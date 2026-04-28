@@ -1,0 +1,144 @@
+# Citations into Reynolds & Heeger (2009), "The Normalization Model of Attention",
+# Neuron 61(2):168-185. PMCID PMC2752446.
+#
+# Each citation is referenced by ID from model_spec.yaml, code docstrings (Citation:),
+# and test spec_ref values. Citations are write-once during Phase A and treated as
+# immutable thereafter.
+
+- id: C-001
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 1; Section: Suppressive Fields and Normalization"
+  text: "R(x,θ) = ⌊E(x,θ) / [S(x,θ) + σ]⌋_T"
+  notes: "Output firing rate without explicit attention term. Rectification ⌊·⌋_T at threshold T."
+
+- id: C-002
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 2; Section: Suppressive Fields and Normalization"
+  text: "S(x,θ) = s(x,θ) ∗ E(x,θ); ∫ s(x,θ) dx dθ = 1"
+  notes: "Suppressive drive as convolution of stimulus drive with suppressive field. Field normalized to integrate to 1."
+
+- id: C-003
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 3; Section: Suppressive Fields and Normalization"
+  text: "r(c) = αc / (c + σ)"
+  notes: "Single-neuron contrast-response function (simplified). α = response gain, σ = contrast gain."
+
+- id: C-004
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 4; Section: Suppressive Fields and Normalization"
+  text: "r(c) = αc / (c + βc_s + σ)"
+  notes: "Center + surround stimulus. β ∈ [0,1] scales surround suppression."
+
+- id: C-005
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 5; Section: Attention Fields and Attentional Gain"
+  text: "R(x,θ) = ⌊[A(x,θ) E(x,θ)] / [S(x,θ) + σ]⌋_T"
+  notes: "Attention applied as multiplicative gain on stimulus drive before normalization."
+
+- id: C-006
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 6; Section: Attention Fields and Attentional Gain"
+  text: "S(x,θ) = s(x,θ) ∗ [A(x,θ) E(x,θ)]"
+  notes: "Suppressive drive computed from attention-modulated stimulus drive."
+
+- id: C-007
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 7; Section: A Unified Account of Attentional Modulation"
+  text: "r(c) = α(γc) / (γc + σ) = αc / (c + σ/γ)"
+  notes: "Contrast gain limiting case: small stimulus, large attention field. γ approximated as constant across the stimulus footprint."
+
+- id: C-008
+  source: "Reynolds & Heeger (2009)"
+  location: "Eq. 8; Section: A Unified Account of Attentional Modulation"
+  text: "r(c) = α(γc) / (γc + βc + σ)"
+  notes: "Response gain limiting case: large stimulus, small attention field. γ multiplies center contrast only."
+
+- id: C-009
+  source: "Reynolds & Heeger (2009)"
+  location: "Section: The Normalization Model of Attention; Figure 1 caption"
+  text: "Three model components: stimulation field, suppressive field, attention field. The stimulus, stimulation field, suppressive field, and attention field all had Gaussian profiles in space and orientation."
+  notes: "Foundational architectural statement."
+
+- id: C-010
+  source: "Reynolds & Heeger (2009)"
+  location: "Table 1; surrounding text"
+  text: "For all simulations: stimulation field size = 5, suppressive field size = 20. Spatial sizes in arbitrary units; only relative values are meaningful."
+  notes: "Constants across all figure simulations."
+
+- id: C-011
+  source: "Reynolds & Heeger (2009)"
+  location: "Table 1; surrounding text"
+  text: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°. MT/MST experiments (moving stimuli): tuning widths doubled to cover the 360° range of motion directions."
+  notes: "Tuning width conventions per cortical area."
+
+- id: C-012
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 1 caption; Table 1 row 'Figure 1'"
+  text: "Figure 1 parameters — stimulus size 3, attention field size 30, peak attention gain (γ) = 2."
+  notes: "Schematic figure illustrating the population computation."
+
+- id: C-013
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 2 caption; Table 1 rows '2A', '2B'"
+  text: "Fig 2A: stimulus = 0.6× stimulation field (=3); attention field = 6× stimulation field (=30). Fig 2B: stimulus = stimulation field (=5); attention field ≈ 2/3 stimulation field (=3, i.e., 10× smaller than 2A). γ=2 in both. All other parameters identical."
+  notes: "Demonstrates contrast vs response gain regimes."
+
+- id: C-014
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 3 caption; Table 1 rows '3C', '3F'"
+  text: "Fig 3C (Reynolds 2000): stimulus 5, attention field 30, γ=2, baseline modulated by attention added to stimulus drive AND additional unmodulated baseline added after normalization. Fig 3F (Williford & Maunsell 2006): stimulus 7, attention field 7, γ=2, same baseline handling. Fig 3F is identical to 3C except (1) larger stimulus, smaller attention field, (2) baseline added in 3C."
+  notes: "Two empirical patterns reconciled by stimulus/attention size ratio plus baseline."
+
+- id: C-015
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 4 caption; Table 1 rows '4C', '4E'"
+  text: "Fig 4C (Martinez-Trujillo & Treue 2002): two stimuli in RF — preferred direction (contrast varied) and nonpreferred direction (fixed contrast). Attention to nonpreferred-in-RF vs opposite hemifield. Fig 4E: two stimuli (preferred + nonpreferred) with contrasts covarying; attention to preferred vs nonpreferred. Both: stim 5, attention field 5, tuning width 20°, γ=5."
+  notes: "Contrast gain (4C) vs response gain (4E) outcomes from same parameters."
+
+- id: C-016
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 5 caption; Table 1 row '5C'"
+  text: "Fig 5C: spatial attention, broad (flat) orientation attention field. Stimulus 10, attention field 10, γ=2. Yields multiplicative scaling of orientation tuning curve."
+  notes: "Reproduces McAdams & Maunsell 1999 multiplicative-scaling result."
+
+- id: C-017
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 6 caption; Table 1 row '6C'"
+  text: "Fig 6C: spatial attention always away from RF; feature-based attention either to fixation (flat) or to opposite-hemifield stimulus (selective for direction). Stim 10, attention field 30, tuning width 60° when attending moving stimulus (unselective when attending fixation), γ=2."
+  notes: "Reproduces Martinez-Trujillo & Treue 2004 tuning-sharpening with feature attention."
+
+- id: C-018
+  source: "Reynolds & Heeger (2009)"
+  location: "Figure 7 caption; Table 1 row '7C'"
+  text: "Fig 7C: two stimuli in RF (one nonpreferred fixed, one variable direction). Three attention conditions: fixation (flat field), nonpreferred (spatial+directional for nonpreferred), variable (spatial in RF + directional matching variable stimulus). Stim 5, attention field 5, tuning width 45°, γ=5."
+  notes: "Reproduces Treue & Martinez-Trujillo 1999 tuning shifts with combined spatial+feature attention."
+
+- id: C-019
+  source: "Reynolds & Heeger (2009)"
+  location: "Section: A Unified Account of Attentional Modulation; Discussion"
+  text: "Contrast gain regime predicts a leftward shift of the contrast-response function on the log-contrast axis, with the largest percentage modulation at intermediate contrasts. Response gain regime predicts an upward shift of the contrast-response function, with attentional modulation large across the full range of contrasts and largest absolute effects at the highest contrasts."
+  notes: "Qualitative predictions distinguishing the two regimes."
+
+- id: C-020
+  source: "Reynolds & Heeger (2009)"
+  location: "Discussion; Section on stimulus size effects"
+  text: "Resulting neural responses saturate (level off) at high stimulus contrasts due to normalization, regardless of whether the high-contrast stimulus is preferred or nonpreferred. When c >> σ, r(c) ≈ α."
+  notes: "Saturation as fundamental property of normalization."
+
+- id: C-021
+  source: "Reynolds & Heeger (2009)"
+  location: "Section: Attentional Modulation of the Contrast-Response Function with Two Stimuli"
+  text: "Only the preferred direction contributes to the stimulus drive but both contribute to the suppressive drive. Response to the pair is less than it would be to the preferred direction on its own. Attending to preferred multiplies its stimulus drive (equivalent to increasing its contrast). Attending to nonpreferred shifts the balance in favor of the nonpreferred stimulus, increasing its suppressive effect and yielding a smaller output firing rate."
+  notes: "Two-stimulus interactions."
+
+- id: C-022
+  source: "Reynolds & Heeger (2009)"
+  location: "Section: Spatial Attention and Multiplicative Scaling of Neuronal Tuning Curves"
+  text: "When spatial attention is directed to a stimulus in the receptive field with an orientation-broad attention field, the orientation tuning curve is multiplicatively scaled with no change in shape."
+  notes: "Tuning-curve multiplicative scaling claim."
+
+- id: C-023
+  source: "Reynolds & Heeger (2009)"
+  location: "Section: Feature-Based Attention and Nonmultiplicative Scaling of Neuronal Tuning"
+  text: "When feature-based attention is selective for a particular motion direction, the tuning curve narrows (sharpens) because the stimulus drive is multiplied by an attention field that is itself selective for motion direction."
+  notes: "Tuning-curve sharpening claim."

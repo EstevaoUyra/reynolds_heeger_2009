@@ -1,0 +1,228 @@
+# Assumptions made where the paper underspecifies.
+#
+# Each assumption is referenced by ID from model_spec.yaml (parameters with
+# value: null point to an assumption via underspecified_by), and from code
+# docstrings (Assumption:) once implementation begins.
+#
+# Format: name (snake_case identifier), description (what was assumed),
+# rationale (why), alternatives_considered (other plausible choices),
+# affects (where this assumption propagates), spec_refs (cross-references).
+
+- id: A-001
+  name: contrast_gain_constant_sigma
+  description: |
+    Numeric value of σ (contrast gain constant in the normalization
+    denominator) is not specified. Choose σ = 0.1 on a contrast scale
+    where c ∈ [0, 1].
+  rationale: |
+    σ controls the contrast at half-maximum of the contrast-response
+    function. σ = 0.1 places the half-saturation contrast at ~10%, in
+    line with V4/MT ranges commonly reported in the normalization
+    literature, and ensures observable saturation behavior across the
+    [0,1] contrast range used in figure protocols.
+  alternatives_considered:
+    - "σ = 0.5 (half-saturation at 50% contrast — too high; few stimuli would saturate)"
+    - "σ = 0.01 (half-saturation at 1% — saturation too aggressive)"
+    - "σ = 1.0 (no half-saturation in [0,1] range)"
+  affects:
+    - "EQ-1, EQ-3, EQ-5, EQ-7, EQ-8 (all output computations)"
+  spec_refs:
+    - "parameters.sigma"
+
+- id: A-002
+  name: response_gain_alpha
+  description: |
+    Numeric value of α (response gain; max attainable response) is not
+    specified. Choose α = 1 (dimensionless).
+  rationale: |
+    Paper treats output units as arbitrary (Table 1 notes: "spatial
+    sizes in arbitrary units"). With α = 1, output ranges in [0, ~γ]
+    for attention conditions, making qualitative comparisons easy and
+    avoiding confusion about firing rate units that are not specified.
+  alternatives_considered:
+    - "α = 100 (interpret as spikes/s)"
+  affects:
+    - "EQ-1, EQ-3, EQ-5, EQ-7, EQ-8"
+    - "All simulation outputs (uniform multiplicative scale only)"
+  spec_refs:
+    - "parameters.alpha"
+
+- id: A-003
+  name: rectification_threshold_T
+  description: |
+    Value of T in the rectification operator ⌊·⌋_T is not given. Choose
+    T = 0 (half-wave rectification).
+  rationale: |
+    Half-wave rectification at T = 0 is the standard interpretation of
+    ⌊·⌋_T in the divisive normalization literature (Heeger 1992; Carandini
+    & Heeger 1994). Output of the divisive form is non-negative for all
+    valid inputs (E ≥ 0, S ≥ 0, σ > 0), so T = 0 affects only edge
+    cases involving subtracted baselines.
+  alternatives_considered:
+    - "T > 0 (subtract spontaneous baseline before rectification)"
+  affects:
+    - "EQ-1, EQ-5"
+  spec_refs:
+    - "parameters.threshold_T"
+
+- id: A-004
+  name: gaussian_size_convention
+  description: |
+    Paper specifies sizes (e.g., "stimulation field size = 5") without
+    stating whether 'size' refers to standard deviation σ_g, FWHM, or
+    full extent. Adopt convention: 'size' = standard deviation σ_g of
+    the Gaussian profile.
+  rationale: |
+    σ_g convention is the most common in vision and computational
+    neuroscience modeling, and Table 1 ratios (e.g., stimulus = 0.6 ×
+    stimulation field) are most naturally interpreted as σ_g ratios.
+    Under this convention, a "size = 5" stimulus has full extent
+    ~3σ_g = 15 units (covering ~99.7% of the Gaussian mass).
+  alternatives_considered:
+    - "FWHM (size = 2.355 σ_g)"
+    - "Full extent at some cutoff (e.g., 2σ_g or 3σ_g)"
+  affects:
+    - "All Gaussian profile constructions"
+    - "components.stimulation_field"
+    - "components.suppressive_field"
+    - "components.attention_field"
+    - "EQ-stim"
+  spec_refs:
+    - "components.stimulation_field"
+    - "components.suppressive_field"
+    - "components.attention_field"
+
+- id: A-005
+  name: spatial_discretization
+  description: |
+    Spatial sample grid for x is not specified. Use x ∈ [-50, 50] with
+    201 points (dx = 0.5).
+  rationale: |
+    Grid must (i) extend beyond the suppressive field (size = 20, so
+    the Gaussian decays to negligible by ±3σ = 60; clip at ±50 to
+    balance edge effects vs grid size), (ii) resolve the smallest
+    stimulus (size 0.6 × 5 = 3) — dx = 0.5 gives 6 samples per σ_g.
+    Edge effects checked via tests on conservation of integrated
+    suppressive field.
+  alternatives_considered:
+    - "[-100, 100] with dx = 0.5 (more conservative; 4× compute)"
+    - "[-50, 50] with dx = 1.0 (faster; risk of undersampling small stimuli)"
+    - "[-50, 50] with dx = 0.25 (finer; 2× compute)"
+  affects:
+    - "All spatial convolutions (EQ-2, EQ-6)"
+    - "components.stimulation_field, components.suppressive_field"
+  spec_refs:
+    - "parameters.x_grid"
+
+- id: A-006
+  name: spatial_dimensionality
+  description: |
+    Figure 1 schematic depicts 2D images, but the equations and
+    Figures 2–7 protocols are equally well expressed in 1D. Use 1D
+    space (x ∈ ℝ) for all simulations.
+  rationale: |
+    1D space suffices to reproduce all numeric and qualitative claims
+    in Figures 2–7: hemifield-separated stimuli or single-RF analyses
+    only require relative position along one axis. Figure 1 is
+    illustrative; we will not reproduce its 2D schematic.
+  alternatives_considered:
+    - "Full 2D space (x, y) — needed only for Figure 1 reproduction"
+  affects:
+    - "All simulation protocols (Figures 2C through 7C)"
+  spec_refs:
+    - "components.stimulation_field"
+    - "components.suppressive_field"
+    - "components.attention_field"
+
+- id: A-007
+  name: baseline_activity_values_figure_3
+  description: |
+    Figures 3C and 3F add 'baseline activity' — one component
+    modulated by attention (added to stimulus drive), one unmodulated
+    (added after normalization). Table 1 marks 'X' but gives no
+    numbers. Provisional values: modulated baseline = 0.05·α,
+    unmodulated baseline = 0.05·α.
+  rationale: |
+    Baselines should be small relative to peak response (α) but visible
+    at zero contrast. 5% of α is a conventional starting point; will be
+    tuned (per-protocol) to match the qualitative shapes the paper
+    describes — for 3C, % modulation peaking at low contrast; for 3F,
+    % modulation peaking at low contrast with greatest absolute
+    increase at high contrast.
+  alternatives_considered:
+    - "10–20% of α (larger baseline; risks dominating modulation pattern)"
+    - "Asymmetric values for modulated vs unmodulated"
+    - "Zero unmodulated baseline (only attention-modulated baseline)"
+  affects:
+    - "simulation_protocols.figure_3C"
+    - "simulation_protocols.figure_3F"
+  spec_refs:
+    - "simulation_protocols.figure_3C.parameter_overrides"
+    - "simulation_protocols.figure_3F.parameter_overrides"
+
+- id: A-008
+  name: orientation_discretization
+  description: |
+    Number of θ sample points is not specified. Use θ ∈ [-180°, 180°]
+    with 73 points (5° spacing).
+  rationale: |
+    73 points across 360° gives 5° resolution — fine enough to resolve
+    the narrowest tuning width (20° in Figs 4C/4E) with ≥4 samples per
+    σ for direction-tuned protocols. The 360° range covers MT/MST
+    motion directions; for V4 protocols spanning only 180° orientation
+    space, the symmetry can be exploited but the same grid suffices.
+  alternatives_considered:
+    - "37 points (10° spacing) — coarse for tuning width 20°"
+    - "361 points (1° spacing) — finer than needed; ~5× compute"
+  affects:
+    - "All orientation/direction convolutions and tuning curve outputs"
+  spec_refs:
+    - "parameters.theta_grid"
+
+- id: A-009
+  name: stimulus_drive_form
+  description: |
+    Paper does not give an explicit equation for E(x,θ); it only refers
+    to the "stimulus drive" evoked by the stimulus and used as input to
+    Eq. 1. Adopted form (EQ-stim): for a single grating at position
+    x_0, contrast c, orientation θ_0:
+        E(x,θ) = c · G_stim(x - x_0; σ_x = stimulus_size)
+                   · G_orient(θ - θ_0; σ_θ = tuning_width)
+    where G_* is the (unnormalized) Gaussian profile.
+  rationale: |
+    Standard interpretation in normalization models: stimulus drive is
+    contrast-scaled product of spatial and orientation tuning, where
+    the spatial extent of the drive is set by the *stimulus* size
+    (which approximates how the stimulus interacts with the
+    stimulation field). For multiple stimuli, E is the sum of per-
+    stimulus contributions.
+  alternatives_considered:
+    - "E from explicit convolution of raw stimulus image with stimulation field (heavier; same outcome under our parameters)"
+    - "Linear+nonlinear filtering with explicit RF shape"
+  affects:
+    - "All simulations (defines how stimulus parameters become E(x,θ))"
+    - "EQ-stim"
+  spec_refs:
+    - "components.stimulation_field"
+    - "equations.EQ-stim"
+
+- id: A-010
+  name: surround_suppression_scale_beta
+  description: |
+    Numeric value of β (surround suppression scale, 0 < β < 1) in
+    Eqs. 4 and 8 is not given. Choose β = 1.0.
+  rationale: |
+    β = 1 yields full surround suppression; this is the natural
+    interpretation when the suppressive field already determines
+    suppression strength via convolution and there is no additional
+    discount on surround contribution. β only appears in the
+    closed-form approximations (EQ-4, EQ-8) used for analysis; the
+    full population simulations (EQ-2, EQ-6) compute suppression
+    through the suppressive field directly and do not use β.
+  alternatives_considered:
+    - "β = 0.5 (partial surround discount)"
+    - "β derived from suppressive-field integral over surround region"
+  affects:
+    - "EQ-4, EQ-8 (analytical predictions only)"
+  spec_refs:
+    - "parameters.beta"
