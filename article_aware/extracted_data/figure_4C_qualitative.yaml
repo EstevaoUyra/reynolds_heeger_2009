@@ -1,0 +1,42 @@
+figure: "Figure 4C — Two stimuli in RF, attention to nonpreferred"
+protocol_ref: figure_4C
+notes: |
+  Outputs: attended_CRF[c_pref], unattended_CRF[c_pref], percent_modulation
+  where 'attended' = attend nonpreferred-in-RF, 'unattended' = attend
+  opposite hemifield.
+  Attending nonpreferred shifts the balance toward suppression of the
+  recorded neuron — net effect is suppression of the response to the
+  preferred stimulus.
+
+claims:
+  - id: Q-025
+    statement: |
+      Attending nonpreferred-in-RF DECREASES the recorded neuron's
+      response to the preferred stimulus at every contrast (suppressive
+      effect). attended_CRF ≤ unattended_CRF.
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "(attended_CRF <= unattended_CRF).all()"
+
+  - id: Q-026
+    statement: |
+      The attended (attend-nonpref) CRF is rightward-shifted vs the
+      unattended (attend-opposite) CRF on log-contrast axis: the contrast
+      at half-max is larger for attended.
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "half_max_contrast(attended_CRF, c_pref) > half_max_contrast(unattended_CRF, c_pref)"
+
+  - id: Q-027
+    statement: |
+      Absolute value of percent modulation is largest at low/intermediate
+      c_pref (rising portion of CRF), not at saturating contrasts.
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: "abs(percent_modulation).argmax() < len(percent_modulation) - 1"
+
+  - id: Q-028
+    statement: "Both CRFs saturate at high contrast (similar values at c_pref = 1)."
+    citation_ref: C-020
+    reducible_to_deterministic: true
+    deterministic_form: "abs(attended_CRF[-1] - unattended_CRF[-1]) / unattended_CRF[-1] < abs(attended_CRF - unattended_CRF).max() / unattended_CRF.max()"

@@ -1,0 +1,40 @@
+figure: "Figure 4E — Two stimuli in RF, contrasts covary, attend pref vs nonpref"
+protocol_ref: figure_4E
+notes: |
+  Outputs: attend_pref_CRF[c], attend_nonpref_CRF[c], ratio[c] =
+  attend_pref / attend_nonpref.
+  Attention to preferred yields response gain (multiplicative scaling)
+  relative to attending nonpreferred.
+
+claims:
+  - id: Q-029
+    statement: |
+      Attending preferred yields larger responses than attending
+      nonpreferred at every contrast in the swept range.
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "(attend_pref_CRF > attend_nonpref_CRF).all()"
+
+  - id: Q-030
+    statement: |
+      The two CRFs are approximately related by a multiplicative scaling
+      (response gain): ratio ≈ constant across contrast.
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: |
+      mask = attend_nonpref_CRF > 0.01 * attend_nonpref_CRF.max()
+      ratio[mask].max() / ratio[mask].min() < 1.5
+
+  - id: Q-031
+    statement: "Both CRFs saturate at high contrast."
+    citation_ref: C-020
+    reducible_to_deterministic: true
+    deterministic_form: "(attend_pref_CRF[-1] - attend_pref_CRF_at(0.5)) / attend_pref_CRF_at(0.5) < 0.3"
+
+  - id: Q-032
+    statement: |
+      Peak attend_pref response is greater than peak attend_nonpref
+      response (upward shift).
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: "attend_pref_CRF.max() > attend_nonpref_CRF.max()"

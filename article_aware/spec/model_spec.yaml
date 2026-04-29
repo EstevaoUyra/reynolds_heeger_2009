@@ -210,6 +210,31 @@ equations:
     citation_refs: [C-009]
     notes: "Form not given explicitly in paper; per A-009. Sum is over stimuli i with contrasts c_i, positions x_i, feature values θ_i."
 
+  - id: EQ-attention
+    name: attention_field_construction
+    expression: |
+      A(x,θ) = 1 + (γ - 1) · G_space(x - x_attended; σ=attention_field_size)
+                            · G_feature(θ - θ_attended; σ=attention_tuning_width)
+      For unselective dimensions (e.g., "flat over θ"), the corresponding Gaussian
+      is replaced by 1 (uniform). For "attend elsewhere" conditions where the
+      attended location is far from the recorded neuron's RF, the spatial Gaussian
+      contribution at the RF is negligible and A ≈ 1 over the RF.
+    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width]
+    outputs: [A]
+    citation_refs: [C-005, C-009]
+    notes: "Construction form is conventional (paper says 'Gaussian profiles'); baseline 1, peak γ. Gaussian σ convention per A-004."
+
+  - id: EQ-suppressive_kernel
+    name: suppressive_kernel_construction
+    expression: |
+      s(x,θ) = N · G_space(x; σ=suppressive_field_size)
+                 · G_feature(θ; σ=suppressive_tuning_width)
+      where N is chosen so that ∫∫ s(x,θ) dx dθ = 1.
+    inputs: [suppressive_field_size, suppressive_tuning_width]
+    outputs: [s]
+    citation_refs: [C-002, C-009, C-011]
+    notes: "s is fixed by parameters; does not depend on stimulus or attention. Normalized integral per EQ-2."
+
 components:
   - id: stimulation_field
     name: Stimulation Field
@@ -238,6 +263,69 @@ components:
     parameter_refs: [sigma, threshold_T]
     equation_refs: [EQ-5, EQ-6]
     citation_refs: [C-005, C-006]
+
+pipeline:
+  # Ordered computation steps that produce the recorded neuron's response from a
+  # protocol's stimulus and attention configuration. Each step references an
+  # equation. Optional steps run only when the protocol overrides the relevant
+  # parameter. Convolutions: periodic in θ, zero-padded in x (per A-011).
+
+  - step: 1
+    name: build_suppressive_kernel
+    description: "Construct the (constant) suppressive field kernel s(x,θ), normalized to integrate to 1. Computed once per simulation."
+    equation_ref: EQ-suppressive_kernel
+    inputs: [suppressive_field_size, suppressive_tuning_width, x_grid, theta_grid]
+    outputs: [s]
+
+  - step: 2
+    name: build_stimulus_drive
+    description: "Construct E(x,θ) by summing per-stimulus Gaussian contributions from the protocol's stimulus configuration."
+    equation_ref: EQ-stim
+    inputs: [stimulus_size, tuning_width, x_grid, theta_grid, "<protocol.stimuli>"]
+    outputs: [E]
+
+  - step: 2.5
+    name: add_modulated_baseline_to_E
+    optional: true
+    applies_when: "protocol.parameter_overrides has baseline_modulated_by_attention"
+    description: "Add a uniform baseline to E so that it gets multiplied by A (and contributes to S)."
+    inputs: [E, baseline_modulated_by_attention]
+    outputs: [E]
+
+  - step: 3
+    name: build_attention_field
+    description: "Construct A(x,θ) per the protocol's attention condition: baseline 1 plus Gaussian peak γ at the attended location, with feature selectivity per protocol."
+    equation_ref: EQ-attention
+    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width, x_grid, theta_grid, "<protocol.attention_condition>"]
+    outputs: [A]
+
+  - step: 4
+    name: compute_suppressive_drive
+    description: "Element-wise multiply A and E, then convolve with the suppressive kernel s in both x (zero-padded) and θ (periodic)."
+    equation_ref: EQ-6
+    inputs: [s, A, E]
+    outputs: [S]
+
+  - step: 5
+    name: compute_output
+    description: "Element-wise compute R = (A·E) / (S + σ), then rectify at threshold T."
+    equation_ref: EQ-5
+    inputs: [A, E, S, sigma, threshold_T]
+    outputs: [R]
+
+  - step: 5.5
+    name: add_unmodulated_baseline_to_R
+    optional: true
+    applies_when: "protocol.parameter_overrides has baseline_unmodulated"
+    description: "Add a uniform unmodulated baseline to R after normalization and rectification."
+    inputs: [R, baseline_unmodulated]
+    outputs: [R]
+
+  - step: 6
+    name: extract_recorded_neuron_response
+    description: "Read out R(x, θ) at the recorded neuron's coordinates (typically x = 0, θ = preferred = 0). For tuning-curve protocols, the recorded coordinates are fixed and the stimulus θ is swept."
+    inputs: [R, "<protocol.recorded_neuron_coords>"]
+    outputs: ["recorded_response"]
 
 simulation_protocols:
 

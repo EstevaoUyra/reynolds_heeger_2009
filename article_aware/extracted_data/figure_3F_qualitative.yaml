@@ -1,0 +1,49 @@
+figure: "Figure 3F — Williford & Maunsell 2006 reproduction (with baseline)"
+protocol_ref: figure_3F
+notes: |
+  Outputs: attended_CRF[c], unattended_CRF[c], percent_modulation[c],
+  absolute_difference[c] = attended - unattended.
+  Distinguishing feature: percent peaks at low contrast BUT absolute
+  difference peaks at high contrast — neither pure contrast nor pure
+  response gain.
+
+claims:
+  - id: Q-019
+    statement: "Attended response ≥ unattended response at every contrast."
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "(attended_CRF >= unattended_CRF).all()"
+
+  - id: Q-020
+    statement: "Percent modulation is largest at low contrasts."
+    citation_ref: C-014
+    reducible_to_deterministic: true
+    deterministic_form: "percent_modulation.argmax() < len(percent_modulation) / 2"
+
+  - id: Q-021
+    statement: |
+      Absolute difference (attended - unattended) is largest at high
+      contrasts (argmax in the upper half of the contrast range).
+    citation_ref: C-014
+    reducible_to_deterministic: true
+    deterministic_form: "absolute_difference.argmax() >= len(absolute_difference) / 2"
+
+  - id: Q-022
+    statement: |
+      The CRF pattern is mixed: percent_modulation and absolute_difference
+      peak at different contrast extremes (not the same regime as 3C).
+    citation_ref: C-014
+    reducible_to_deterministic: true
+    deterministic_form: "abs(percent_modulation.argmax() - absolute_difference.argmax()) > len(percent_modulation) / 3"
+
+  - id: Q-023
+    statement: "With baseline included, response at the smallest contrast is positive."
+    citation_ref: C-014
+    reducible_to_deterministic: true
+    deterministic_form: "attended_CRF[0] > 0 and unattended_CRF[0] > 0"
+
+  - id: Q-024
+    statement: "Both curves saturate at high contrast."
+    citation_ref: C-020
+    reducible_to_deterministic: true
+    deterministic_form: "(attended_CRF[-1] - attended_CRF_at(0.5)) / attended_CRF_at(0.5) < 0.3"

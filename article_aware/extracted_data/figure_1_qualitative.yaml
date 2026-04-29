@@ -1,0 +1,30 @@
+figure: "Figure 1 — Schematic / Population Visualization"
+protocol_ref: figure_1
+notes: |
+  Figure 1 is illustrative. Per A-006, no quantitative reproduction of the
+  2D schematic is attempted. Claims here verify that the population
+  computation produces sensible outputs.
+
+claims:
+  - id: Q-001
+    statement: |
+      Output firing rate R is larger at the attended stimulus location
+      (x = +10) than at the unattended stimulus location (x = -10).
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "R_at_x(+10, theta=0) > R_at_x(-10, theta=0)"
+
+  - id: Q-002
+    statement: |
+      Attention field A is ≥ 1 everywhere; baseline 1 with peak at the
+      attended location reaching γ = 2.
+    citation_ref: C-005
+    reducible_to_deterministic: true
+    deterministic_form: "(A >= 1).all() and abs(A.max() - 2) < 0.1"
+
+  - id: Q-003
+    statement: |
+      All four population fields (E, A, S, R) are non-negative.
+    citation_ref: C-001
+    reducible_to_deterministic: true
+    deterministic_form: "(E >= 0).all() and (A >= 1).all() and (S >= 0).all() and (R >= 0).all()"

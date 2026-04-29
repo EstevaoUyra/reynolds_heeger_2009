@@ -8,3 +8,6 @@ htmlcov/
 
 .env
 .env.*
+
+# Generated qualitative sanity-check artifacts
+implementation/sanity_checks/*_outputs/

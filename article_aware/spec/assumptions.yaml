@@ -95,19 +95,19 @@
 - id: A-005
   name: spatial_discretization
   description: |
-    Spatial sample grid for x is not specified. Use x ∈ [-50, 50] with
-    201 points (dx = 0.5).
+    Spatial sample grid for x is not specified. Use x ∈ [-100, 100] with
+    401 points (dx = 0.5).
   rationale: |
-    Grid must (i) extend beyond the suppressive field (size = 20, so
-    the Gaussian decays to negligible by ±3σ = 60; clip at ±50 to
-    balance edge effects vs grid size), (ii) resolve the smallest
-    stimulus (size 0.6 × 5 = 3) — dx = 0.5 gives 6 samples per σ_g.
-    Edge effects checked via tests on conservation of integrated
-    suppressive field.
+    Grid must (i) extend beyond the suppressive field (size = 20) and
+    beyond the largest attention field (size = 30) so that "opposite
+    hemifield" attention conditions can be placed far enough that A ≈ 1
+    over the recorded neuron's RF (need distance >> 3σ_attn = 90), and
+    (ii) resolve the smallest stimulus (size 0.6 × 5 = 3) — dx = 0.5
+    gives 6 samples per σ_g.
   alternatives_considered:
-    - "[-100, 100] with dx = 0.5 (more conservative; 4× compute)"
-    - "[-50, 50] with dx = 1.0 (faster; risk of undersampling small stimuli)"
-    - "[-50, 50] with dx = 0.25 (finer; 2× compute)"
+    - "[-50, 50] with dx = 0.5 (initial choice; too small for figure 2A geometry)"
+    - "[-100, 100] with dx = 1.0 (faster; risk of undersampling small stimuli)"
+    - "[-200, 200] (overkill)"
   affects:
     - "All spatial convolutions (EQ-2, EQ-6)"
     - "components.stimulation_field, components.suppressive_field"
@@ -205,6 +205,30 @@
   spec_refs:
     - "components.stimulation_field"
     - "equations.EQ-stim"
+
+- id: A-011
+  name: convolution_boundary_handling
+  description: |
+    Convolutions in EQ-2 / EQ-6 require a boundary convention. Adopt:
+    periodic (circular) convolution in θ; zero-padded convolution in x.
+  rationale: |
+    θ is genuinely periodic (orientation: 180°; motion direction: 360°),
+    so circular convolution preserves wrap-around contributions to
+    suppression. x is not periodic — hemifield-separated stimuli should
+    not "leak" suppression around the boundary, so zero-padding (or
+    equivalently, large enough x_grid extent that boundaries are
+    unreachable) is correct. Per A-005, x_grid extends well beyond any
+    stimulus's footprint; combined with zero-padding, boundary effects
+    are negligible.
+  alternatives_considered:
+    - "Periodic in both x and θ — would let opposite-hemifield stimuli wrap into the recorded RF"
+    - "Zero-padded in θ — would lose suppressive contributions across the 180°/360° wrap"
+    - "Reflect (mirror) boundaries in x"
+  affects:
+    - "EQ-2, EQ-6 (suppressive drive convolutions)"
+    - "Pipeline step 4 (compute_suppressive_drive)"
+  spec_refs:
+    - "pipeline.compute_suppressive_drive"
 
 - id: A-010
   name: surround_suppression_scale_beta

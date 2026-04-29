@@ -1,0 +1,48 @@
+figure: "Figure 2A — Contrast Gain"
+protocol_ref: figure_2A
+notes: |
+  Predicted regime (small stim, large attn field): contrast gain.
+  Outputs from protocol: attended_CRF[c], unattended_CRF[c],
+  percent_modulation[c] = 100 * (attended - unattended) / unattended.
+  Contrast vector c spans [0.01, 1] log-spaced (8 points).
+
+claims:
+  - id: Q-004
+    statement: "Attended response ≥ unattended response at every contrast."
+    citation_ref: C-021
+    reducible_to_deterministic: true
+    deterministic_form: "(attended_CRF >= unattended_CRF).all()"
+
+  - id: Q-005
+    statement: |
+      Percent modulation peaks at an intermediate contrast (interior of
+      the contrast range), not at the lowest or highest contrast.
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: "0 < percent_modulation.argmax() < (len(percent_modulation) - 1)"
+
+  - id: Q-006
+    statement: |
+      Attended CRF is leftward-shifted vs unattended CRF on log-contrast
+      axis: the contrast at half-max is smaller for attended than for
+      unattended.
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: "half_max_contrast(attended_CRF, c) < half_max_contrast(unattended_CRF, c)"
+
+  - id: Q-007
+    statement: |
+      Both curves saturate at high contrast: the increase from c=0.5 to
+      c=1 is small relative to the response at c=0.5 (less than 30%).
+    citation_ref: C-020
+    reducible_to_deterministic: true
+    deterministic_form: "(attended_CRF[-1] - attended_CRF_at(0.5)) / attended_CRF_at(0.5) < 0.3"
+
+  - id: Q-008
+    statement: |
+      Percent modulation at the highest contrast is smaller than at the
+      contrast where it peaks (saturating contrasts have smaller
+      modulation than the rising portion).
+    citation_ref: C-019
+    reducible_to_deterministic: true
+    deterministic_form: "percent_modulation[-1] < percent_modulation.max()"
