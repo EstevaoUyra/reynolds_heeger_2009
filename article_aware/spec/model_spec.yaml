@@ -336,8 +336,9 @@ simulation_protocols:
       stimulus_size: 3
       attention_field_size: 30
       peak_attention_gain_gamma: 2
+    expected_outputs: [x_grid, E_slice, A_slice, S_slice, R_slice, R_at_attended, R_at_unattended, E, A, S, R]
     expected_data_paths:
-      - extracted_data/figure_1_qualitative.yaml
+      - extracted_data/test_figure_1.py
     citation_refs: [C-012]
 
   - id: figure_2A
@@ -347,8 +348,9 @@ simulation_protocols:
       stimulus_size: 3
       attention_field_size: 30
       peak_attention_gain_gamma: 2
+    expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, c]
     expected_data_paths:
-      - extracted_data/figure_2A_qualitative.yaml
+      - extracted_data/test_figure_2A.py
     citation_refs: [C-013]
 
   - id: figure_2B
@@ -358,8 +360,9 @@ simulation_protocols:
       stimulus_size: 5
       attention_field_size: 3
       peak_attention_gain_gamma: 2
+    expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, c]
     expected_data_paths:
-      - extracted_data/figure_2B_qualitative.yaml
+      - extracted_data/test_figure_2B.py
     citation_refs: [C-013]
 
   - id: figure_3C
@@ -371,8 +374,9 @@ simulation_protocols:
       peak_attention_gain_gamma: 2
       baseline_modulated_by_attention: 0.05    # per A-007
       baseline_unmodulated: 0.05               # per A-007
+    expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
-      - extracted_data/figure_3C_qualitative.yaml
+      - extracted_data/test_figure_3C.py
     citation_refs: [C-014]
 
   - id: figure_3F
@@ -384,8 +388,9 @@ simulation_protocols:
       peak_attention_gain_gamma: 2
       baseline_modulated_by_attention: 0.05    # per A-007
       baseline_unmodulated: 0.05               # per A-007
+    expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
-      - extracted_data/figure_3F_qualitative.yaml
+      - extracted_data/test_figure_3F.py
     citation_refs: [C-014]
 
   - id: figure_4C
@@ -396,8 +401,9 @@ simulation_protocols:
       attention_field_size: 5
       tuning_width: 20
       peak_attention_gain_gamma: 5
+    expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, c_pref]
     expected_data_paths:
-      - extracted_data/figure_4C_qualitative.yaml
+      - extracted_data/test_figure_4C.py
     citation_refs: [C-015]
 
   - id: figure_4E
@@ -408,8 +414,9 @@ simulation_protocols:
       attention_field_size: 5
       tuning_width: 20
       peak_attention_gain_gamma: 5
+    expected_outputs: [attend_pref_CRF, attend_nonpref_CRF, ratio, c]
     expected_data_paths:
-      - extracted_data/figure_4E_qualitative.yaml
+      - extracted_data/test_figure_4E.py
     citation_refs: [C-015]
 
   - id: figure_5C
@@ -419,8 +426,9 @@ simulation_protocols:
       stimulus_size: 10
       attention_field_size: 10
       peak_attention_gain_gamma: 2
+    expected_outputs: [theta_0_grid, attended_tuning, unattended_tuning, ratio]
     expected_data_paths:
-      - extracted_data/figure_5C_qualitative.yaml
+      - extracted_data/test_figure_5C.py
     citation_refs: [C-016]
 
   - id: figure_6C
@@ -431,8 +439,9 @@ simulation_protocols:
       attention_field_size: 30
       tuning_width: 60
       peak_attention_gain_gamma: 2
+    expected_outputs: [theta_stim_grid, attend_fixation_tuning, attend_opposite_stimulus_tuning]
     expected_data_paths:
-      - extracted_data/figure_6C_qualitative.yaml
+      - extracted_data/test_figure_6C.py
     citation_refs: [C-017]
 
   - id: figure_7C
@@ -443,6 +452,7 @@ simulation_protocols:
       attention_field_size: 5
       tuning_width: 45
       peak_attention_gain_gamma: 5
+    expected_outputs: [theta_var_grid, fixation_tuning, attend_nonpref_tuning, attend_variable_tuning]
     expected_data_paths:
-      - extracted_data/figure_7C_qualitative.yaml
+      - extracted_data/test_figure_7C.py
     citation_refs: [C-018]
