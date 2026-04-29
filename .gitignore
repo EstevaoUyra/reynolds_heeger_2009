@@ -11,3 +11,4 @@ htmlcov/
 
 # Generated qualitative sanity-check artifacts
 implementation/sanity_checks/*_outputs/
+implementation/figure_outputs/
