@@ -29,15 +29,26 @@ Response) share the same 2D layout:
 
 ## Panel: Stimulus (schematic)
 
+This schematic encodes the simulation parameters visually: grating orientations reflect
+the stimulus orientation parameter, and grating positions reflect the stimulus position
+parameters. If those parameters changed, the schematic would change accordingly. Checklist
+items here verify that the schematic is consistent with the parameters used in this figure.
+
 - [ ] Two grating patches are shown, one on the left side and one on the right side of
-      the panel, with a visible gap between them.
-- [ ] Both gratings have a vertical orientation (stripes run top to bottom).
+      the panel, with a visible gap between them — consistent with two stimuli, one per
+      hemifield.
+- [ ] Both gratings have a vertical orientation (stripes run top to bottom), reflecting
+      the stimulus orientation parameter (vertical gratings).
+- [ ] The two gratings are positioned symmetrically in the left and right hemifields,
+      reflecting the stimulus position parameters (left and right of fixation).
 - [ ] A small black dot (fixation point) is visible at the center of the panel, between
       the two gratings.
-- [ ] A solid circle is drawn around the right-side grating, marking the receptive field.
-- [ ] A dashed circle is drawn around the right-side grating, marking the attention field.
+- [ ] A solid circle is drawn around the right-side grating, marking the receptive field
+      of the model neuron — consistent with attention being directed to the right stimulus.
+- [ ] A dashed circle is drawn around the right-side grating, marking the attention field
+      centered on the attended stimulus.
 - [ ] Both gratings appear equal in contrast (same stripe brightness and spacing on both
-      sides).
+      sides), reflecting the equal-contrast parameter.
 
 ---
 
@@ -48,9 +59,10 @@ Response) share the same 2D layout:
 - [ ] Exactly two bright vertical stripes are present — one in the left half and one in
       the right half of the panel.
 - [ ] Both stripes are narrow in the horizontal direction, occupying a small fraction of
-      the total panel width. <!-- UNSURE: the paper figure is small and JPEG-compressed; the stripes look thin but the exact fraction is hard to judge -->
-- [ ] Both stripes are tall in the vertical direction, extending across a substantial
-      portion of the orientation axis. <!-- UNSURE: stripes appear to taper toward top and bottom rather than being fully uniform top-to-bottom; the exact extent is not clearly readable from the figure -->
+      the total panel width.
+- [ ] Both stripes occupy approximately 50% of the vertical extent of the panel — they
+      are tall but do not fill the full height. The regions above and below each stripe
+      return to black (baseline), reflecting the Gaussian falloff in orientation preference.
 - [ ] The two stripes are equal in peak brightness — neither is visibly brighter than
       the other.
 - [ ] A clear dark gap (black or near-black) separates the two stripes; they do not
@@ -71,7 +83,7 @@ Response) share the same 2D layout:
 - [ ] The brightest point of the panel is located in the right half of the x-axis,
       roughly in the middle of the right half — not flush against the rightmost edge.
 - [ ] The brightness drops back toward midgray before reaching the rightmost edge of
-      the panel — the peak is a Gaussian, not a ramp that continues to the edge. <!-- UNSURE: hard to read precisely in the JPEG; the right-edge falloff may be subtle -->
+      the panel — the peak is a Gaussian, not a ramp that continues to the edge.
 - [ ] The panel is uniform along the entire vertical (orientation) axis — every horizontal
       row is the same shade at any given x position. No vertical banding or gradient is
       present.
@@ -85,10 +97,10 @@ Response) share the same 2D layout:
 - [ ] Each band is substantially wider in the horizontal direction than the corresponding
       stripe in the Stimulus Drive panel — the convolution with the large suppressive
       field has spatially smeared the drive.
-- [ ] A dark region is visible between the two bands — they remain distinguishable as
-      two separate structures and have not merged into a single uniform blob. <!-- UNSURE: the boundary between the bands and the gap is visually subtle in the paper figure; this is the most commonly misread feature of this panel -->
-- [ ] The right band is brighter than the left band, reflecting that the attention field
-      amplified the right stimulus drive before pooling. <!-- UNSURE: the brightness difference is present but subtle; the JPEG compression makes it difficult to quantify -->
+- [ ] A dark region is clearly visible between the two bands — they are distinguishable
+      as two separate structures and have not merged into a single uniform blob.
+- [ ] The right band is clearly brighter than the left band, reflecting that the attention
+      field amplified the right stimulus drive before pooling.
 - [ ] Both bands extend across the full vertical extent of the panel (full orientation
       axis), consistent with the broad orientation tuning of the suppressive field.
 - [ ] The background outside the two bands (far left, far right, and between) is dark,
@@ -107,8 +119,9 @@ Response) share the same 2D layout:
 - [ ] Both stripes are narrow in the horizontal direction, comparable in width to the
       Stimulus Drive stripes — they have not been broadened by the normalization.
 - [ ] The right stripe (attended location) is noticeably brighter than the left stripe.
-- [ ] The left stripe (unattended location) is present and clearly visible — it is dimmer
-      than the right but not suppressed to near-zero. <!-- UNSURE: the left stripe is visibly present in the paper figure but its brightness relative to the right is hard to quantify precisely -->
+- [ ] The left stripe (unattended location) is present and visible but much dimmer than
+      the right stripe — it is not suppressed to near-zero, but the brightness difference
+      between left and right is clearly apparent.
 - [ ] A clear dark gap separates the two stripes; they do not merge.
 
 ---
