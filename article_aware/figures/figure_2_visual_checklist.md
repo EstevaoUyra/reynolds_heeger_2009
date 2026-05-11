@@ -88,6 +88,8 @@ Both panels share the same axis layout:
 - [ ] Both curves saturate at high contrast, but at clearly different response levels —
       the attended curve saturates at a higher y-value than the ignored curve. The two
       curves do not converge; their vertical separation is maintained at saturation.
+- [ ] The ignored curve's saturation level is visibly below 1 (estimated ~0.65–0.75 by
+      visual inspection), leaving a clear vertical gap at the right end of the plot. <!-- UNSURE: exact asymptote value is unlabeled; this is a visual estimate -->
 - [ ] The maximum (saturating) response of the attended curve is clearly higher than the
       maximum response of the ignored curve — the upward scaling is visible at both
       intermediate and high contrasts.
