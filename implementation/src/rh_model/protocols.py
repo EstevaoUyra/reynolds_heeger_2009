@@ -42,6 +42,10 @@ def run_figure_1():
         attention_field_size=30.0,
         peak_attention_gain_gamma=2.0,
         tuning_width=30.0,
+        sigma=1.5,
+        stimulus_spatial_sigma_scale=0.5,
+        attention_spatial_sigma_scale=21.5 / 30.0,
+        suppressive_spatial_sigma_scale=0.2,
         recorded_x=10.0,
         recorded_theta=0.0,
     )

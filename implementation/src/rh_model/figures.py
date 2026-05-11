@@ -220,6 +220,78 @@ def _plot_tuning(
     ax.legend(frameon=False, fontsize=8)
 
 
+def _draw_stimulus_schematic(ax) -> None:
+    """Draw the Figure 1 two-grating stimulus cartoon.
+
+    Citation: C-012
+    """
+    ax.set_xlim(-1.3, 1.3)
+    ax.set_ylim(-0.85, 0.85)
+    ax.set_aspect("equal")
+    ax.set_facecolor("white")
+    ax.axis("off")
+
+    stripe_x = np.linspace(0.0, 2.0 * np.pi * 5.0, 120)
+    grating = 0.35 + 0.55 * (np.sin(stripe_x)[np.newaxis, :] > 0.0)
+    grating = np.repeat(grating, 120, axis=0)
+    for center in (-0.55, 0.55):
+        ax.imshow(
+            grating,
+            extent=(center - 0.28, center + 0.28, -0.28, 0.28),
+            cmap="gray",
+            vmin=0.0,
+            vmax=1.0,
+            origin="lower",
+            zorder=1,
+        )
+
+    plt = _pyplot()
+    solid_rf = plt.Circle((0.55, 0.0), 0.34, fill=False, color="#222222", linewidth=1.8)
+    attention = plt.Circle(
+        (0.55, 0.0),
+        0.43,
+        fill=False,
+        color="#b33f3f",
+        linewidth=1.7,
+        linestyle=(0, (4, 3)),
+    )
+    ax.add_patch(solid_rf)
+    ax.add_patch(attention)
+    ax.plot(0.0, 0.0, "o", color="black", markersize=4.5, zorder=3)
+    ax.set_title("Stimulus", fontsize=10)
+
+
+def _show_population_image(
+    ax,
+    field: np.ndarray,
+    x_grid: np.ndarray,
+    *,
+    title: str,
+    cmap: str,
+    vmin: float,
+    vmax: float | None = None,
+) -> None:
+    """Render one RF-center by feature-preference population panel.
+
+    Citation: C-012
+    """
+    extent = [float(x_grid[0]), float(x_grid[-1]), -180.0, 175.0]
+    ax.imshow(
+        field,
+        origin="lower",
+        aspect="auto",
+        extent=extent,
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    ax.set_title(title, fontsize=10)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+
 def save_figure_1(output_dir: str | Path | None = None) -> Path:
     """Render Figure 1-style population fields and theta=0 slices.
 
@@ -229,35 +301,79 @@ def save_figure_1(output_dir: str | Path | None = None) -> Path:
     out = protocols.run_figure_1()
     path = _output_dir(output_dir) / "figure_1.png"
 
-    fig, axes = plt.subplots(2, 4, figsize=(13.5, 6.6), constrained_layout=True)
-    fields = [
-        ("Stimulus drive E", out["E"], out["E_slice"]),
-        ("Attention field A", out["A"], out["A_slice"]),
-        ("Suppressive drive S", out["S"], out["S_slice"]),
-        ("Response R", out["R"], out["R_slice"]),
-    ]
     x_grid = out["x_grid"]
-    extent = [float(x_grid[0]), float(x_grid[-1]), -180.0, 175.0]
+    fig = plt.figure(figsize=(14.0, 4.4), constrained_layout=True)
+    grid = fig.add_gridspec(
+        1,
+        8,
+        width_ratios=[1.15, 1.0, 0.16, 1.0, 0.55, 1.0, 0.16, 1.0],
+    )
+    ax_stim = fig.add_subplot(grid[0, 0])
+    ax_e = fig.add_subplot(grid[0, 1])
+    ax_mul = fig.add_subplot(grid[0, 2])
+    ax_a = fig.add_subplot(grid[0, 3])
+    ax_pool = fig.add_subplot(grid[0, 4])
+    ax_s = fig.add_subplot(grid[0, 5])
+    ax_div = fig.add_subplot(grid[0, 6])
+    ax_r = fig.add_subplot(grid[0, 7])
 
-    for col, (title, field, slice_values) in enumerate(fields):
-        image = axes[0, col].imshow(
-            field,
-            origin="lower",
-            aspect="auto",
-            extent=extent,
-            cmap="magma",
-        )
-        axes[0, col].set_title(title, fontsize=10)
-        axes[0, col].set_xlabel("RF center x")
-        axes[0, col].set_ylabel("feature preference")
-        fig.colorbar(image, ax=axes[0, col], fraction=0.046, pad=0.04)
+    _draw_stimulus_schematic(ax_stim)
+    _show_population_image(
+        ax_e,
+        out["E"],
+        x_grid,
+        title="Stimulus drive",
+        cmap="magma",
+        vmin=0.0,
+    )
+    _show_population_image(
+        ax_a,
+        out["A"],
+        x_grid,
+        title="Attention field",
+        cmap="gray",
+        vmin=0.0,
+        vmax=2.0,
+    )
+    _show_population_image(
+        ax_s,
+        out["S"],
+        x_grid,
+        title="Suppressive drive",
+        cmap="magma",
+        vmin=0.0,
+    )
+    _show_population_image(
+        ax_r,
+        out["R"],
+        x_grid,
+        title="Output firing rate",
+        cmap="magma",
+        vmin=0.0,
+    )
 
-        axes[1, col].plot(x_grid, slice_values, color=COLORS["attended"], linewidth=1.8)
-        axes[1, col].axvline(-10.0, color=COLORS["unattended"], linestyle="--", linewidth=1.0)
-        axes[1, col].axvline(10.0, color=COLORS["attended"], linestyle="--", linewidth=1.0)
-        _finish_axes(axes[1, col], xlabel="RF center x", ylabel="theta=0 slice")
+    for ax in (ax_mul, ax_pool, ax_div):
+        ax.axis("off")
+    ax_mul.text(0.5, 0.5, "×", ha="center", va="center", fontsize=24)
+    ax_div.text(0.5, 0.5, "÷", ha="center", va="center", fontsize=24)
+    ax_pool.text(
+        0.5,
+        0.62,
+        "pool over\nspace and orientation",
+        ha="center",
+        va="center",
+        fontsize=8,
+        transform=ax_pool.transAxes,
+    )
+    ax_pool.annotate(
+        "",
+        xy=(0.90, 0.42),
+        xytext=(0.10, 0.42),
+        xycoords=ax_pool.transAxes,
+        arrowprops={"arrowstyle": "->", "linewidth": 1.0, "color": "#333333"},
+    )
 
-    fig.suptitle("Figure 1: population fields for two stimuli, attend right", fontsize=12)
+    fig.suptitle("Normalization model of attention", fontsize=12)
     return _save(fig, path)
 
 

@@ -62,6 +62,11 @@ class ModelParams:
     # Per-protocol calibration for 1D discretized suppressive pooling.
     suppressive_drive_gain: float = 1.0
 
+    # Per-protocol effective-width calibration for 1D figure protocols.
+    stimulus_spatial_sigma_scale: float = 1.0
+    attention_spatial_sigma_scale: float = 1.0
+    suppressive_spatial_sigma_scale: float = 1.0
+
     # Recorded neuron coordinates (default: origin)
     recorded_x: float = 0.0
     recorded_theta: float = 0.0
@@ -190,7 +195,7 @@ def compute_suppressive_drive(
     F_kernel = np.fft.fft(s_theta_aligned)[:, np.newaxis]
     F_AE = np.fft.fft(conv_x, axis=0)
     S = np.fft.ifft(F_AE * F_kernel, axis=0).real * dtheta
-    return S
+    return np.maximum(S, 0.0)
 
 
 def compute_output(
@@ -230,6 +235,7 @@ def simulate(
         6. extract recorded neuron response
 
     Citation: C-005, C-006 (EQ-5, EQ-6) end-to-end
+    Assumption: A-006 (optional effective spatial widths for 1D protocols)
     """
     if any(
         getattr(params, name) is None
@@ -245,13 +251,15 @@ def simulate(
 
     s_x, s_theta = build_suppressive_kernel(
         x_grid, theta_grid,
-        params.suppressive_field_size, params.suppressive_tuning_width,
+        params.suppressive_field_size * params.suppressive_spatial_sigma_scale,
+        params.suppressive_tuning_width,
         params.theta_period,
     )
 
     E = build_stimulus_drive(
         stimuli, x_grid, theta_grid,
-        params.stimulus_size, params.tuning_width or 30.0,
+        params.stimulus_size * params.stimulus_spatial_sigma_scale,
+        params.tuning_width or 30.0,
         params.theta_period,
     )
 
@@ -259,9 +267,13 @@ def simulate(
         E = E + params.baseline_modulated_by_attention
 
     A = build_attention_field(
-        attention_condition, x_grid, theta_grid,
-        params.attention_field_size, params.peak_attention_gain_gamma,
-        params.tuning_width, params.theta_period,
+        attention_condition,
+        x_grid,
+        theta_grid,
+        params.attention_field_size * params.attention_spatial_sigma_scale,
+        params.peak_attention_gain_gamma,
+        params.tuning_width,
+        params.theta_period,
     )
 
     S = compute_suppressive_drive(s_x, s_theta, A, E, dx, dtheta)
