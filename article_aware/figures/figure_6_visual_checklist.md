@@ -2,7 +2,7 @@
 
 Each item is a binary pass/fail visual claim. No paper access is required; all context
 needed to evaluate the generated figure is included here. Items tagged `<!-- UNSURE -->`
-were difficult to read from the paper figure and deserve extra attention during review.
+depend on a subtle visual relationship and deserve extra attention during review.
 
 ---
 
@@ -16,8 +16,8 @@ chooses to include coarse context placeholders.
 
 - **Panel C horizontal axis:** stimulus motion direction, swept from -180 degrees at the
   left edge through the recorded neuron's preferred direction at 0 degrees in the center
-  to +180 degrees at the right edge. The paper figure marks these directions with motion
-  arrows rather than numeric tick labels.
+  to +180 degrees at the right edge. A generated figure may use numeric tick labels,
+  direction arrows, or both.
 - **Panel C vertical axis:** normalized response of the model neuron recorded at receptive
   field center x = 0 and preferred direction theta = 0.
 - **Curve encoding:** one curve is "attend fixation" with a direction-flat attention field;
@@ -89,15 +89,15 @@ model-generated output in the Figure 6 protocol.
 - [ ] The two curves are horizontally aligned: feature-based attention sharpens the tuning
       without shifting the preferred direction left or right.
 - [ ] Near the central preferred direction, the contralateral-stimulus-attention curve is at
-      least as high as the attend-fixation curve. <!-- UNSURE: the low-resolution paper panel makes the exact peak-height ordering hard to read -->
+      least as high as the attend-fixation curve. <!-- UNSURE: the peak-height ordering can be visually subtle if the curves nearly overlap at the center -->
 - [ ] Away from the preferred direction, in both shoulders of the tuning curve, the
       contralateral-stimulus-attention curve falls below the attend-fixation curve.
 - [ ] At the far left and far right direction extremes, both curves approach the bottom of
       the normalized-response axis.
 - [ ] The left and right halves of each curve are approximately mirror-symmetric around the
       central preferred direction.
-- [ ] The generated model panel does not contain empirical point markers or error bars as
-      part of the panel C model curves.
+- [ ] The generated model panel does not include empirical error bars; model sample markers
+      on the tuning curves are acceptable.
 - [ ] The legend or direct labels identify the attend-fixation condition separately from the
       attend-opposite-hemifield-stimulus condition.
 

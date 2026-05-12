@@ -2,8 +2,8 @@
 
 Each item is a binary pass/fail visual claim. No paper access is required; all
 context needed to evaluate the generated figure is included here. Items tagged
-`<!-- UNSURE -->` were difficult to read from the paper figure or depend on a
-renderer choice and deserve extra attention during review.
+`<!-- UNSURE -->` depend on a renderer choice or a visually subtle model
+relationship and deserve extra attention during review.
 
 This checklist focuses on the generated model simulation outputs for Figure 4C
 and Figure 4E. Panels A, B, and D in the paper figure are experimental/task
@@ -98,13 +98,13 @@ implementation explicitly chooses to render them.
       contrast.
 - [ ] The opposite-hemifield curve begins rising earlier on the log-contrast
       axis than the attend-nonpreferred curve.
-- [ ] The two solid curves are closest together at the far low-contrast end before either curve has risen substantially. <!-- UNSURE: the printed panel is small, and the low-contrast separation is hard to read -->
+- [ ] The two solid curves are closest together at the far low-contrast end before either curve has risen substantially. <!-- UNSURE: the separation can be visually subtle if the renderer compresses the low-response range -->
 - [ ] The two solid curves remain separated through the rising portion of the
       contrast-response function.
-- [ ] The high-contrast endpoints of the two solid curves are close but not perfectly identical in the paper panel. <!-- UNSURE: the curves nearly meet near the top-right corner, but the printed line thickness makes convergence ambiguous -->
+- [ ] The high-contrast endpoints of the two solid curves are close but not necessarily identical. <!-- UNSURE: line thickness and normalization can make endpoint separation hard to judge visually -->
 - [ ] A dashed modulation curve is present or the same modulation quantity is
       plotted in a separate companion axis.
-- [ ] The dashed modulation curve in the combined paper-style panel trends downward from left to right over most of the contrast range. <!-- UNSURE: the curve is low-amplitude and drawn close to the response curves in the printed panel -->
+- [ ] If percent modulation is overlaid in the same panel, the modulation curve trends downward from left to right over most of the contrast range. <!-- UNSURE: the curve can be low-amplitude and close to the response curves depending on axis scaling -->
 - [ ] The dashed modulation curve is lower at high contrast than at low or
       low-to-intermediate contrast.
 - [ ] The dashed modulation curve does not form a high-contrast peak at the
@@ -147,9 +147,9 @@ implementation explicitly chooses to render them.
       contrast shift.
 - [ ] A dashed modulation curve is present or the same modulation/ratio
       quantity is plotted in a separate companion axis.
-- [ ] In the paper-style combined panel, the dashed modulation curve is highest
+- [ ] If percent modulation is overlaid in the same panel, the modulation curve is highest
       near the low-contrast side and lower near the high-contrast side.
-- [ ] In the paper-style combined panel, the dashed modulation curve decreases
+- [ ] If percent modulation is overlaid in the same panel, the modulation curve decreases
       gently rather than dropping all the way to the x-axis.
 - [ ] The dashed modulation curve does not cross either solid response curve in a way that makes the attention-condition ordering ambiguous. <!-- UNSURE: dual-axis overlays may differ across renderers, so crossing is partly a plotting-style issue -->
 

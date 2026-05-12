@@ -2,8 +2,8 @@
 
 Each item is a binary pass/fail visual claim. No paper access is required; all context
 needed to evaluate the generated model output is included here. Items tagged
-`<!-- UNSURE -->` were difficult to read from the paper figure and deserve extra attention
-during review.
+`<!-- UNSURE -->` depend on a subtle visual relationship or an optional renderer choice
+and deserve extra attention during review.
 
 ---
 
@@ -65,12 +65,12 @@ model simulation output for **panel C** only.
 - [ ] The curve separation is largest in absolute response units near the central peak and
       smaller near the low-response tails.
 - [ ] The attended curve appears to be a near-uniform multiplicative scaling of the
-      unattended curve rather than an additive upward offset. <!-- UNSURE: tails are close to the axis in the printed panel, so constant ratio is easier to infer from shape than to read directly at the edges -->
+      unattended curve rather than an additive upward offset. <!-- UNSURE: tails are close to the axis, so constant ratio is easier to infer from shape than to read directly at the edges -->
 - [ ] No additional curve shows feature-based sharpening or a narrower attention-selective
       profile.
 - [ ] If a ratio trace or ratio annotation is included in the generated output, it is
       approximately flat across orientations except where both response curves are very
-      close to zero. <!-- UNSURE: the paper panel itself does not draw the ratio, but the protocol exposes ratio as a named output -->
+      close to zero. <!-- UNSURE: ratio display is optional because the protocol exposes ratio as a named output, but the primary reproduction target is the tuning curves -->
 
 ---
 
