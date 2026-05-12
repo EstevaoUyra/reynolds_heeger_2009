@@ -7,7 +7,7 @@ from rh_claim_helpers import half_max_contrast, value_at
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-014")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-014")
 def test_attended_response_exceeds_unattended():
     """Attended response is at least unattended response at every contrast.
 
@@ -17,7 +17,7 @@ def test_attended_response_exceeds_unattended():
     assert np.all(out["attended_CRF"] >= out["unattended_CRF"])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-015")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-015")
 def test_percent_modulation_peaks_in_lower_half():
     """Percent modulation is largest in the lower half of contrast range.
 
@@ -27,7 +27,7 @@ def test_percent_modulation_peaks_in_lower_half():
     assert int(np.argmax(out["percent_modulation"])) < len(out["percent_modulation"]) / 2
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-016")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-016")
 def test_attended_crf_is_left_shifted():
     """Attended CRF has smaller half-max contrast than unattended CRF.
 
@@ -39,7 +39,7 @@ def test_attended_crf_is_left_shifted():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-017")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-017")
 def test_lowest_contrast_response_is_positive():
     """Smallest-contrast response is positive with baseline included.
 
@@ -50,7 +50,7 @@ def test_lowest_contrast_response_is_positive():
     assert out["unattended_CRF"][0] > 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-018")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-018")
 def test_attended_crf_saturates_at_high_contrast():
     """Attended CRF changes little between c=0.5 and c=1.
 

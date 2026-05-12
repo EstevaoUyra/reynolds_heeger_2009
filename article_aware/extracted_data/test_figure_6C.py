@@ -7,7 +7,7 @@ from rh_claim_helpers import fwhm
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-037")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-037")
 def test_feature_attention_narrows_tuning():
     """Feature-based attention narrows the motion-direction tuning curve.
 
@@ -19,7 +19,7 @@ def test_feature_attention_narrows_tuning():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-038")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-038")
 def test_tuning_curves_peak_at_preferred_direction():
     """Both tuning curves peak near the recorded neuron's preferred direction.
 
@@ -34,7 +34,7 @@ def test_tuning_curves_peak_at_preferred_direction():
     assert abs(opposite_peak) < 15.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-039")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-039")
 def test_tuning_curves_are_non_negative():
     """Both tuning curves are non-negative everywhere.
 
@@ -45,7 +45,7 @@ def test_tuning_curves_are_non_negative():
     assert np.all(out["attend_opposite_stimulus_tuning"] >= 0.0)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-040")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-040")
 def test_feature_attention_boosts_preferred_response():
     """Feature attention boosts the preferred response.
 

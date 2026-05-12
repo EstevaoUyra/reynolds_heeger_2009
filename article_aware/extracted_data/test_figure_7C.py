@@ -7,7 +7,7 @@ from rh_claim_helpers import value_at_min_abs
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-041")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-041")
 def test_attending_variable_boosts_preferred_response():
     """Attending variable stimulus boosts response near preferred direction.
 
@@ -20,7 +20,7 @@ def test_attending_variable_boosts_preferred_response():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-042")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-042")
 def test_attending_nonpreferred_suppresses_preferred_response():
     """Attending nonpreferred stimulus suppresses response near preferred direction.
 
@@ -33,7 +33,7 @@ def test_attending_nonpreferred_suppresses_preferred_response():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-043")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-043")
 def test_variable_and_nonpreferred_shift_in_opposite_directions():
     """Variable and nonpreferred attention shift preferred response oppositely.
 
@@ -49,7 +49,7 @@ def test_variable_and_nonpreferred_shift_in_opposite_directions():
     assert variable_delta * nonpreferred_delta < 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-044")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-044")
 def test_tuning_curves_are_non_negative():
     """All three tuning curves are non-negative everywhere.
 

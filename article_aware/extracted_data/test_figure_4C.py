@@ -7,7 +7,7 @@ from rh_claim_helpers import half_max_contrast
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-025")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-025")
 def test_attending_nonpreferred_decreases_response():
     """Attending nonpreferred-in-RF decreases the preferred-stimulus response.
 
@@ -17,7 +17,7 @@ def test_attending_nonpreferred_decreases_response():
     assert np.all(out["attended_CRF"] <= out["unattended_CRF"])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-026")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-026")
 def test_attended_crf_is_right_shifted():
     """Attend-nonpreferred CRF has larger half-max contrast.
 
@@ -29,7 +29,7 @@ def test_attended_crf_is_right_shifted():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-027")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-027")
 def test_absolute_percent_modulation_does_not_peak_at_highest_contrast():
     """Absolute percent modulation does not peak at the highest contrast.
 
@@ -39,7 +39,7 @@ def test_absolute_percent_modulation_does_not_peak_at_highest_contrast():
     assert int(np.argmax(np.abs(out["percent_modulation"]))) < len(out["percent_modulation"]) - 1
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-028")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-028")
 def test_crfs_converge_at_high_contrast():
     """CRF gap at high contrast is smaller than the maximum normalized gap.
 

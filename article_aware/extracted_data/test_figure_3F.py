@@ -7,7 +7,7 @@ from rh_claim_helpers import value_at
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-019")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-019")
 def test_attended_response_exceeds_unattended():
     """Attended response is at least unattended response at every contrast.
 
@@ -17,7 +17,7 @@ def test_attended_response_exceeds_unattended():
     assert np.all(out["attended_CRF"] >= out["unattended_CRF"])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-020")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-020")
 def test_percent_modulation_peaks_in_lower_half():
     """Percent modulation is largest at low contrasts.
 
@@ -27,7 +27,7 @@ def test_percent_modulation_peaks_in_lower_half():
     assert int(np.argmax(out["percent_modulation"])) < len(out["percent_modulation"]) / 2
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-021")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-021")
 def test_absolute_difference_peaks_in_upper_half():
     """Absolute difference peaks in the upper half of contrast range.
 
@@ -37,7 +37,7 @@ def test_absolute_difference_peaks_in_upper_half():
     assert int(np.argmax(out["absolute_difference"])) >= len(out["absolute_difference"]) / 2
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-022")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-022")
 def test_percent_and_absolute_difference_peak_apart():
     """Percent modulation and absolute difference peak at different extremes.
 
@@ -49,7 +49,7 @@ def test_percent_and_absolute_difference_peak_apart():
     assert abs(percent_peak - difference_peak) > len(out["percent_modulation"]) / 3
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-023")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-023")
 def test_lowest_contrast_response_is_positive():
     """Smallest-contrast response is positive with baseline included.
 
@@ -60,7 +60,7 @@ def test_lowest_contrast_response_is_positive():
     assert out["unattended_CRF"][0] > 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-024")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-024")
 def test_attended_crf_saturates_at_high_contrast():
     """Attended CRF changes little between c=0.5 and c=1.
 

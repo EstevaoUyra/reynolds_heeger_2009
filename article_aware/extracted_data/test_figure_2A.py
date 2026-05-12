@@ -7,7 +7,7 @@ from rh_claim_helpers import half_max_contrast, value_at
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-004")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-004")
 def test_attended_response_exceeds_unattended():
     """Attended response is at least unattended response at every contrast.
 
@@ -17,7 +17,7 @@ def test_attended_response_exceeds_unattended():
     assert np.all(out["attended_CRF"] >= out["unattended_CRF"])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-005")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-005")
 def test_percent_modulation_peaks_at_intermediate_contrast():
     """Percent modulation peaks inside the swept contrast range.
 
@@ -28,7 +28,7 @@ def test_percent_modulation_peaks_at_intermediate_contrast():
     assert 0 < peak < len(out["percent_modulation"]) - 1
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-006")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-006")
 def test_attended_crf_is_left_shifted():
     """Attended CRF has smaller half-max contrast than unattended CRF.
 
@@ -40,7 +40,7 @@ def test_attended_crf_is_left_shifted():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-007")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-007")
 def test_attended_crf_saturates_at_high_contrast():
     """Attended CRF changes little between c=0.5 and c=1.
 
@@ -51,7 +51,7 @@ def test_attended_crf_saturates_at_high_contrast():
     assert (out["attended_CRF"][-1] - attended_at_half) / attended_at_half < 0.3
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-008")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-008")
 def test_high_contrast_modulation_is_below_peak_modulation():
     """Highest-contrast percent modulation is below peak modulation.
 

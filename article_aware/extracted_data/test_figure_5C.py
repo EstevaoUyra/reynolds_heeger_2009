@@ -7,7 +7,7 @@ from rh_claim_helpers import fwhm, is_multiplicative_scaling
 from rh_model import protocols
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-033")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-033")
 def test_attended_tuning_exceeds_unattended():
     """Attended tuning is at least unattended tuning at every orientation.
 
@@ -17,7 +17,7 @@ def test_attended_tuning_exceeds_unattended():
     assert np.all(out["attended_tuning"] >= out["unattended_tuning"])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-034")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-034")
 def test_tuning_ratio_is_approximately_constant():
     """Spatial attention scales tuning without changing shape.
 
@@ -32,7 +32,7 @@ def test_tuning_ratio_is_approximately_constant():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-035")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-035")
 def test_both_tuning_curves_peak_at_same_orientation():
     """Both tuning curves peak at the recorded neuron's preferred orientation.
 
@@ -44,7 +44,7 @@ def test_both_tuning_curves_peak_at_same_orientation():
     assert abs(attended_peak - unattended_peak) < 5.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-036")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-036")
 def test_fwhm_is_approximately_equal():
     """Tuning width is approximately equal with and without attention.
 
