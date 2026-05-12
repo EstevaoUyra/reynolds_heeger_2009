@@ -54,7 +54,7 @@ def _final_log_slope(curve: np.ndarray, contrast: np.ndarray) -> float:
     return float(np.diff(curve)[-1] / np.diff(np.log(contrast))[-1])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-047")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-047")
 def test_figure_4E_output_contract_and_ratio():
     """Figure 4E returns finite CRFs and a consistent attention ratio.
 
@@ -63,7 +63,7 @@ def test_figure_4E_output_contract_and_ratio():
     _validated_outputs(protocols.run_figure_4E())
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-048")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-048")
 def test_attending_preferred_exceeds_attending_nonpreferred():
     """Attending preferred yields larger responses at every contrast.
 
@@ -76,7 +76,7 @@ def test_attending_preferred_exceeds_attending_nonpreferred():
     assert attend_pref[-1] > attend_nonpref[-1]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-049")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-049")
 def test_crfs_are_multiplicative_scaling():
     """Attend-pref and attend-nonpref CRFs differ by response gain.
 
@@ -96,7 +96,7 @@ def test_crfs_are_multiplicative_scaling():
     assert ratio_bearing.mean() > 1.05
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-050")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-050")
 def test_crfs_are_monotonic_and_saturating():
     """Both Figure 4E CRFs rise monotonically and level off at high contrast.
 
@@ -110,7 +110,7 @@ def test_crfs_are_monotonic_and_saturating():
         assert _final_log_slope(curve, contrast) < 0.95 * _max_log_slope(curve, contrast)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-051")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-051")
 def test_attend_pref_crf_saturates_at_high_contrast():
     """Attend-pref CRF changes little between c=0.5 and c=1.
 
@@ -122,7 +122,7 @@ def test_attend_pref_crf_saturates_at_high_contrast():
     assert (attend_pref[-1] - attend_pref_at_half) / attend_pref_at_half < 0.3
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-052")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-052")
 def test_peak_attend_pref_exceeds_peak_attend_nonpreferred():
     """Peak attend-pref response exceeds peak attend-nonpref response.
 
@@ -134,7 +134,7 @@ def test_peak_attend_pref_exceeds_peak_attend_nonpreferred():
     assert attend_pref[-1] >= 1.05 * attend_nonpref[-1]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4E", claim_id="Q-053")
+@deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-053")
 def test_figure_4C_and_4E_attention_effects_have_opposite_signs():
     """Figure 4C nonpreferred attention suppresses while 4E preferred attention enhances.
 

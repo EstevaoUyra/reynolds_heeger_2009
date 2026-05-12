@@ -43,7 +43,7 @@ def _value_near(theta: np.ndarray, curve: np.ndarray, target: float) -> float:
     return float(curve[int(np.argmin(np.abs(theta - float(target))))])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-037")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-037")
 def test_protocol_returns_expected_finite_1d_tuning_arrays():
     """Figure 6C returns same-shaped finite 1D direction tuning arrays.
 
@@ -66,7 +66,7 @@ def test_protocol_returns_expected_finite_1d_tuning_arrays():
     assert np.all(opposite >= 0.0)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-038")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-038")
 def test_tuning_curves_peak_near_preferred_direction_and_drop_at_flanks():
     """Both Figure 6C curves peak near the preferred direction and decline far away.
 
@@ -93,7 +93,7 @@ def test_tuning_curves_peak_near_preferred_direction_and_drop_at_flanks():
     assert center_opposite > far_opposite
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-039")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-039")
 def test_attend_opposite_stimulus_tuning_is_narrower_than_fixation_tuning():
     """Feature-based attention narrows the Figure 6C motion-direction tuning curve.
 
@@ -107,7 +107,7 @@ def test_attend_opposite_stimulus_tuning_is_narrower_than_fixation_tuning():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-040")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-040")
 def test_feature_attention_increases_center_to_flank_selectivity():
     """Feature attention increases preferred-direction selectivity over flank responses.
 
@@ -133,7 +133,7 @@ def test_feature_attention_increases_center_to_flank_selectivity():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_6C", claim_id="Q-041")
+@deterministic_test(spec_ref="simulation_protocols.figure_6C", figure=6, claim_id="Q-041")
 def test_normalized_attend_opposite_curve_falls_off_more_steeply_near_preferred():
     """Normalized attend-opposite tuning has a steeper near-preferred falloff.
 

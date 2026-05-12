@@ -32,7 +32,7 @@ def _assert_monotonic_and_saturating(curve: np.ndarray) -> None:
     assert increments[-1] < 0.35 * total_rise
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-019")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-019")
 def test_protocol_output_contract_and_curve_shapes():
     """Figure 3F returns finite same-shaped log-contrast protocol arrays.
 
@@ -54,7 +54,7 @@ def test_protocol_output_contract_and_curve_shapes():
     np.testing.assert_allclose(np.diff(np.log(c)), np.diff(np.log(c))[0], rtol=0.08)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-020")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-020")
 def test_reported_modulation_and_difference_match_crfs():
     """Figure 3F modulation outputs are derived from attended and unattended CRFs.
 
@@ -72,7 +72,7 @@ def test_reported_modulation_and_difference_match_crfs():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-021")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-021")
 def test_attended_and_unattended_crfs_have_baseline_and_saturate():
     """Figure 3F CRFs are positive, monotonic, saturating, and attention ordered.
 
@@ -87,7 +87,7 @@ def test_attended_and_unattended_crfs_have_baseline_and_saturate():
     _assert_monotonic_and_saturating(unattended)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-022")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-022")
 def test_absolute_difference_is_high_contrast_weighted():
     """Figure 3F absolute response difference peaks high and exceeds low contrast.
 
@@ -101,7 +101,7 @@ def test_absolute_difference_is_high_contrast_weighted():
     assert difference[-1] >= 0.75 * float(difference[peak])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-023")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-023")
 def test_percent_modulation_peaks_low_not_high():
     """Figure 3F percent modulation peaks low and declines toward high contrast.
 
@@ -116,7 +116,7 @@ def test_percent_modulation_peaks_low_not_high():
     assert percent[-1] > 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-024")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-024")
 def test_absolute_and_percent_peaks_are_separated():
     """Figure 3F absolute-difference peak is at higher contrast than modulation peak.
 
@@ -127,7 +127,7 @@ def test_absolute_and_percent_peaks_are_separated():
     assert c[int(np.argmax(difference))] > c[int(np.argmax(percent))]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3F", claim_id="Q-026")
+@deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-026")
 def test_figure_3f_has_larger_high_contrast_separation_than_3c():
     """Figure 3F keeps a larger high-contrast attended-unattended separation.
 

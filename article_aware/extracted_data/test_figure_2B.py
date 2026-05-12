@@ -62,7 +62,7 @@ def _final_log_slope(curve: np.ndarray, contrast: np.ndarray) -> float:
     return float(np.diff(curve)[-1] / np.diff(np.log(contrast))[-1])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-009")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-009")
 def test_figure_2B_output_contract_and_percent_modulation():
     """Figure 2B returns finite CRF arrays on a log-contrast grid.
 
@@ -71,7 +71,7 @@ def test_figure_2B_output_contract_and_percent_modulation():
     _validated_outputs(protocols.run_figure_2B())
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-010")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-010")
 def test_figure_2B_crfs_are_monotonic_and_saturating():
     """Both Figure 2B contrast-response functions rise monotonically and level off.
 
@@ -87,7 +87,7 @@ def test_figure_2B_crfs_are_monotonic_and_saturating():
         assert (curve[-1] - at_half_contrast) / at_half_contrast < 0.35
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-011")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-011")
 def test_figure_2B_attended_curve_is_upward_shifted_at_high_contrast():
     """The attended Figure 2B CRF maintains a higher high-contrast response.
 
@@ -104,7 +104,7 @@ def test_figure_2B_attended_curve_is_upward_shifted_at_high_contrast():
     assert attended.max() > 1.35 * unattended.max()
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-012")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-012")
 def test_figure_2B_lateral_shift_is_modest_for_response_gain():
     """Figure 2B shows less half-max displacement than a contrast-gain panel.
 
@@ -125,7 +125,7 @@ def test_figure_2B_lateral_shift_is_modest_for_response_gain():
     assert shift_ratio_a < 0.90 * shift_ratio_b
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-013")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-013")
 def test_figure_2B_percent_modulation_is_sustained_at_high_contrast():
     """Figure 2B percent modulation remains substantial at high contrast.
 
@@ -143,7 +143,7 @@ def test_figure_2B_percent_modulation_is_sustained_at_high_contrast():
     assert (attended[-1] - unattended[-1]) > (attended[0] - unattended[0])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2B", claim_id="Q-015")
+@deterministic_test(spec_ref="simulation_protocols.figure_2B", figure=2, claim_id="Q-015")
 def test_figure_2B_has_larger_high_contrast_separation_than_figure_2A():
     """High-contrast separation and sustained modulation are larger in 2B than 2A.
 

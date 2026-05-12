@@ -68,7 +68,7 @@ def _assert_approximately_symmetric(theta: np.ndarray, curve: np.ndarray) -> Non
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-033")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-033")
 def test_figure_5c_output_contract_and_ratio_consistency():
     """Figure 5C returns finite same-shaped arrays and a computed gain ratio.
 
@@ -91,7 +91,7 @@ def test_figure_5c_output_contract_and_ratio_consistency():
     np.testing.assert_allclose(ratio[positive], attended[positive] / unattended[positive])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-034")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-034")
 def test_attended_tuning_exceeds_unattended():
     """Attended tuning is at least unattended tuning at every orientation.
 
@@ -102,7 +102,7 @@ def test_attended_tuning_exceeds_unattended():
     assert np.max(attended - unattended) > 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-035")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-035")
 def test_tuning_curves_are_nonnegative_single_peaked_and_preferred_at_zero():
     """Both tuning curves are nonnegative and peak near preferred orientation.
 
@@ -118,7 +118,7 @@ def test_tuning_curves_are_nonnegative_single_peaked_and_preferred_at_zero():
     _assert_approximately_symmetric(theta, unattended)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-036")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-036")
 def test_tuning_ratio_is_approximately_constant():
     """Spatial attention scales tuning without changing shape.
 
@@ -140,7 +140,7 @@ def test_tuning_ratio_is_approximately_constant():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-037")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-037")
 def test_normalized_tuning_shape_is_preserved():
     """Peak-normalized attended and unattended tuning curves have the same shape.
 
@@ -153,7 +153,7 @@ def test_normalized_tuning_shape_is_preserved():
     np.testing.assert_allclose(attended_norm, unattended_norm, rtol=0.08, atol=0.04)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_5C", claim_id="Q-038")
+@deterministic_test(spec_ref="simulation_protocols.figure_5C", figure=5, claim_id="Q-038")
 def test_fwhm_is_approximately_equal():
     """Tuning width is approximately equal with and without attention.
 

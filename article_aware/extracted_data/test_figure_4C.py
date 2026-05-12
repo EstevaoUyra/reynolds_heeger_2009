@@ -54,7 +54,7 @@ def _final_log_slope(curve: np.ndarray, contrast: np.ndarray) -> float:
     return float(np.diff(curve)[-1] / np.diff(np.log(contrast))[-1])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-025")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-025")
 def test_figure_4C_output_contract_and_percent_modulation():
     """Figure 4C returns finite CRFs and a consistent percent-modulation curve.
 
@@ -63,7 +63,7 @@ def test_figure_4C_output_contract_and_percent_modulation():
     _validated_outputs(protocols.run_figure_4C())
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-026")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-026")
 def test_attending_nonpreferred_decreases_response():
     """Attending nonpreferred-in-RF decreases the preferred-stimulus response.
 
@@ -77,7 +77,7 @@ def test_attending_nonpreferred_decreases_response():
     assert percent_modulation.min() < -1.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-027")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-027")
 def test_attended_crf_is_right_shifted():
     """Attend-nonpreferred CRF has larger half-max contrast.
 
@@ -91,7 +91,7 @@ def test_attended_crf_is_right_shifted():
     assert attended[-1] >= 0.80 * unattended[-1]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-028")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-028")
 def test_absolute_percent_modulation_does_not_peak_at_highest_contrast():
     """Suppression is largest before the high-contrast endpoint.
 
@@ -106,7 +106,7 @@ def test_absolute_percent_modulation_does_not_peak_at_highest_contrast():
     assert absolute_modulation[: len(absolute_modulation) // 2].max() >= absolute_modulation[-1]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_4C", claim_id="Q-029")
+@deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-029")
 def test_crfs_saturate_and_suppression_weakens_at_high_contrast():
     """Figure 4C CRFs level off and the high-contrast suppressive gap weakens.
 

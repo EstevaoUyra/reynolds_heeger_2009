@@ -80,7 +80,7 @@ def _direction_changes(curve: np.ndarray) -> int:
     return int(np.count_nonzero(signs[1:] != signs[:-1]))
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-041")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-041")
 def test_protocol_outputs_are_finite_direction_tuning_curves():
     """Figure 7C returns finite, non-negative tuning curves over direction.
 
@@ -103,7 +103,7 @@ def test_protocol_outputs_are_finite_direction_tuning_curves():
         assert np.all(curve >= 0.0)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-042")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-042")
 def test_preferred_direction_ordering_matches_attention_target():
     """Near the preferred direction, variable attention exceeds fixation and nonpreferred attention suppresses it.
 
@@ -118,7 +118,7 @@ def test_preferred_direction_ordering_matches_attention_target():
     assert variable_pref > nonpref_pref
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-043")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-043")
 def test_attention_effects_have_opposite_signs_around_preferred_flanks():
     """Variable attention raises, and nonpreferred attention lowers, most central-flank responses.
 
@@ -136,7 +136,7 @@ def test_attention_effects_have_opposite_signs_around_preferred_flanks():
     assert float(np.mean(nonpref_delta)) < 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-044")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-044")
 def test_attention_conditions_shift_preferred_bias_oppositely():
     """Attending the variable stimulus increases preferred bias, while attending nonpreferred decreases it.
 
@@ -152,7 +152,7 @@ def test_attention_conditions_shift_preferred_bias_oppositely():
     assert (nonpref_bias - fixation_bias) < 0.0
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-045")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-045")
 def test_attend_variable_has_larger_peak_than_attend_nonpreferred():
     """The attend-variable curve has the largest preferred-direction peak and the nonpreferred curve the smallest.
 
@@ -168,7 +168,7 @@ def test_attend_variable_has_larger_peak_than_attend_nonpreferred():
     assert _nearest_value(theta, attend_nonpref, 0.0) < _nearest_value(theta, fixation, 0.0)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_7C", claim_id="Q-046")
+@deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-046")
 def test_tuning_curves_are_single_peaked_and_not_pathologically_jagged():
     """All three Figure 7C curves rise to a central peak and remain smooth on the sampled grid.
 

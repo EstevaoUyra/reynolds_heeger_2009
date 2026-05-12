@@ -62,7 +62,7 @@ def _final_log_slope(curve: np.ndarray, contrast: np.ndarray) -> float:
     return float(np.diff(curve)[-1] / np.diff(np.log(contrast))[-1])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-004")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-004")
 def test_figure_2A_output_contract_and_percent_modulation():
     """Figure 2A returns finite CRF arrays on a log-contrast grid.
 
@@ -71,7 +71,7 @@ def test_figure_2A_output_contract_and_percent_modulation():
     _validated_outputs(protocols.run_figure_2A())
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-005")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-005")
 def test_figure_2A_crfs_are_monotonic_and_saturating():
     """Both Figure 2A contrast-response functions rise monotonically and level off.
 
@@ -87,7 +87,7 @@ def test_figure_2A_crfs_are_monotonic_and_saturating():
         assert (curve[-1] - at_half_contrast) / at_half_contrast < 0.35
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-006")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-006")
 def test_figure_2A_attended_curve_is_left_shifted_without_response_gain():
     """The attended Figure 2A CRF reaches half-max at lower contrast.
 
@@ -108,7 +108,7 @@ def test_figure_2A_attended_curve_is_left_shifted_without_response_gain():
     assert attended[-1] < 1.35 * unattended[-1]
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-007")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-007")
 def test_figure_2A_percent_modulation_peaks_then_falls_at_high_contrast():
     """Figure 2A percent modulation peaks before the high-contrast endpoint and declines.
 
@@ -127,7 +127,7 @@ def test_figure_2A_percent_modulation_peaks_then_falls_at_high_contrast():
     assert percent_modulation[rising_mask].mean() > 1.6 * percent_modulation[-2:].mean()
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-014")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-014")
 def test_figure_2A_has_stronger_left_shift_than_figure_2B():
     """The lateral attended-vs-unattended shift is larger in 2A than in 2B.
 
@@ -145,7 +145,7 @@ def test_figure_2A_has_stronger_left_shift_than_figure_2B():
     assert shift_ratio_a < 0.90 * shift_ratio_b
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_2A", claim_id="Q-016")
+@deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-016")
 def test_figure_2A_modulation_falls_more_than_figure_2B():
     """Figure 2A modulation falls farther from peak to high contrast than 2B.
 

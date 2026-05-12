@@ -33,7 +33,7 @@ def _assert_monotonic_and_saturating(curve: np.ndarray) -> None:
     assert increments[-1] < 0.35 * total_rise
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-014")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-014")
 def test_protocol_output_contract_and_curve_shapes():
     """Figure 3C returns finite same-shaped log-contrast protocol arrays.
 
@@ -55,7 +55,7 @@ def test_protocol_output_contract_and_curve_shapes():
     np.testing.assert_allclose(np.diff(np.log(c)), np.diff(np.log(c))[0], rtol=0.08)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-015")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-015")
 def test_reported_modulation_and_difference_match_crfs():
     """Figure 3C modulation outputs are derived from attended and unattended CRFs.
 
@@ -73,7 +73,7 @@ def test_reported_modulation_and_difference_match_crfs():
     )
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-016")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-016")
 def test_attended_and_unattended_crfs_have_baseline_and_saturate():
     """Figure 3C CRFs are positive, monotonic, saturating, and attention ordered.
 
@@ -88,7 +88,7 @@ def test_attended_and_unattended_crfs_have_baseline_and_saturate():
     _assert_monotonic_and_saturating(unattended)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-017")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-017")
 def test_attended_crf_has_lower_half_max_contrast():
     """Figure 3C attended CRF is left-shifted relative to the unattended CRF.
 
@@ -99,7 +99,7 @@ def test_attended_crf_has_lower_half_max_contrast():
     assert half_max_contrast(attended, c) < half_max_contrast(unattended, c)
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-018")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-018")
 def test_modulation_is_low_contrast_weighted_and_converges_high():
     """Figure 3C percent modulation peaks low and is small at high contrast.
 
@@ -116,7 +116,7 @@ def test_modulation_is_low_contrast_weighted_and_converges_high():
     assert difference[-1] < 0.75 * float(difference[difference_peak])
 
 
-@deterministic_test(spec_ref="simulation_protocols.figure_3C", claim_id="Q-025")
+@deterministic_test(spec_ref="simulation_protocols.figure_3C", figure=3, claim_id="Q-025")
 def test_figure_3c_has_stronger_left_shift_than_3f():
     """Figure 3C has stronger contrast-gain left shift than Figure 3F.
 
