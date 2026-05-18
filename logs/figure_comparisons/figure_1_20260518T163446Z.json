@@ -1,0 +1,40 @@
+{
+  "figure_number": "1",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:46Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_1.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": false,
+    "summary": "Figure 1 schematic: the four population panels (E, A, S, R) are compressed near panel center rather than spread into the left/right hemifields where the two equal-contrast stimuli sit; the attention field's bright peak is near-center, not over the attended right stimulus; the suppressive drive reads as one near-merged central structure, not two gap-separated hemifield bands.",
+    "checklist_results": [
+      {
+        "item": "Two stimuli rendered in separated hemifields (left/right)",
+        "result": "fail",
+        "note": "Stimulus-drive stripes are jammed near center, not at x=+/-10 hemifields."
+      },
+      {
+        "item": "Attention-field peak over the attended (right) stimulus",
+        "result": "fail",
+        "note": "Attention-field bright band is near-center, not right-shifted."
+      },
+      {
+        "item": "Suppressive drive shows two separable broad bands",
+        "result": "fail",
+        "note": "Reads as one merged central structure."
+      },
+      {
+        "item": "Output R has two narrow stripes at stimulus locations",
+        "result": "unsure",
+        "note": "R stripes present but center-compressed like E/S."
+      }
+    ],
+    "issues": [
+      "Figure-1-specific 1D display/geometry issue (x-grid extent or stimulus-position vs spatial-scale calibration), NOT the suppressive-pooling family fixed for 2A/3C/4C; deterministic tests sample the recorded neuron not the spatial layout so they stay green."
+    ],
+    "recommendation": "fail - population fields compressed at center; attention peak not over right stimulus (UNCHANGED vs pre-migration committed state)"
+  }
+}

@@ -1,0 +1,359 @@
+# Calibration ledger — PAPER-DERIVED parameters only (ARCHITECTURE.md §3).
+#
+# Phase A owns this file; it is Phase-A-protected and Phase B reads only.
+# Every entry here is a value the paper states or that follows from it
+# (source: C-NNN), or a spec-resolved underspecified global whose value is
+# fixed by an assumption (source: A-NNN). Implementation-side calibration
+# (the 1D-discretization knobs, per-protocol suppressive/baseline overrides,
+# the SQ-001/002/004 class) lives in implementation/calibration.yaml, NOT
+# here.
+#
+# This file was introduced by the organizer-designated ARCHITECTURE
+# migration. It only RELOCATES values that already lived in code/spec; it
+# changes no test semantics and no claims. The numeric values are identical
+# to the pre-migration ModelParams defaults and model_spec.yaml
+# parameter_overrides.
+#
+# Namespacing: <stage_or_global>.<param>: { value, units, source, audited,
+# note }.
+
+schema_version: 1
+
+# ---------------------------------------------------------------------------
+# Underspecified globals — spec-resolved via assumptions (model_spec.yaml
+# parameters; assumptions.yaml). Values are the model_spec defaults.
+# ---------------------------------------------------------------------------
+
+model.sigma:
+  value: 0.1
+  units: "contrast (c in [0,1])"
+  source: A-001
+  audited: true
+  note: "Contrast gain constant in the normalization denominator (model_spec parameters.sigma; A-001). Per-protocol sigma OVERRIDES are implementation-side."
+
+model.alpha:
+  value: 1.0
+  units: "arbitrary"
+  source: A-002
+  audited: true
+  note: "Response gain / max attainable rate (model_spec parameters.alpha; A-002)."
+
+model.threshold_T:
+  value: 0.0
+  units: "arbitrary"
+  source: A-003
+  audited: true
+  note: "Rectification threshold for the half-wave operator (model_spec parameters.threshold_T; A-003)."
+
+model.beta:
+  value: 1.0
+  units: "dimensionless"
+  source: A-010
+  audited: true
+  note: "Surround suppression scale; used only by closed-form CRFs, not the full simulation (model_spec parameters.beta; A-010)."
+
+# ---------------------------------------------------------------------------
+# Constants from the paper (cited).
+# ---------------------------------------------------------------------------
+
+model.stimulation_field_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma, A-004)"
+  source: C-010
+  audited: true
+  note: "Stimulation field size, constant across all simulations (Table 1; C-010)."
+
+model.suppressive_field_size:
+  value: 20.0
+  units: "arbitrary spatial units (Gaussian sigma, A-004)"
+  source: C-010
+  audited: true
+  note: "Suppressive field spatial size, constant across all simulations (Table 1; C-010)."
+
+model.suppressive_tuning_width:
+  value: 180.0
+  units: "degrees"
+  source: C-011
+  audited: true
+  note: "Suppressive field orientation tuning width (broad/nonspecific), 180 deg for V4 oriented gratings (C-011). Figure 4C's narrower per-protocol override is implementation-side (SQ-004), not here."
+
+# ---------------------------------------------------------------------------
+# Per-protocol PAPER-DERIVED scientific parameters
+# (model_spec.yaml simulation_protocols.<id>.parameter_overrides). These are
+# the scientific knobs a dependent passes in; the relative stimulus-vs-
+# attention-field size is the figure's content (Table 1).
+# ---------------------------------------------------------------------------
+
+figure_1.stimulus_size:
+  value: 3.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-012
+  audited: true
+  note: "Figure 1 schematic stimulus size (model_spec figure_1 parameter_overrides)."
+figure_1.attention_field_size:
+  value: 30.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-012
+  audited: true
+  note: "Figure 1 attention field size (model_spec figure_1)."
+figure_1.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-012
+  audited: true
+  note: "Figure 1 peak attention gain gamma (model_spec figure_1)."
+figure_1.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-012
+  audited: true
+  note: "Figure 1 feature tuning width."
+
+figure_2A.stimulus_size:
+  value: 3.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-013
+  audited: true
+  note: "Figure 2A small stimulus (contrast-gain regime; Table 1, C-013)."
+figure_2A.attention_field_size:
+  value: 30.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-013
+  audited: true
+  note: "Figure 2A large attention field (contrast-gain regime; C-013)."
+figure_2A.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-013
+  audited: true
+  note: "Figure 2A peak attention gain gamma (Table 1)."
+figure_2A.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-013
+  audited: true
+  note: "Figure 2A feature tuning width."
+
+figure_2B.stimulus_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-013
+  audited: true
+  note: "Figure 2B large stimulus (response-gain regime; Table 1, C-013)."
+figure_2B.attention_field_size:
+  value: 3.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-013
+  audited: true
+  note: "Figure 2B small attention field (response-gain regime; C-013)."
+figure_2B.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-013
+  audited: true
+  note: "Figure 2B peak attention gain gamma (Table 1)."
+figure_2B.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-013
+  audited: true
+  note: "Figure 2B feature tuning width."
+
+figure_3C.stimulus_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-014
+  audited: true
+  note: "Figure 3C stimulus size (large attention field => contrast-gain mix; Table 1, C-014)."
+figure_3C.attention_field_size:
+  value: 30.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-014
+  audited: true
+  note: "Figure 3C attention field size (C-014)."
+figure_3C.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-014
+  audited: true
+  note: "Figure 3C peak attention gain gamma (Table 1)."
+figure_3C.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-014
+  audited: true
+  note: "Figure 3C feature tuning width."
+
+figure_3F.stimulus_size:
+  value: 7.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-014
+  audited: true
+  note: "Figure 3F stimulus size (response-gain mix; Table 1, C-014)."
+figure_3F.attention_field_size:
+  value: 7.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-014
+  audited: true
+  note: "Figure 3F attention field size (C-014)."
+figure_3F.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-014
+  audited: true
+  note: "Figure 3F peak attention gain gamma (Table 1)."
+figure_3F.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-014
+  audited: true
+  note: "Figure 3F feature tuning width."
+
+figure_4C.stimulus_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-015
+  audited: true
+  note: "Figure 4C stimulus size (Table 1, C-015)."
+figure_4C.attention_field_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-015
+  audited: true
+  note: "Figure 4C attention field size (C-015)."
+figure_4C.peak_attention_gain_gamma:
+  value: 5.0
+  units: "dimensionless"
+  source: C-015
+  audited: true
+  note: "Figure 4C peak attention gain gamma (Table 1: Peak Mod = 5)."
+figure_4C.tuning_width:
+  value: 20.0
+  units: "degrees"
+  source: C-015
+  audited: true
+  note: "Figure 4C feature tuning width (model_spec figure_4C parameter_overrides)."
+figure_4C.c_nonpref:
+  value: 0.5
+  units: "contrast (c in [0,1])"
+  source: C-015
+  audited: true
+  note: "Fixed nonpreferred-stimulus contrast for Figure 4C (figure_4.md / C-015)."
+
+figure_4E.stimulus_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-015
+  audited: true
+  note: "Figure 4E stimulus size (Table 1, C-015)."
+figure_4E.attention_field_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-015
+  audited: true
+  note: "Figure 4E attention field size (C-015)."
+figure_4E.peak_attention_gain_gamma:
+  value: 5.0
+  units: "dimensionless"
+  source: C-015
+  audited: true
+  note: "Figure 4E peak attention gain gamma (Table 1: Peak Mod = 5)."
+figure_4E.tuning_width:
+  value: 20.0
+  units: "degrees"
+  source: C-015
+  audited: true
+  note: "Figure 4E feature tuning width (model_spec figure_4E parameter_overrides)."
+
+figure_5C.stimulus_size:
+  value: 10.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-016
+  audited: true
+  note: "Figure 5C stimulus size (Table 1, C-016)."
+figure_5C.attention_field_size:
+  value: 10.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-016
+  audited: true
+  note: "Figure 5C attention field size (C-016)."
+figure_5C.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-016
+  audited: true
+  note: "Figure 5C peak attention gain gamma (Table 1)."
+figure_5C.tuning_width:
+  value: 30.0
+  units: "degrees"
+  source: C-016
+  audited: true
+  note: "Figure 5C feature tuning width."
+figure_5C.contrast:
+  value: 0.5
+  units: "contrast (c in [0,1])"
+  source: C-016
+  audited: true
+  note: "Single stimulus contrast for the Figure 5C orientation-tuning sweep."
+
+figure_6C.stimulus_size:
+  value: 10.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-017
+  audited: true
+  note: "Figure 6C stimulus size (Table 1, C-017)."
+figure_6C.attention_field_size:
+  value: 30.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-017
+  audited: true
+  note: "Figure 6C attention field size (C-017)."
+figure_6C.peak_attention_gain_gamma:
+  value: 2.0
+  units: "dimensionless"
+  source: C-017
+  audited: true
+  note: "Figure 6C peak attention gain gamma (Table 1)."
+figure_6C.tuning_width:
+  value: 60.0
+  units: "degrees"
+  source: C-017
+  audited: true
+  note: "Figure 6C feature tuning width (model_spec figure_6C parameter_overrides)."
+figure_6C.contrast:
+  value: 0.5
+  units: "contrast (c in [0,1])"
+  source: C-017
+  audited: true
+  note: "Stimulus contrast for the Figure 6C direction-tuning sweep (both stimuli)."
+
+figure_7C.stimulus_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-018
+  audited: true
+  note: "Figure 7C stimulus size (Table 1, C-018)."
+figure_7C.attention_field_size:
+  value: 5.0
+  units: "arbitrary spatial units (Gaussian sigma)"
+  source: C-018
+  audited: true
+  note: "Figure 7C attention field size (C-018)."
+figure_7C.peak_attention_gain_gamma:
+  value: 5.0
+  units: "dimensionless"
+  source: C-018
+  audited: true
+  note: "Figure 7C peak attention gain gamma (Table 1: Peak Mod = 5)."
+figure_7C.tuning_width:
+  value: 45.0
+  units: "degrees"
+  source: C-018
+  audited: true
+  note: "Figure 7C feature tuning width (model_spec figure_7C parameter_overrides)."
+figure_7C.contrast:
+  value: 0.5
+  units: "contrast (c in [0,1])"
+  source: C-018
+  audited: true
+  note: "Stimulus contrast for the Figure 7C direction-tuning sweep (both stimuli)."

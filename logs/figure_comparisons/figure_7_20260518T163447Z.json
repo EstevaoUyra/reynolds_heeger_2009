@@ -1,0 +1,33 @@
+{
+  "figure_number": "7",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:47Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_7.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": true,
+    "summary": "Figure 7 Panel C (sole deliverable per SQ-003, human-resolved): at the preferred direction attend-variable (blue) > fixation (gray) > attend-nonpreferred (red); all three curves are single-peaked near 0 deg and smooth on the sampled grid; attend-variable has the largest peak and attend-nonpreferred the smallest.",
+    "checklist_results": [
+      {
+        "item": "Panel C: variable > fixation > nonpreferred at preferred dir",
+        "result": "pass",
+        "note": "Ordering correct."
+      },
+      {
+        "item": "Panel C: single-peaked, smooth curves",
+        "result": "pass",
+        "note": "No pathological jaggedness."
+      },
+      {
+        "item": "Panels A/B, labels, bottom legend, arrow row",
+        "result": "unsure",
+        "note": "Out of scope per SQ-003 (Panel C is the sole deliverable)."
+      }
+    ],
+    "issues": [],
+    "recommendation": "pass - Panel-C-scoped per SQ-003; all in-scope items pass (UNCHANGED vs pre-migration green state)"
+  }
+}

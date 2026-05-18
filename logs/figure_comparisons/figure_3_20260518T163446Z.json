@@ -1,0 +1,38 @@
+{
+  "figure_number": "3",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:46Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_3.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": true,
+    "summary": "Figure 3C/3F: attended (blue) lies above ignored (gray) at every contrast; 3C attended/ignored converge at high contrast with the absolute difference peaking mid-range then falling; 3F retains a larger sustained high-contrast separation with a monotonically rising absolute difference; both percent-modulation curves peak at low contrast.",
+    "checklist_results": [
+      {
+        "item": "Attended above unattended (3C and 3F)",
+        "result": "pass",
+        "note": "Blue above gray throughout."
+      },
+      {
+        "item": "3C high-contrast convergence; abs-diff peaks then falls",
+        "result": "pass",
+        "note": "Convergent; abs-diff humped."
+      },
+      {
+        "item": "3F sustained high-contrast separation; abs-diff rises",
+        "result": "pass",
+        "note": "Monotone abs-diff, larger endpoint gap."
+      },
+      {
+        "item": "% modulation low-contrast weighted",
+        "result": "pass",
+        "note": "Both panels."
+      }
+    ],
+    "issues": [],
+    "recommendation": "pass - baseline shifts percent/absolute modulation as claimed (UNCHANGED vs pre-migration green state)"
+  }
+}

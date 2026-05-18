@@ -71,10 +71,42 @@ class ModelParams:
     recorded_x: float = 0.0
     recorded_theta: float = 0.0
 
+    # Config-selectable normalization stage variant (§1 variants-as-config;
+    # §5(4) modification smoke test). Default "divisive" = paper Eq. 5 and
+    # is byte-for-behavior identical to the pre-migration path. A non-default
+    # value is set ONLY via config/ledger, never by editing stage code.
+    normalization_variant: str = "divisive"
+
+
+def _resolved_normalization_variant() -> str:
+    """Config-only normalization-stage selector (§1 variants-as-config).
+
+    Resolution order (all config, never code): the
+    ``RH_NORMALIZATION_VARIANT`` environment variable, else the
+    ``model.normalization_variant`` ledger key, else "divisive". This is
+    what makes the §5(4) modification smoke test a pure config swap.
+    """
+    import os
+
+    env = os.environ.get("RH_NORMALIZATION_VARIANT")
+    if env:
+        return env
+    try:
+        from .calibration import resolve
+
+        return str(resolve("model.normalization_variant"))
+    except Exception:
+        return "divisive"
+
 
 def default_params(**overrides) -> ModelParams:
-    """Build a ModelParams with defaults plus any overrides."""
+    """Build a ModelParams with defaults plus any overrides.
+
+    The normalization-stage variant is resolved from config (ledger / env)
+    unless explicitly overridden, so a stage swap is config-only.
+    """
     p = ModelParams()
+    p.normalization_variant = _resolved_normalization_variant()
     for k, v in overrides.items():
         setattr(p, k, v)
     return p
@@ -278,7 +310,14 @@ def simulate(
 
     S = compute_suppressive_drive(s_x, s_theta, A, E, dx, dtheta)
     S = params.suppressive_drive_gain * S
-    R = compute_output(A, E, S, params.sigma, params.threshold_T)
+    # Normalization stage (config-selectable variant). The default
+    # "divisive" path is identical to the pre-migration compute_output.
+    from .stages import normalization as _normalization
+
+    R = _normalization.run(
+        A, E, S, params.sigma, params.threshold_T,
+        variant=params.normalization_variant,
+    )
 
     if params.baseline_unmodulated != 0.0:
         R = R + params.baseline_unmodulated

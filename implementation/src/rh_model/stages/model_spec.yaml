@@ -1,0 +1,157 @@
+# Stage manifest (ARCHITECTURE.md §1) — declared AS DATA.
+#
+# Placement note: ARCHITECTURE.md §1 says stages are declared as data in
+# model_spec.yaml. The organizer-designated MIGRATION_BRIEF restricts the
+# ONLY permitted article_aware/ change to relocating paper-derived
+# calibration into article_aware/spec/calibration.yaml (no other
+# article_aware/ edits, no test-semantic/claim changes). So this stage
+# manifest is kept implementation-side; it mirrors the named stages in
+# rh_model/stages/ and the pipeline already in
+# article_aware/spec/model_spec.yaml. It adds NO claims and changes NO
+# test semantics — it only formalizes the existing forward functions.
+#
+# The contract (consumes/produces with shapes AND units, citation/
+# assumption, the ledger param names) is the primary artifact; ordering is
+# secondary. No stage holds a tunable numeric literal — every number comes
+# from the §3 two-ledger view (rh_model.calibration).
+
+schema_version: 1
+
+model: "Reynolds & Heeger 2009 — Normalization Model of Attention"
+
+# R&H is FEEDFORWARD. There is NO ODE integrator / numerical-solver stage
+# and none is needed (the integrator-as-its-own-stage rule, §1, does not
+# apply here). Stated explicitly per the brief.
+integrator: none
+integrator_rationale: >-
+  The model is a closed-form feedforward map E,A,S -> R (Eqs. 5/6). No
+  state is integrated over time; there is no solver to make swappable.
+
+# A dependent may reuse the clean PRIMITIVE forward stages directly
+# (carrasco2021 pattern) but MUST NOT reach into a calibrated protocol
+# (the hermann2010 leak). The formalized calibrated reuse surface is the
+# crf_protocol entry point below.
+reuse_surface:
+  primitive_stages:
+    - rh_model.stages.suppressive_kernel.run
+    - rh_model.stages.stimulus_drive.run
+    - rh_model.stages.attention_field.run
+    - rh_model.stages.suppression.run
+    - rh_model.stages.normalization.run
+    - rh_model.stages.readout.run
+  calibrated_entry_point:
+    name: rh_model.crf_protocol.run_crf
+    rule: >-
+      A dependent that needs protocol-level (calibrated 1D-CRF) behavior
+      depends on THIS entry point, passing only scientific params
+      (stimulus_size, attention_field_size, gamma, regime, contrasts).
+      The per-regime implementation-side 1D calibration is applied
+      INTERNALLY from implementation/calibration.yaml (regime.* namespace);
+      the dependent carries zero discretization knobs and writes zero
+      regime-conditional. Fixes the ARCHITECTURE_WATCHLIST hermann leak.
+
+stages:
+
+  - name: suppressive_kernel
+    boundary: natural
+    citation: [C-002, C-009, C-011]
+    assumption: [A-004, A-011]
+    consumes:
+      - { name: x_grid, type: "ndarray (n_x,)", units: "arbitrary spatial units" }
+      - { name: theta_grid, type: "ndarray (n_th,)", units: "degrees" }
+    produces:
+      - { name: s_x, type: "ndarray (n_x,)", units: "1/spatial (∫=1 in x)" }
+      - { name: s_theta, type: "ndarray (n_th,)", units: "1/deg (∫=1 in θ)" }
+    params:
+      - model.suppressive_field_size          # paper-derived ledger (C-010)
+      - model.suppressive_tuning_width        # paper-derived ledger (C-011)
+      - figure_4C.suppressive_tuning_width    # impl ledger (SQ-004, per-protocol)
+    pure: true
+
+  - name: stimulus_drive
+    boundary: natural
+    citation: [C-009]
+    assumption: [A-009]
+    consumes:
+      - { name: stimuli, type: "list[{x,theta,contrast}]", units: "x spatial; theta deg; c [0,1]" }
+      - { name: x_grid, type: "ndarray (n_x,)", units: "arbitrary spatial units" }
+      - { name: theta_grid, type: "ndarray (n_th,)", units: "degrees" }
+    produces:
+      - { name: E, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
+    params:
+      - "<protocol>.stimulus_size"   # paper-derived ledger (C-013..C-018)
+      - "<protocol>.tuning_width"    # paper-derived ledger
+    pure: true
+
+  - name: attention_field
+    boundary: natural
+    citation: [C-005, C-009]
+    assumption: [A-004]
+    consumes:
+      - { name: attention_condition, type: "{spatial_center,feature_center}", units: "spatial / deg or None" }
+      - { name: x_grid, type: "ndarray (n_x,)", units: "arbitrary spatial units" }
+      - { name: theta_grid, type: "ndarray (n_th,)", units: "degrees" }
+    produces:
+      - { name: A, type: "ndarray (n_th, n_x)", units: "dimensionless gain (≥ 1)" }
+    params:
+      - "<protocol>.attention_field_size"        # paper-derived ledger
+      - "<protocol>.peak_attention_gain_gamma"   # paper-derived ledger
+      - "<protocol>.tuning_width"                # paper-derived ledger
+    pure: true
+
+  - name: suppression
+    boundary: natural
+    citation: [C-002, C-006]
+    assumption: [A-011]
+    consumes:
+      - { name: s_x, type: "ndarray (n_x,)", units: "1/spatial" }
+      - { name: s_theta, type: "ndarray (n_th,)", units: "1/deg" }
+      - { name: A, type: "ndarray (n_th, n_x)", units: "dimensionless gain (≥ 1)" }
+      - { name: E, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
+      - { name: dx, type: float, units: "arbitrary spatial units" }
+      - { name: dtheta, type: float, units: "degrees" }
+    produces:
+      - { name: S, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
+    params:
+      - "<protocol>.suppressive_drive_gain"   # impl ledger (SQ-001, 1D scale)
+    pure: true
+
+  - name: normalization
+    boundary: natural
+    citation: [C-005]
+    assumption: [A-001, A-003]
+    consumes:
+      - { name: A, type: "ndarray (n_th, n_x)", units: "dimensionless gain (≥ 1)" }
+      - { name: E, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
+      - { name: S, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
+    produces:
+      - { name: R, type: "ndarray (n_th, n_x)", units: "arbitrary response (≥ 0)" }
+    params:
+      - model.sigma                # paper/spec ledger (A-001)
+      - model.threshold_T          # paper/spec ledger (A-003)
+      - figure_4C.sigma            # impl ledger (SQ-001, per-protocol override)
+    pure: true
+    config_surface:
+      key: "model.normalization_variant"          # impl ledger / RH_NORMALIZATION_VARIANT
+      allowed: [divisive, identity_suppression]
+      contract: >-
+        Every variant consumes the same typed inputs (A,E,S:(n_th,n_x),
+        σ:float, T:float) and produces R:(n_th,n_x). Selecting a variant
+        is a ledger/env edit; zero edits to protocols, measurements,
+        views, other stages (§5(4) modification smoke test).
+
+  - name: readout
+    boundary: natural
+    citation: [C-005, C-012]
+    assumption: [A-006]
+    consumes:
+      - { name: R, type: "ndarray (n_th, n_x)", units: "arbitrary response (≥ 0)" }
+      - { name: x_grid, type: "ndarray (n_x,)", units: "arbitrary spatial units" }
+      - { name: theta_grid, type: "ndarray (n_th,)", units: "degrees" }
+      - { name: recorded_x, type: float, units: "arbitrary spatial units" }
+      - { name: recorded_theta, type: float, units: "degrees" }
+    produces:
+      - { name: response, type: float, units: "arbitrary response (≥ 0)" }
+    params:
+      - figure_1.recorded_x   # impl ledger (A-006, Figure-1 readout position)
+    pure: true

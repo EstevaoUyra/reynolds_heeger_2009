@@ -1,0 +1,40 @@
+{
+  "figure_number": "2",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:46Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_2.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": false,
+    "summary": "Figure 2A/2B normalized CRFs do not visibly saturate within [0.01,1] (both attended and ignored curves are still rising steeply at the right edge with no clear plateau/convergence); 2A (contrast gain) and 2B (response gain) are not visually distinct enough; inset stimulus/attention schematics are absent.",
+    "checklist_results": [
+      {
+        "item": "2A CRFs saturate / converge at high contrast",
+        "result": "fail",
+        "note": "Curves still rising at c=1, no plateau."
+      },
+      {
+        "item": "2A vs 2B visually distinct (contrast- vs response-gain)",
+        "result": "fail",
+        "note": "Both panels look similar."
+      },
+      {
+        "item": "Attended above unattended; % modulation falls (2A) / sustained (2B)",
+        "result": "pass",
+        "note": "Ordering and modulation-trend signatures present."
+      },
+      {
+        "item": "Inset condition schematics",
+        "result": "fail",
+        "note": "Missing."
+      }
+    ],
+    "issues": [
+      "The deterministic slope test is a weak proxy (2A fls/mls ~0.918 barely bends); visually the saturation criterion fails."
+    ],
+    "recommendation": "fail - non-saturating CRFs, 2A/2B not distinct, no insets (UNCHANGED vs pre-migration committed state)"
+  }
+}
