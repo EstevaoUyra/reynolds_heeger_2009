@@ -1,0 +1,16 @@
+{
+  "figure_number": "5",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:41Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_5.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Single fresh subagent, clear PASS; model unchanged, verdict refreshed against new HEAD.",
+  "verdict": {
+    "passes": true,
+    "summary": "5C multiplicative spatial scaling reproduced: same peak/width, attended above unattended everywhere, ratio near-constant (~1.59). Deterministic 6/6.",
+    "issues": [],
+    "recommendation": "pass - multiplicative scaling, near-constant ratio"
+  }
+}

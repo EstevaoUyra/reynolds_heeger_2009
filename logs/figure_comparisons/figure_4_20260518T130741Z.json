@@ -1,0 +1,18 @@
+{
+  "figure_number": "4",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:41Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_4.json",
+  "n_subagents": 2,
+  "parent_adjudication": "Parent adjudication (direct image read): runs split 1 PASS / 1 FAIL. 4C is genuinely improved by the SQ-004 fix - contrast-gain saturation and recovery are now visibly present (PASS run correct on 4C). However the 4E attend-preferred CRF rises to ~7.3 with only weak concavity and does not clearly level off (FAIL run's specific concrete point; 4E was not modified this session). The 2-subagent protocol surfaced a latent 4E weak-saturation issue the prior single-subagent run missed. Det-green (12/12) but VLM not clean -> not green.",
+  "verdict": {
+    "passes": false,
+    "summary": "4C now correct (contrast-gain recovery/saturation visible after the SQ-004 effective-suppressive-width fix). 4E remains weakly saturating: the attend-preferred curve climbs to ~7.3 with only mild high-contrast concavity, not a clear plateau. Deterministic 12/12.",
+    "issues": [
+      "4E attend-preferred CRF does not clearly level off at high contrast (weak saturation; 4E unchanged this session)"
+    ],
+    "recommendation": "needs_review - 4C fixed and good; 4E weak high-contrast saturation surfaced by 2-subagent protocol"
+  }
+}

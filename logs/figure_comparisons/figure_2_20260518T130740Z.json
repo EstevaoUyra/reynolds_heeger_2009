@@ -1,0 +1,20 @@
+{
+  "figure_number": "2",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:40Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_2.json",
+  "n_subagents": 2,
+  "parent_adjudication": "Unanimous FAIL across both subagents; no parent override needed (consistent with direct knowledge of the deterministic slope test being a weak proxy: 2A fls/mls ~0.918 only barely bends).",
+  "verdict": {
+    "passes": false,
+    "summary": "Deterministic Figure 2 is now 12/12, but the VLM unanimously fails it: Panel 2A attended/ignored CRFs still do not visibly converge at high contrast (attended ~1.0 vs ignored ~0.85) and look non-saturating; panels 2A and 2B are not qualitatively distinct (contrast-gain vs response-gain not demonstrated); inset schematics are entirely missing.",
+    "issues": [
+      "2A attended/ignored CRFs do not converge at high contrast (deterministic slope test passes but is a weak proxy)",
+      "2A and 2B not visually distinct - core contrast-gain vs response-gain point not shown",
+      "Inset schematics (RF/attention-field/stimulus) absent in both panels - figure-generation gap"
+    ],
+    "recommendation": "fail - det-green but VLM-red: 2A non-convergence + missing insets; deterministic slope proxy too weak"
+  }
+}

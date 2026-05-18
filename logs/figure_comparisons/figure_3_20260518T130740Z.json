@@ -1,0 +1,16 @@
+{
+  "figure_number": "3",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:40Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_3.json",
+  "n_subagents": 2,
+  "parent_adjudication": "Unanimous PASS across both subagents; orientation/convergence/separation all confirmed. Newly green this session (3C suppressive-pooling fix).",
+  "verdict": {
+    "passes": true,
+    "summary": "3C/3F reproduced correctly: in both CRF panels the attended curve sits above ignored; 3C converges at high contrast (abs-diff falls below 75% of peak) while 3F retains the larger high-contrast separation; modulation peaks at low contrast in both. Deterministic 13/13.",
+    "issues": [],
+    "recommendation": "pass - 3C fix verified; attended-above-unattended correct, 3C converges, 3F retains separation"
+  }
+}

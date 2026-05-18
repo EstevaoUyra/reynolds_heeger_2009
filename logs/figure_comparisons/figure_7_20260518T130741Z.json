@@ -1,0 +1,16 @@
+{
+  "figure_number": "7",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:41Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_7.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Single fresh subagent, Panel-C scoped per SQ-003 (human-resolved). All in-scope Panel C items pass; out-of-scope structural items marked unsure per SQ-003.",
+  "verdict": {
+    "passes": true,
+    "summary": "7C Panel C (sole deliverable per SQ-003): three single-peaked tuning curves with correct ordering attend-variable > fixation > attend-nonpreferred, correct axes. Out-of-scope Panel A/B/legend/arrow items excluded per SQ-003. Deterministic 6/6.",
+    "issues": [],
+    "recommendation": "pass - Panel C correct (SQ-003 scope); out-of-scope items excluded"
+  }
+}

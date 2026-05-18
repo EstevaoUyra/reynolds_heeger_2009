@@ -22,88 +22,89 @@ shifts, C-018).
 
 ## Current state
 
-A VLM pass now backs every figure; verdicts are in
-`logs/figure_comparisons/` at commit `dc4f838` (fresh — matches HEAD).
-Applying the conflict rule (any deterministic red = loss; deterministic-green
-+ VLM-red = loss; green needs both):
+Deterministic suite is **64/64** (was 59/64). VLM verdicts refreshed at
+HEAD `e88984f` (all fresh). Conflict rule (any deterministic red = loss;
+deterministic-green + VLM-red/needs_review = loss; green needs both):
 
-- **Green: Figures 5, 6, 7.** Deterministic 6/6, 5/5, 6/6 plus fresh VLM
-  `pass`. 5/6: multiplicative spatial scaling; feature-attention sharpening.
-  Figure 7: SQ-003 was human-resolved 2026-05-18 — Panel C is the sole
-  deliverable, so the prior `needs_review` (missing Panels A/B, labels,
-  legend, arrow row) is superseded by a Panel-C-scoped `pass`; the Phase A
-  checklist still needs trimming (SQ-003). First figures complete.
-- **Broken: Figure 1.** Deterministic 10/10 but VLM `fail`,
-  parent-confirmed by direct image read — the suppressive drive is a single
-  merged bright blob (no two gap-separated bands) and the attention-field
-  peak sits near-center, not over the right stimulus. Reclassified from the
-  previous "uncovered".
-- **Broken: Figures 2, 3, 4.** Deterministic-red; VLM agrees. Figure 4's
-  lone VLM `pass` is overridden (parent: 4C does not saturate/converge,
-  matching the red). Figure 3's VLM additionally flags the attended curve
-  plotted below unattended in 3C/3F (possible swapped labels), internally
-  inconsistent with its own positive abs-diff panels.
-Deterministic failures unchanged: 2A non-saturating (final log-slope == max
-`1.7336`); 3C convergence (`0.2894` !< `0.75·0.3115`); 3F vs 3C separation
-(`0.28894` !> `0.28937`); 4C recovery + saturation. Soft blockers SQ-001 /
-SQ-002 (`chosen_assumption`, un-audited) still prop up Figures 2/3
-calibration. `test_runs.jsonl` is 6 days old but HEAD == `dc4f838`, so the
-deterministic test surface still matches (not stale-data).
+- **Green: Figures 3, 5, 6, 7.** Deterministic 13/13, 6/6, 5/5, 6/6 plus
+  fresh VLM `pass`. Figure 3 is **newly green**: the 3C suppressive-pooling
+  fix made it converge; two independent subagents confirm
+  attended-above-unattended, 3C convergence, 3F separation. 5/6:
+  multiplicative scaling / feature sharpening. Figure 7 Panel-C-scoped per
+  SQ-003 (Phase A checklist still needs trimming).
+- **Broken: Figure 1.** Deterministic 10/10 but VLM `fail`
+  (parent-adjudicated over a 1-pass/1-fail split; the pass run hallucinated
+  pixel-measured "two bands"). E/S/R fields are compressed near panel
+  center, not in the left/right hemifields (stimuli at x=±10); the
+  attention-field peak is near-center, not over the attended right stimulus.
+  `run_figure_1` was untouched this session — same broken figure.
+- **Broken: Figure 2.** Deterministic now 12/12 but VLM **unanimous fail**:
+  2A attended/ignored CRFs still don't visibly converge / look
+  non-saturating (the deterministic slope test passes but at fls/mls≈0.918
+  is a weak proxy), 2A/2B not visually distinct, inset schematics missing.
+- **Not green: Figure 4.** Deterministic 12/12; VLM split → parent: the
+  SQ-004 4C fix is verified good (contrast-gain recovery now visible), but
+  4E's attend-preferred CRF saturates only weakly. The 2-subagent protocol
+  surfaced this latent 4E issue.
+
+Soft blockers: SQ-001/SQ-002 (Fig 2/3 calibration) and **SQ-004** (Fig 4C
+per-protocol suppressive tuning width vs C-011) — `chosen_assumption`,
+un-audited; Fig 3/4C green is provisional. `test_runs.jsonl` fresh at
+`e88984f`.
 
 ## Next correction
 
-**Target:** `article_aware/extracted_data/test_figure_2A.py::test_figure_2A_crfs_are_monotonic_and_saturating`
-(a deterministic-red test outranks the det-green/VLM-red Figure 1 for the
-next-correction slot).
-**Action:** make both 2A CRFs level off by the high-contrast endpoint
-without losing the contrast-gain left shift.
-**Symptom:** `assert 1.7336 < 0.95·1.7336` — final log-slope equals the
-maximum log-slope; the CRF is still rising at the right edge.
-**Starting point:** `implementation/src/rh_model/protocols.py`
-(`run_figure_2A` / `_run_figure_2_panel`) and shared normalization in
-`implementation/src/rh_model/model.py`.
-**Likely scope:** 2A suppressive normalization strength / baseline
-(SQ-001/SQ-002).
-**Hypothesis (now cross-figure):** the VLM shows Figure 1's suppressive
-drive as an over-diffuse merged blob. A weak or over-broad suppressive
-denominator would also leave 2A, 3C and 4C CRFs in a rising, non-saturating
-regime — one root cause (under-powered / over-broad suppressive pooling) may
-explain both the merged blob and the 2A/3/4 non-saturation. Strengthening or
-narrowing the suppressive drive should lower the 2A final log-slope and is
-independently checkable against Figure 1's expected two-band structure.
+**Target:** Figure 1 — `run_figure_1` in
+`implementation/src/rh_model/protocols.py` (no deterministic red remains; a
+VLM-fail with a specific visible discrepancy is the next signal).
+**Action:** position the two stimuli / recorded / attended location so the
+E/A/S/R fields render across the left and right hemifields (not compressed
+at center), with the attention-field peak over the right (attended)
+stimulus.
+**Symptom:** parent-confirmed by direct image read — all population panels
+show signal jammed near panel center; attention-field peak near-center, not
+in the right half; suppressive drive one merged central structure rather
+than two hemifield-separated bands.
+**Likely scope:** `run_figure_1` x-grid extent / stimulus x-positions (±10)
+vs the `*_spatial_sigma_scale` calibration, and the figure-1 display window
+in `figures.py::save_figure_1` — ±10 on the default ±100 x-grid is too
+close together for the plotted range.
+**Hypothesis:** a Figure-1-specific display/geometry issue, **not** the
+suppressive-pooling family fixed for 2A/3C/4C — deterministic tests sample
+the recorded neuron, not the spatial layout, so they stay green regardless
+(why this is VLM-only). Widening stimulus separation or the plotted
+x-window should spread the fields into the two hemifields.
 
 ## Test status
 
 | Figure | Deterministic tests | VLM Test |
 |---|---|---|
-| Figure 1 | 10 total, 10 (100%) passing | fail (dc4f838) |
-| Figure 2 | 12 total, 11 (92%) passing | fail (dc4f838) |
-| Figure 3 | 13 total, 11 (85%) passing | fail (dc4f838) |
-| Figure 4 | 12 total, 10 (83%) passing | pass (dc4f838) |
-| Figure 5 | 6 total, 6 (100%) passing | pass (dc4f838) |
-| Figure 6 | 5 total, 5 (100%) passing | pass (dc4f838) |
-| Figure 7 | 6 total, 6 (100%) passing | pass (dc4f838) |
+| Figure 1 | 10 total, 10 (100%) passing | fail (e88984f) |
+| Figure 2 | 12 total, 12 (100%) passing | fail (e88984f) |
+| Figure 3 | 13 total, 13 (100%) passing | pass (e88984f) |
+| Figure 4 | 12 total, 12 (100%) passing | needs review (e88984f) |
+| Figure 5 | 6 total, 6 (100%) passing | pass (e88984f) |
+| Figure 6 | 5 total, 5 (100%) passing | pass (e88984f) |
+| Figure 7 | 6 total, 6 (100%) passing | pass (e88984f) |
 
-The Figure 4 cell reads `pass` but the verdict is overridden by a recorded
-`parent_adjudication` (deterministic-red wins); the cell reports the raw
-verdict, the conflict rule is applied in "Current state".
+Figures 1, 2, 4 are deterministic-green but VLM-red/needs_review → broken by
+the conflict rule. Figure 4's `needs_review` is the parent-adjudicated
+4C-good / 4E-weak-saturation split.
 
 ## Recent changes
 
-No `logs/changelog.yaml` yet. Last 10 commits:
+No `logs/changelog.yaml` yet. Last 8 commits:
 
 | Commit | Subject |
 |---|---|
+| `e88984f` | Fix deterministic CRF failures (2A, 3C/3F, 4C); log SQ-004 |
+| `a1ba25b` | update-state: first VLM pass, Fig7 scope (SQ-003) |
 | `dc4f838` | Update reproduction state |
 | `56f5e40` | Strengthen figure article-aware tests |
 | `c7bca39` | Refine figure 4-7 visual checklists |
 | `43d71a8` | Extract figure 7: initial extraction pending review |
 | `fa3dc1b` | Extract figure 6: initial extraction pending review |
 | `060ae0f` | Extract figure 5: initial extraction pending review |
-| `c68d9fe` | Extract figure 4: initial extraction pending review |
-| `959f55f` | Add figure=N markers to article-aware claim tests |
-| `476b18d` | Add pytest.ini to scope rootdir per-model |
-| `8529ed4` | Fix figure 1 model reproduction |
 
 ## README generation
 
@@ -146,6 +147,28 @@ No `logs/changelog.yaml` yet. Last 10 commits:
 - 2026-05-18: Re-ran `neuromodels test-table --model-dir
   models/reynolds_heeger_2009` after persistence to capture the
   now-populated VLM column verbatim.
+- 2026-05-18 (round 2): Calibration sweeps for the deterministic CRF fixes
+  (now reusable sanity checks).
+  Code:
+  ```
+  python implementation/sanity_checks/check_fig2_saturation.py
+  python implementation/sanity_checks/check_fig3_convergence.py
+  python implementation/sanity_checks/check_fig4c_saturation.py
+  ```
+  Why: needed to find A-006/SQ-004 calibration values that satisfy each
+  figure's full deterministic predicate set without regression; the fig4c
+  sweep is also the SQ-004 evidence (only the C-011 width moves 4C).
+- 2026-05-18 (round 2): Re-ran the VLM (2 subagents for Figs 1–4, 1 for
+  5–7) after the model fixes; parent-adjudicated the Fig 1 and Fig 4 splits
+  by direct image read; persisted via the helper.
+  Code:
+  ```
+  for n in 1..7: neuromodels compare-figure-packet $n ...
+  # subagents -> /tmp build script -> persist_verdict.py per figure
+  ```
+  Why: model changed (2A/3C/4C) so all verdicts had to refresh against the
+  new HEAD; the 2-subagent protocol caught a Fig 1 hallucination and a
+  latent Fig 4E weak-saturation the prior single run missed.
 - 2026-05-18: Figure 7 scope resolved (SQ-003, human). Logged SQ-003 in
   `logs/spec_questions.md` and persisted a Panel-C-scoped superseding
   verdict.

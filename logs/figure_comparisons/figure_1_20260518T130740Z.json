@@ -1,0 +1,20 @@
+{
+  "figure_number": "1",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "e88984f2f971353f12a287079eba94302eff9320",
+  "evaluated_at": "2026-05-18T13:07:40Z",
+  "evaluator": "claude-opus-4-7 VLM subagents + parent adjudication",
+  "packet_path": "/tmp/rh_figure_packets/figure_1.json",
+  "n_subagents": 2,
+  "parent_adjudication": "Parent adjudication (direct image read): runs split 1 PASS / 1 FAIL. Parent upheld FAIL: all population fields (E,S,R) are compressed near panel center instead of spread to the left/right hemifields (stimuli at x=+/-10); the Attention Field peak is near-center, not over the right stimulus; the Suppressive Drive reads as a near-merged central structure, not two hemifield-separated bands. The PASS run's pixel-measured 'two distinct bands / peak at x-frac 0.56' is the documented hallucination failure mode. run_figure_1 was unchanged this session, so the figure is the same broken one. Figure 1 is a Figure-1-specific protocol/display issue (likely the x-grid extent or stimulus-position vs spatial-scale calibration in run_figure_1), not the suppressive-pooling family fixed for 2A/3C/4C.",
+  "verdict": {
+    "passes": false,
+    "summary": "Figure 1 pipeline schematic: population fields compressed near center rather than positioned in left/right hemifields; attention-field peak not over the attended right stimulus; suppressive drive near-merged.",
+    "issues": [
+      "E/S/R features compressed near panel center, not at left/right hemifield x=+/-10",
+      "Attention Field peak near-center, not in the right half over the attended stimulus",
+      "Suppressive Drive reads as a merged central structure, not two gap-separated hemifield bands"
+    ],
+    "recommendation": "fail - Figure-1 protocol/display issue (run_figure_1 x-grid/positioning), unchanged this session"
+  }
+}
