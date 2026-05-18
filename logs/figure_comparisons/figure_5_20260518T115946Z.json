@@ -1,0 +1,37 @@
+{
+  "figure_number": "5",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "dc4f8382998be0fd850219d3457965c63ad1e6d7",
+  "evaluated_at": "2026-05-18T11:59:46Z",
+  "evaluator": "claude-opus-4-7 / general-purpose VLM subagent (1 per figure)",
+  "packet_path": "/tmp/rh_figure_packets/figure_5.json",
+  "n_subagents": 1,
+  "parent_adjudication": "",
+  "verdict": {
+    "passes": true,
+    "summary": "The generated figure successfully reproduces panel C: two single-peaked bell-shaped orientation tuning curves (gray unattended lower, blue attended upper) sharing the same peak location at center (0 deg) and approximately the same width, with the attended curve elevated above the unattended across the entire orientation range. A ratio panel shows the attended/unattended ratio is nearly flat (~1.586 to ~1.612, only ~1.6% relative variation), confirming approximately multiplicative scaling rather than additive offset or feature-based sharpening. Panels A/B context correctly not reproduced.",
+    "checklist_results": [
+      "PASS: Panel C model simulation present (+ratio panel)",
+      "PASS: Panel B empirical geometry not required",
+      "PASS: Panel A schematic geometry not required",
+      "PASS: Exactly two primary solid tuning curves",
+      "PASS: Both single-peaked bell-shaped",
+      "PASS: Both peak at center (preferred orientation)",
+      "PASS: Attended above unattended at central peak",
+      "PASS: Attended above unattended across full range",
+      "PASS: Same peak orientation (no horizontal shift)",
+      "PASS: Same width at half-height (no narrowing/broadening)",
+      "PASS: Parallel rising flanks",
+      "PASS: Parallel falling flanks",
+      "PASS: Both decline at left/right edges",
+      "PASS: Separation largest near peak, smaller at tails",
+      "PASS: Attended is multiplicative scaling not additive offset",
+      "PASS: No feature-based sharpening curve",
+      "PASS: Ratio trace approximately flat across orientations",
+      "PASS: Visual impression = response scaling without shape change",
+      "PASS: Qualitatively matches panel B pattern (two aligned curves, attention increases response)"
+    ],
+    "issues": [],
+    "recommendation": "pass - generated panel C shows multiplicative scaling with preserved peak location and width, ratio panel confirms near-constant scaling"
+  }
+}

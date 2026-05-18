@@ -1,0 +1,43 @@
+{
+  "figure_number": "7",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "dc4f8382998be0fd850219d3457965c63ad1e6d7",
+  "evaluated_at": "2026-05-18T12:30:13Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_7.json",
+  "n_subagents": 1,
+  "parent_adjudication": "SQ-003 (human-resolved 2026-05-18): Panel C is the sole Figure 7 deliverable. Out-of-scope structural items (Panels A/B, labels, bottom legend, arrow row) excluded; all in-scope Panel C content passes -> Figure 7 is green.",
+  "verdict": {
+    "passes": true,
+    "summary": "Scoped to Panel C, the sole Figure 7 deliverable (SQ-003, human-resolved 2026-05-18). Every Panel C content item passes: exactly three smooth single-peaked tuning curves over the variable-stimulus motion-direction axis, low at both endpoints, with the correct vertical ordering (attend-variable > fixation > attend-nonpreferred) maintained through the flanks, attend-variable broader than attend-nonpreferred, a legend distinguishing the three conditions, a response (not Hz) y-axis, and no contrast-response structure. The previously-failing items (Panels A/B, A/B/C panel labels, bottom legend, motion-direction arrow row) are out of scope under SQ-003 and are excluded from this verdict rather than scored as failures.",
+    "checklist_results": [
+      "PASS: Panel C present - three model tuning curves vs motion direction",
+      "PASS: Panel C conditions identified by legend (attend variable / fixation / attend nonpreferred)",
+      "PASS: Exactly three smooth single-peaked curves",
+      "PASS: All three low at left/right motion-direction extremes",
+      "PASS: attend-variable highest peak at center",
+      "PASS: fixation peak below attend-variable",
+      "PASS: attend-nonpreferred lowest peak",
+      "PASS: Center ordering attend-variable > fixation > attend-nonpreferred",
+      "PASS: attend-variable broader than attend-nonpreferred",
+      "PASS: attend-nonpreferred below fixation through central flanks",
+      "PASS: attend-variable above fixation through central flanks",
+      "PASS: Three curves converge to similar low responses at endpoints",
+      "PASS: No flat curve (all rise to a central peak and fall)",
+      "PASS: Y-axis = response (not firing rate in Hz)",
+      "PASS: No empirical error bars / point clouds (sample markers acceptable)",
+      "PASS: X-axis = variable-stimulus motion direction (not contrast)",
+      "PASS: Curves are the three attention conditions",
+      "PASS: Qualitative ordering preserved (attend-variable raises, attend-nonpreferred lowers)",
+      "PASS: Output focuses on Panel C",
+      "OUT_OF_SCOPE (SQ-003): three-panel A/B/C layout",
+      "OUT_OF_SCOPE (SQ-003): A/B/C panel labels",
+      "OUT_OF_SCOPE (SQ-003): bottom legend (RF circle / attention-field circles / arrow icons)",
+      "OUT_OF_SCOPE (SQ-003): motion-direction arrow row",
+      "OUT_OF_SCOPE (SQ-003): Panel A schematic items",
+      "OUT_OF_SCOPE (SQ-003): Panel B empirical-context items"
+    ],
+    "issues": [],
+    "recommendation": "pass - scoped to Panel C per SQ-003; all in-scope Panel C content items pass. Out-of-scope structural items pending Phase A checklist trim."
+  }
+}
