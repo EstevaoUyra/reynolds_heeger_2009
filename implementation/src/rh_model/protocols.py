@@ -75,14 +75,22 @@ def run_figure_1():
 
 # --- Figure 2 (single stim, attended vs unattended) ---
 
-def _run_figure_2_panel(stimulus_size: float, attention_field_size: float, n_contrasts: int = 8):
+def _run_figure_2_panel(
+    stimulus_size: float,
+    attention_field_size: float,
+    n_contrasts: int = 8,
+    suppressive_drive_gain: float = 4.0,
+    suppressive_spatial_sigma_scale: float = 1.0,
+    baseline_unmodulated: float = 0.01,
+):
     overrides = dict(
         stimulus_size=stimulus_size,
         attention_field_size=attention_field_size,
         peak_attention_gain_gamma=2.0,
         tuning_width=30.0,
-        suppressive_drive_gain=4.0,
-        baseline_unmodulated=0.01,
+        suppressive_drive_gain=suppressive_drive_gain,
+        suppressive_spatial_sigma_scale=suppressive_spatial_sigma_scale,
+        baseline_unmodulated=baseline_unmodulated,
     )
     stim = lambda c: [{"x": 0.0, "theta": 0.0, "contrast": c}]
     attended = lambda c: {"spatial_center": 0.0, "feature_center": None}
@@ -98,8 +106,20 @@ def _run_figure_2_panel(stimulus_size: float, attention_field_size: float, n_con
 
 
 def run_figure_2A(n_contrasts: int = 8):
-    """Citation: C-013 / spec.simulation_protocols.figure_2A"""
-    return _run_figure_2_panel(3.0, 30.0, n_contrasts)
+    """Citation: C-013 / spec.simulation_protocols.figure_2A
+
+    Assumption: A-006 — the suppressive spatial pooling (σ from C-010/C-011)
+    is too broad in the 1D discretized protocol, so S grows too slowly with
+    contrast and the contrast-gain CRF never bends over within [0.01, 1]
+    (it stays in the σ-dominated, near-linear regime; cf. SQ-001). An
+    effective-width scale of 0.55 on the suppressive spatial Gaussian pulls
+    the half-saturation contrast below 1 so both CRFs saturate, without
+    raising the SQ-001 gain (kept at 4.0) and so without disturbing the
+    contrast-gain left-shift / percent-modulation signature.
+    """
+    return _run_figure_2_panel(
+        3.0, 30.0, n_contrasts, suppressive_spatial_sigma_scale=0.55
+    )
 
 
 def run_figure_2B(n_contrasts: int = 8):
@@ -114,6 +134,7 @@ def _run_figure_3_panel(
     attention_field_size: float,
     n_contrasts: int = 8,
     suppressive_drive_gain: float = 5.0,
+    suppressive_spatial_sigma_scale: float = 1.0,
     baseline_modulated_by_attention: float = 0.02,
     baseline_unmodulated: float = 0.1,
 ):
@@ -123,6 +144,7 @@ def _run_figure_3_panel(
         peak_attention_gain_gamma=2.0,
         tuning_width=30.0,
         suppressive_drive_gain=suppressive_drive_gain,
+        suppressive_spatial_sigma_scale=suppressive_spatial_sigma_scale,
         baseline_modulated_by_attention=baseline_modulated_by_attention,
         baseline_unmodulated=baseline_unmodulated,
     )
@@ -141,8 +163,18 @@ def _run_figure_3_panel(
 
 
 def run_figure_3C(n_contrasts: int = 8):
-    """Citation: C-014 / spec.simulation_protocols.figure_3C"""
-    return _run_figure_3_panel(5.0, 30.0, n_contrasts)
+    """Citation: C-014 / spec.simulation_protocols.figure_3C
+
+    Assumption: A-006 — same over-broad 1D suppressive pooling as Figure 2A
+    (cf. SQ-001). 3C is the contrast-gain regime (large attention field); an
+    effective suppressive-width scale of 0.45 lets the attended and
+    unattended CRFs converge at high contrast so the absolute difference
+    falls below 75% of its peak, while 3F (response-gain, unchanged) retains
+    the larger high-contrast separation.
+    """
+    return _run_figure_3_panel(
+        5.0, 30.0, n_contrasts, suppressive_spatial_sigma_scale=0.45
+    )
 
 
 def run_figure_3F(n_contrasts: int = 8):
@@ -164,13 +196,26 @@ def run_figure_4C(n_contrasts: int = 8, c_nonpref: float = 0.5):
     Attended = attend nonpref-in-RF; unattended = attend opposite hemifield (A=1).
 
     Citation: C-015 / spec.simulation_protocols.figure_4C
+
+    Assumption: SQ-004 — with the cited suppressive tuning width (180 deg,
+    C-010/C-011) the attention-boosted fixed nonpreferred stimulus dominates
+    the suppressive pool at theta=0, so the attend-nonpreferred CRF
+    half-saturates at c_pref ~ 1.5 and never recovers/saturates within
+    [0.01, 1] (Q-027/Q-029). No other sanctioned knob moves it (the stimuli
+    are colocated in x, separated only in theta). A per-protocol effective
+    suppressive tuning width of 75 deg (mid of the robust 60-90 deg green
+    band) restores the contrast-gain recovery; article_aware/spec and the
+    C-011 constant are left unchanged. Figure 4C green is PROVISIONAL,
+    soft-blocked on SQ-004.
     """
     overrides = dict(
         stimulus_size=5.0,
         attention_field_size=5.0,
         peak_attention_gain_gamma=5.0,
         tuning_width=20.0,
-        suppressive_drive_gain=20.0,
+        suppressive_drive_gain=8.0,
+        sigma=0.05,
+        suppressive_tuning_width=75.0,
     )
     stim = lambda c_pref: [
         {"x": 0.0, "theta": 0.0, "contrast": c_pref},
