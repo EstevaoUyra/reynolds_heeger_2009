@@ -1,0 +1,40 @@
+{
+  "figure_number": "4",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:47Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_4.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": false,
+    "summary": "Figure 4C is genuinely improved by the SQ-004 per-protocol suppressive tuning width: contrast-gain saturation and recovery are now visibly present (attend-nonpreferred CRF recovers toward attend-away at high contrast). However the 4E attend-preferred CRF rises to ~7.3 with only weak concavity and does not clearly level off within [0.01,1].",
+    "checklist_results": [
+      {
+        "item": "4C nonpreferred attention suppresses preferred response",
+        "result": "pass",
+        "note": "Attend-nonpref below attend-away."
+      },
+      {
+        "item": "4C contrast-gain recovery/saturation at high contrast",
+        "result": "pass",
+        "note": "SQ-004 fix visibly works."
+      },
+      {
+        "item": "4E attend-pref scales response (multiplicative)",
+        "result": "pass",
+        "note": "Near-constant ratio."
+      },
+      {
+        "item": "4E attend-pref CRF saturates at high contrast",
+        "result": "fail",
+        "note": "Rises to ~7.3, weak concavity, no clear plateau."
+      }
+    ],
+    "issues": [
+      "4E attend-preferred weak saturation (4E unmodified this session); the 2-subagent protocol surfaced this latent issue. Det-green 12/12 but VLM not clean."
+    ],
+    "recommendation": "needs_review - 4C good, 4E weak saturation (UNCHANGED vs pre-migration committed state)"
+  }
+}

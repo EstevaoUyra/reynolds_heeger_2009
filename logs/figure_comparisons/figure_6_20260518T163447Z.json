@@ -1,0 +1,33 @@
+{
+  "figure_number": "6",
+  "model_dir": "/Users/estevaouyra/dev/model_agent/models/reynolds_heeger_2009",
+  "model_commit_hash": "3a008a78fba47e42ef3d5c57da6dbd6ebaeebe4b",
+  "evaluated_at": "2026-05-18T16:34:47Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh_figure_packets/figure_6.json",
+  "n_subagents": 2,
+  "parent_adjudication": "arch-migration behavior-preservation gate: the migrated figure is PIXEL-IDENTICAL to the pre-migration committed state (5d3e751), verified by decoded-array comparison of all 7 PNGs (max abs pixel diff = 0). Protocol outputs are byte-for-behavior identical (hash match). Parent read the image directly; verdict is unchanged from the committed README by construction.",
+  "verdict": {
+    "passes": true,
+    "summary": "Figure 6C: feature-based attention narrows the motion-direction tuning curve - the attend-opposite-stimulus curve (blue) is narrower than attend-fixation (gray) with a slightly higher preferred-direction peak; both peak near 0 deg and fall to ~0 at +/-180 deg.",
+    "checklist_results": [
+      {
+        "item": "Both curves peak near preferred direction",
+        "result": "pass",
+        "note": "Peak near 0 deg."
+      },
+      {
+        "item": "Attend-opposite narrower than attend-fixation",
+        "result": "pass",
+        "note": "Visibly narrower flanks."
+      },
+      {
+        "item": "Center-to-flank selectivity increased by feature attention",
+        "result": "pass",
+        "note": "Higher peak, lower flanks."
+      }
+    ],
+    "issues": [],
+    "recommendation": "pass - feature-based attention narrows tuning (UNCHANGED vs pre-migration green state)"
+  }
+}

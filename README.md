@@ -22,89 +22,96 @@ shifts, C-018).
 
 ## Current state
 
-Deterministic suite is **64/64** (was 59/64). VLM verdicts refreshed at
-HEAD `e88984f` (all fresh). Conflict rule (any deterministic red = loss;
-deterministic-green + VLM-red/needs_review = loss; green needs both):
+On branch `arch-migration` (HEAD `3a008a7`; not merged to main). This is a
+**structure migration to the ARCHITECTURE shape**, behavior-preserving by
+construction: all 10 protocol outputs are byte-for-behavior identical to
+pre-migration (hash match), and the 7 generated figures are **pixel-
+identical** to the committed pre-migration state `5d3e751` (decoded-array
+diff = 0 on every PNG). VLM verdicts are therefore unchanged by
+construction; all 7 refreshed fresh at HEAD.
+
+Conflict rule applied literally (det-red = loss; det-green + VLM-red/
+needs_review = loss; green needs both, fresh):
 
 - **Green: Figures 3, 5, 6, 7.** Deterministic 13/13, 6/6, 5/5, 6/6 plus
-  fresh VLM `pass`. Figure 3 is **newly green**: the 3C suppressive-pooling
-  fix made it converge; two independent subagents confirm
-  attended-above-unattended, 3C convergence, 3F separation. 5/6:
-  multiplicative scaling / feature sharpening. Figure 7 Panel-C-scoped per
-  SQ-003 (Phase A checklist still needs trimming).
-- **Broken: Figure 1.** Deterministic 10/10 but VLM `fail`
-  (parent-adjudicated over a 1-pass/1-fail split; the pass run hallucinated
-  pixel-measured "two bands"). E/S/R fields are compressed near panel
-  center, not in the left/right hemifields (stimuli at x=±10); the
-  attention-field peak is near-center, not over the attended right stimulus.
-  `run_figure_1` was untouched this session — same broken figure.
-- **Broken: Figure 2.** Deterministic now 12/12 but VLM **unanimous fail**:
-  2A attended/ignored CRFs still don't visibly converge / look
-  non-saturating (the deterministic slope test passes but at fls/mls≈0.918
-  is a weak proxy), 2A/2B not visually distinct, inset schematics missing.
-- **Not green: Figure 4.** Deterministic 12/12; VLM split → parent: the
-  SQ-004 4C fix is verified good (contrast-gain recovery now visible), but
-  4E's attend-preferred CRF saturates only weakly. The 2-subagent protocol
-  surfaced this latent 4E issue.
+  fresh VLM `pass` (3a008a7). Figure 7 Panel-C-scoped per SQ-003. Unchanged
+  from the pre-migration green state.
+- **Broken: Figure 1.** Det 10/10 but VLM `fail` — E/S/R fields compressed
+  near panel center, attention-field peak near-center not over the right
+  stimulus. A Figure-1-specific 1D display/geometry issue, not the
+  suppressive-pooling family. Unchanged this migration (Fig-1 geometry was
+  relocated verbatim into the implementation ledger).
+- **Broken: Figure 2.** Det 12/12 but VLM unanimous `fail` — 2A/2B CRFs do
+  not visibly saturate; 2A/2B not visually distinct; no inset schematics.
+  Unchanged.
+- **Not green: Figure 4.** Det 12/12; VLM `needs_review` — 4C contrast-gain
+  recovery good (SQ-004 fix), 4E attend-preferred CRF weak saturation.
+  Unchanged.
 
-Soft blockers: SQ-001/SQ-002 (Fig 2/3 calibration) and **SQ-004** (Fig 4C
-per-protocol suppressive tuning width vs C-011) — `chosen_assumption`,
-un-audited; Fig 3/4C green is provisional. `test_runs.jsonl` fresh at
-`e88984f`.
+**Calibration is now a §3 two-ledger split.** Paper-derived ledger
+`article_aware/spec/calibration.yaml`: 51 entries, 0 `audited:false` (all
+`C-NNN`/spec-fixed). Implementation-side ledger
+`implementation/calibration.yaml`: 34 entries, **33 `audited:false`** — the
+SQ-001/002/004 class + Figure-1 1D geometry, all relocated verbatim from
+`protocols.py` literals. The ledger *contained* the prior 4-SQ sprawl in
+one reviewable place; it did not eliminate it (soft blockers SQ-001/002/004
+unchanged, green for Fig 3/4C still provisional).
 
 ## Next correction
 
-**Target:** Figure 1 — `run_figure_1` in
-`implementation/src/rh_model/protocols.py` (no deterministic red remains; a
-VLM-fail with a specific visible discrepancy is the next signal).
-**Action:** position the two stimuli / recorded / attended location so the
-E/A/S/R fields render across the left and right hemifields (not compressed
-at center), with the attention-field peak over the right (attended)
-stimulus.
-**Symptom:** parent-confirmed by direct image read — all population panels
-show signal jammed near panel center; attention-field peak near-center, not
-in the right half; suppressive drive one merged central structure rather
-than two hemifield-separated bands.
-**Likely scope:** `run_figure_1` x-grid extent / stimulus x-positions (±10)
-vs the `*_spatial_sigma_scale` calibration, and the figure-1 display window
-in `figures.py::save_figure_1` — ±10 on the default ±100 x-grid is too
-close together for the plotted range.
-**Hypothesis:** a Figure-1-specific display/geometry issue, **not** the
-suppressive-pooling family fixed for 2A/3C/4C — deterministic tests sample
-the recorded neuron, not the spatial layout, so they stay green regardless
-(why this is VLM-only). Widening stimulus separation or the plotted
-x-window should spread the fields into the two hemifields.
+**Target:** Figure 1 — the spatial-layout of `run_figure_1`. **Action:**
+this is a human/Phase-A decision, not an agent fix: the Figure-1 1D display
+geometry (`figure_1.*` in `implementation/calibration.yaml`:
+`stim_left_x/right_x` ±10 on the default ±100 x-grid, the
+`*_spatial_sigma_scale` values) places all four population panels near
+panel center instead of in the left/right hemifields. **Symptom:** VLM
+`fail` (3a008a7) — fields compressed at center; attention-field peak
+near-center, suppressive drive one merged band. **Likely scope:**
+`implementation/calibration.yaml` `figure_1.*` geometry and the figure-1
+display window in `views.py::save_figure_1`. **Hypothesis:** widening the
+stimulus separation or the plotted x-window spreads the fields into the two
+hemifields; deterministic tests sample only the recorded neuron so they
+stay green regardless (why this is VLM-only). Out of scope for the
+migration (would change model outputs); flagged for a later
+implementation/Phase-A pass.
 
 ## Test status
 
 | Figure | Deterministic tests | VLM Test |
 |---|---|---|
-| Figure 1 | 10 total, 10 (100%) passing | fail (e88984f) |
-| Figure 2 | 12 total, 12 (100%) passing | fail (e88984f) |
-| Figure 3 | 13 total, 13 (100%) passing | pass (e88984f) |
-| Figure 4 | 12 total, 12 (100%) passing | needs review (e88984f) |
-| Figure 5 | 6 total, 6 (100%) passing | pass (e88984f) |
-| Figure 6 | 5 total, 5 (100%) passing | pass (e88984f) |
-| Figure 7 | 6 total, 6 (100%) passing | pass (e88984f) |
+| Figure 1 | 10 total, 10 (100%) passing | fail (3a008a7) |
+| Figure 2 | 12 total, 12 (100%) passing | fail (3a008a7) |
+| Figure 3 | 13 total, 13 (100%) passing | pass (3a008a7) |
+| Figure 4 | 12 total, 12 (100%) passing | needs review (3a008a7) |
+| Figure 5 | 6 total, 6 (100%) passing | pass (3a008a7) |
+| Figure 6 | 5 total, 5 (100%) passing | pass (3a008a7) |
+| Figure 7 | 6 total, 6 (100%) passing | pass (3a008a7) |
+| Unassigned | 17 total, 17 (100%) passing | — |
 
-Figures 1, 2, 4 are deterministic-green but VLM-red/needs_review → broken by
-the conflict rule. Figure 4's `needs_review` is the parent-adjudicated
-4C-good / 4E-weak-saturation split.
+Deterministic **64/64**, identical pass set to pre-migration. The 17
+"Unassigned" are the new ARCHITECTURE-shape implementation tests: stage
+contracts (§5(1)), the calibrated-CRF entry-point contract, and the
+§5(4) config-only modification smoke test. Figures 1, 2, 4 are
+deterministic-green but VLM-red/needs_review → broken by the conflict
+rule (unchanged vs pre-migration). Resolved-ledger hash:
+`sha256:f00f97488280dc1f`.
+
+Soft blockers (unchanged, now contained in the implementation ledger):
+SQ-001/SQ-002 (Fig 2/3 calibration), SQ-004 (Fig 4C per-protocol
+suppressive tuning width vs C-011) — `chosen_assumption`, `audited:false`;
+Fig 3/4C green is provisional.
 
 ## Recent changes
 
-No `logs/changelog.yaml` yet. Last 8 commits:
+No `logs/changelog.yaml` yet. Last 5 commits:
 
 | Commit | Subject |
 |---|---|
+| `3a008a7` | arch-migration: stages/measurements/views, two-ledger split, calibrated CRF entry point |
+| `5d3e751` | update-state round 2: 64/64 deterministic; re-VLM; Fig 3 green |
 | `e88984f` | Fix deterministic CRF failures (2A, 3C/3F, 4C); log SQ-004 |
 | `a1ba25b` | update-state: first VLM pass, Fig7 scope (SQ-003) |
 | `dc4f838` | Update reproduction state |
-| `56f5e40` | Strengthen figure article-aware tests |
-| `c7bca39` | Refine figure 4-7 visual checklists |
-| `43d71a8` | Extract figure 7: initial extraction pending review |
-| `fa3dc1b` | Extract figure 6: initial extraction pending review |
-| `060ae0f` | Extract figure 5: initial extraction pending review |
 
 ## README generation
 
@@ -117,68 +124,39 @@ No `logs/changelog.yaml` yet. Last 8 commits:
 - 2026-05-12: Queried log freshness with
   `/Users/estevaouyra/dev/model_agent/.venv/bin/python /Users/estevaouyra/dev/model_agent/skills/update-state/scripts/log_freshness.py`.
   Needed to check whether test-table rows were stale relative to the current test surface.
-- 2026-05-18: First VLM pass over Figures 1-7. Drafted subagent context with
-  the lib and spawned one VLM subagent per figure; parent cross-checked
-  Figures 1 and 4 by reading the images directly.
-  Code:
-  ```
-  for n in 1..7: neuromodels compare-figure-packet $n \
-    --model-dir models/reynolds_heeger_2009 \
-    --output-file /tmp/rh_figure_packets/figure_$n.json
-  # then one subagent per packet, strict-JSON verdict
-  ```
-  Why: no VLM data existed; this run established the persistent verdict home.
+- 2026-05-18: First VLM pass over Figures 1-7; per-figure subagents,
+  parent cross-checked Figures 1 and 4 by reading the images directly.
 - 2026-05-18: One-shot bulk wrapper to stamp all 7 subagent verdicts with
-  provenance and write `logs/figure_comparisons/`.
-  Code:
-  ```
-  python /tmp/persist_verdicts.py   # all 7 verdicts inline, one run
-  ```
-  Why: needed first-time bulk persistence. Pattern promoted to
-  `skills/update-state/scripts/persist_verdict.py` (single-figure, reusable);
-  future runs use that script, not ad-hoc Python.
-- 2026-05-18: Per-figure verdict freshness / uncovered / adjudications.
-  Code:
-  ```
-  python skills/update-state/scripts/verdict_status.py \
-    --model-dir models/reynolds_heeger_2009
-  ```
-  Why: recurring VLM-side diagnostic for the reflection; added as a script.
-- 2026-05-18: Re-ran `neuromodels test-table --model-dir
-  models/reynolds_heeger_2009` after persistence to capture the
-  now-populated VLM column verbatim.
+  provenance (promoted to `skills/update-state/scripts/persist_verdict.py`).
+- 2026-05-18: Per-figure verdict freshness via
+  `python skills/update-state/scripts/verdict_status.py --model-dir models/reynolds_heeger_2009`.
 - 2026-05-18 (round 2): Calibration sweeps for the deterministic CRF fixes
-  (now reusable sanity checks).
+  (reusable sanity checks); re-ran the VLM (2 subagents Figs 1–4).
+- 2026-05-18: Figure 7 scope resolved (SQ-003, human); persisted a
+  Panel-C-scoped superseding verdict.
+- 2026-05-18 (arch-migration): Behavior-preservation gate for the
+  structure migration. Beyond the standard scripts I needed two custom
+  verifications the helper set does not cover:
   Code:
   ```
-  python implementation/sanity_checks/check_fig2_saturation.py
-  python implementation/sanity_checks/check_fig3_convergence.py
-  python implementation/sanity_checks/check_fig4c_saturation.py
+  # 1. Byte-for-behavior fingerprint of every protocol output (legacy
+  #    keys only) vs a pre-migration baseline — proves the refactor is
+  #    behavior-identical, not just test-passing.
+  python - <<'PY'
+  # sha256 over np.ascontiguousarray bytes of each run_figure_*() dict
+  # (filtered to pre-migration keys), incl. the figure-resolution variants
+  # views.py uses; compared to /tmp/rh_baseline_fp.json captured at 5d3e751.
+  PY
+  # 2. Pixel-identity of all 7 generated PNGs vs the pre-migration
+  #    committed state, via a throwaway git worktree at 5d3e751:
+  git -C models/reynolds_heeger_2009 worktree add /tmp/rh_premig 5d3e751
+  # generate figures from both trees, compare decoded matplotlib arrays
+  # (np.array_equal) — all 7 PIXEL-IDENTICAL, max abs diff 0.
+  git -C models/reynolds_heeger_2009 worktree remove --force /tmp/rh_premig
   ```
-  Why: needed to find A-006/SQ-004 calibration values that satisfy each
-  figure's full deterministic predicate set without regression; the fig4c
-  sweep is also the SQ-004 evidence (only the C-011 width moves 4C).
-- 2026-05-18 (round 2): Re-ran the VLM (2 subagents for Figs 1–4, 1 for
-  5–7) after the model fixes; parent-adjudicated the Fig 1 and Fig 4 splits
-  by direct image read; persisted via the helper.
-  Code:
-  ```
-  for n in 1..7: neuromodels compare-figure-packet $n ...
-  # subagents -> /tmp build script -> persist_verdict.py per figure
-  ```
-  Why: model changed (2A/3C/4C) so all verdicts had to refresh against the
-  new HEAD; the 2-subagent protocol caught a Fig 1 hallucination and a
-  latent Fig 4E weak-saturation the prior single run missed.
-- 2026-05-18: Figure 7 scope resolved (SQ-003, human). Logged SQ-003 in
-  `logs/spec_questions.md` and persisted a Panel-C-scoped superseding
-  verdict.
-  Code:
-  ```
-  python skills/update-state/scripts/persist_verdict.py \
-    --model-dir models/reynolds_heeger_2009 --figure 7 \
-    --packet /tmp/rh_figure_packets/figure_7.json \
-    --verdict-file /tmp/figure_7_verdict_panelC.json \
-    --adjudication "SQ-003 ... Panel C is the sole deliverable ..."
-  ```
-  Why: append-only re-verdict via the new helper; flips Figure 7 to green
-  without editing article_aware/ (checklist trim deferred to Phase A).
+  Why: the migration's contract is "model outputs must not change"; the
+  existing scripts check test color and verdict freshness but not
+  output/figure byte-identity, which is the actual gate for a *structure*
+  migration. Candidate future script:
+  `scripts/behavior_fingerprint.py <ref>` (protocol-output + figure-pixel
+  diff vs a git ref) — recurring need for any migration/refactor run.
