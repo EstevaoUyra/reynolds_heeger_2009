@@ -41,7 +41,7 @@ Each figure is shown **three ways, side by side**:
 
 1. **Paper** — the original panel image (`article_aware/figures/figure_<N>.jpg`).
 2. **Reproduced from digitization** — the tool-grounded digitized curves drawn **on the
-   paper panel** (the audited overlay, `article_aware/figures/figure_<N>/_retrial/overlay_*.png`).
+   paper panel** (the audited overlay, `article_aware/figures/figure_<N>/overlay_*.png`).
    This is the *reference the tests compare against*; it was produced with the digitization
    tools and passed a **separate-critic audit** (`logs/digitization_audit/`), loops closed
    2026-06-03 (see *How the digitization was verified* below).
@@ -80,7 +80,7 @@ The `E × A ÷ S → R` pipeline — stimulus drive, a localized attention field
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="article_aware/figures/figure_2/_retrial/overlay_2A.png" width="150"><img src="article_aware/figures/figure_2/_retrial/overlay_2B.png" width="150"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="article_aware/figures/figure_2/overlay_2A.png" width="150"><img src="article_aware/figures/figure_2/overlay_2B.png" width="150"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
 </table>
 
 Digitized reference (middle) reproduces the paper: 2A converges at high contrast with %-modulation falling (contrast gain); 2B stays separated with %-modulation sustained (response gain). The implementation (right) does **not** fully converge in 2A and its %-modulation bottoms ~30% (not ~0) — the shape divergence the soft dozen-point check quantifies.
@@ -110,7 +110,7 @@ Digitized reference (middle) reproduces the paper: 2A converges at high contrast
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="article_aware/figures/figure_3/_retrial/overlay_3C.png" width="150"><img src="article_aware/figures/figure_3/_retrial/overlay_3F.png" width="150"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="article_aware/figures/figure_3/overlay_3C.png" width="150"><img src="article_aware/figures/figure_3/overlay_3F.png" width="150"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
 </table>
 
 Digitized reference matches the paper's converging CRFs with an interior %-modulation bump. The implementation diverges in curve shape across the low/mid range and in the %-modulation curve (3F %-mod off by ~57). Empirical panels (B/E) are correctly "not reproduced."
@@ -138,7 +138,7 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="article_aware/figures/figure_4/_retrial/overlay_4C.png" width="150"><img src="article_aware/figures/figure_4/_retrial/overlay_4E.png" width="150"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="article_aware/figures/figure_4/overlay_4C.png" width="150"><img src="article_aware/figures/figure_4/overlay_4E.png" width="150"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
 </table>
 
 4C nearly overlaps (faithful). 4E is the headline divergence: %-attentional-modulation reaches ~390% against the paper's 0–100 axis — a **hard gate failure** (also caught by the pinned-axis test that the old auto-scaled view hid).
@@ -164,7 +164,7 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_5.jpg" width="300"></td><td><img src="article_aware/figures/figure_5/_retrial/overlay_5C.png" width="300"></td><td><img src="figures_reproduced/figure_5.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_5.jpg" width="300"></td><td><img src="article_aware/figures/figure_5/overlay_5C.png" width="300"></td><td><img src="figures_reproduced/figure_5.png" width="300"></td></tr>
 </table>
 
 Multiplicative, same-width scaling (the right *kind* of effect), but the attended/unattended **peak ratio is ~1.59 vs the paper's ~1.22** — gain too strong. Hard ratio test gates red.
@@ -186,7 +186,7 @@ Multiplicative, same-width scaling (the right *kind* of effect), but the attende
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/_retrial/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
 
 The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The implementation's two curves **overlap** (peak gap ~0.009) — the feature-based effect is essentially absent (the opposite failure to Fig 5: too weak rather than too strong). Qualitative + hard tests gate red.
@@ -208,7 +208,7 @@ The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="article_aware/figures/figure_7/_retrial/overlay_7C.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="article_aware/figures/figure_7/overlay_7C.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
 </table>
 
 Ordering is right (attend-variable > fixation > attend-nonpreferred) but the attend-variable/fixation **peak ratio is ~3.3 vs the paper's ~1.4** — the attention gain is more than twice too strong. Hard ratio test gates red.
@@ -260,9 +260,10 @@ not dark density) now prevents that slip. The old self-grade loop would have pas
 figures *and* surfaced none of this. (Provenance and tool-trail are now recorded in each
 digitized JSON — a process gap the round-1 critics flagged.)
 
-The per-figure overlays and audit verdicts are shown in **Reproduced figures** above; the full
-audit trail is in [`logs/digitization_audit/`](logs/digitization_audit/) (per-figure reports +
-the round-2 closure record `round2_adjudication_2026-06-03.md`).
+The per-figure overlays and audit verdicts are shown in **Reproduced figures** above; the
+single current verdict of record is
+[`logs/digitization_audit/digitization_audit.md`](logs/digitization_audit/digitization_audit.md)
+(the round-by-round iteration that produced it lives in git history).
 
 Two **process** gaps the round-1 critics flagged are **now fixed**: digitizers recorded no
 provenance/tool-trail (the `digitize-figure` skill now requires a `provenance` block in each

@@ -1,37 +1,126 @@
 {
   "panel": "4E",
   "figure": 4,
-  "description": "Two stimuli colocated in RF, contrasts covary; attend preferred vs attend nonpreferred. Two solid CRFs: attend-preferred (upper, peak 1.0) sits above attend-nonpreferred (lower, peak ~0.78) with a sustained separation (response-gain-like). Dashed percent-modulation curve stays WITHIN 0-100 in the paper (roughly 40-55, gently declining). KNOWN MODEL DIVERGENCE: the implementation's percent modulation reaches ~300-400%, overflowing this 0-100 axis (intended failing test).",
+  "description": "Two stimuli colocated in RF, contrasts covary; attend preferred vs attend nonpreferred (response-gain-like). Attend-preferred (upper solid) saturates at ~0.68 of left-axis full scale; attend-nonpreferred (lower solid) saturates at ~0.50 -- a sustained vertical separation, neither reaching 1.0. Dashed percent-modulation (right axis 0-100) starts ~54% at low contrast and declines monotonically to ~36% at high contrast, staying WELL within 0-100 in the paper. (Implementation's %-modulation overshoots past 100 -- intended failing test -- but this is the PAPER curve.)",
   "x_variable": "contrast",
   "x_scale": "log",
-  "x_range": [0.01, 1.0],
+  "x_range": [
+    0.01,
+    1.0
+  ],
   "curves": {
     "attend_pref": {
       "axis": "left",
-      "y_range": [0.0, 1.0],
+      "y_range": [
+        0.0,
+        1.0
+      ],
       "points": [
-        [0.01, 0.06], [0.0152, 0.09], [0.0231, 0.14], [0.0351, 0.21],
-        [0.0534, 0.31], [0.0811, 0.44], [0.1233, 0.58], [0.1874, 0.72],
-        [0.2848, 0.84], [0.4329, 0.93], [0.6579, 0.98], [1.0, 1.0]
+        [0.01, 0.117],
+        [0.0131, 0.126],
+        [0.0172, 0.17],
+        [0.0225, 0.223],
+        [0.0296, 0.286],
+        [0.0387, 0.35],
+        [0.0508, 0.417],
+        [0.0666, 0.48],
+        [0.0873, 0.539],
+        [0.1145, 0.578],
+        [0.1501, 0.612],
+        [0.1968, 0.634],
+        [0.2581, 0.652],
+        [0.3384, 0.666],
+        [0.4437, 0.673],
+        [0.5817, 0.682],
+        [0.7627, 0.682],
+        [1.0, 0.682]
       ]
     },
     "attend_nonpref": {
       "axis": "left",
-      "y_range": [0.0, 1.0],
+      "y_range": [
+        0.0,
+        1.0
+      ],
       "points": [
-        [0.01, 0.03], [0.0152, 0.05], [0.0231, 0.08], [0.0351, 0.13],
-        [0.0534, 0.20], [0.0811, 0.29], [0.1233, 0.40], [0.1874, 0.52],
-        [0.2848, 0.63], [0.4329, 0.71], [0.6579, 0.76], [1.0, 0.78]
+        [0.01, 0.061],
+        [0.0131, 0.087],
+        [0.0172, 0.114],
+        [0.0225, 0.153],
+        [0.0296, 0.194],
+        [0.0387, 0.244],
+        [0.0508, 0.293],
+        [0.0666, 0.341],
+        [0.0873, 0.382],
+        [0.1145, 0.418],
+        [0.1501, 0.442],
+        [0.1968, 0.461],
+        [0.2581, 0.477],
+        [0.3384, 0.484],
+        [0.4437, 0.49],
+        [0.5817, 0.497],
+        [0.7627, 0.5],
+        [1.0, 0.503]
       ]
     },
     "percent_modulation": {
       "axis": "right",
-      "y_range": [0.0, 100.0],
+      "y_range": [
+        0.0,
+        100.0
+      ],
       "points": [
-        [0.01, 48.0], [0.0152, 50.0], [0.0231, 52.0], [0.0351, 53.0],
-        [0.0534, 52.0], [0.0811, 50.0], [0.1233, 47.0], [0.1874, 43.0],
-        [0.2848, 39.0], [0.4329, 35.0], [0.6579, 32.0], [1.0, 30.0]
+        [0.01, 53.5],
+        [0.0131, 53.8],
+        [0.0172, 53.7],
+        [0.0225, 53.0],
+        [0.0296, 52.2],
+        [0.0387, 51.2],
+        [0.0508, 49.4],
+        [0.0666, 47.1],
+        [0.0873, 44.9],
+        [0.1145, 42.4],
+        [0.1501, 40.5],
+        [0.1968, 38.8],
+        [0.2581, 37.6],
+        [0.3384, 36.7],
+        [0.4437, 36.2],
+        [0.5817, 35.8],
+        [0.7627, 35.9],
+        [1.0, 36.0]
       ]
+    }
+  },
+  "provenance": {
+    "figure_type": "line/curve CRF pair + dashed %-modulation, log-x, twin right axis",
+    "tools": ["detect_plot_box", "build_calibration", "trace_darkest_in_band", "crop_region", "resample_pchip", "overlay"],
+    "tool_rationale": "Mode-1 plot: two same-colour solid CRFs that converge at low contrast and a dashed %-mod that crosses both. detect_plot_box gave a hint; the bottom frame had to be re-anchored by hand (see caveats). Per-column dark-cluster scan + right-to-left nearest-neighbour continuity tracking separated the three curves; crop_region zooms verified the crossing; PCHIP renders the overlay.",
+    "calibration": {
+      "x": [[50, 0.01], [178, 1.0]],
+      "y_left": [[165, 0.0], [11, 1.0]],
+      "y_right": [[165, 0.0], [11, 100.0]],
+      "x_scale": "log",
+      "y_scale": "linear"
+    },
+    "per_curve": {
+      "attend_pref": "traced via per-column darkest-cluster centroid + continuity; smooth monotone sigmoid, plateau ~0.682. Clean through the crossing (dashed crosses it near x~0.07 but did not contaminate the band).",
+      "attend_nonpref": "traced via continuity; the darkest-band picked up the descending dashed %-mod line where it crosses near x=0.104-0.107 (spurious spike to 0.43 then dip), producing the reported non-monotone wiggle. Bridged those two contaminated points by monotone log-interpolation between the clean reads at x=0.10 (0.399) and x=0.111 (0.418); result is smooth monotone-rising, plateau ~0.50.",
+      "percent_modulation": "dashed curve, isolated by being the only curve above both solids at low-x and the lowest at high-x; sparse (dashed gaps). Re-read smooth monotone-declining 53.5%->36%. The previous reference dipped to 38.3% at x=0.087 (a wiggle where the dashed passes between the solids) -- removed; the true dashed declines smoothly through the crossing."
+    },
+    "normalization": "paper shared sub-1.0 left scale; attend_pref plateau ~0.682, attend_nonpref ~0.50, NOT pinned to 1.0. Right axis 0-100; dashed stays within [0,100] (paper).",
+    "caveats": [
+      "Plot box bottom frame is row 165, NOT the detect_plot_box/dark-row candidate row 207 -- row 206-207 is the SEPARATE 'Stimuli' legend box below panel E. Left axis (col 50) runs continuously 11..165 then a gap, confirming y=0 at row 165. Calibration re-anchored accordingly; matches the shipped overlay frame.",
+      "No numeric x ticks on this panel -- x_range [0.01,1.0] taken from the model sweep / panel role (panel_E.md).",
+      "Dashed %-mod is sparse; its values in the crossing gap (x~0.06-0.10, hidden between the two solids) are interpolated, not directly traced -- flagged as a smooth bridge consistent with the isolated reads on both sides."
+    ],
+    "corrections_this_pass": {
+      "reason": "Reviewer flagged weird movements near the curve intersection in overlay_4E.png.",
+      "attend_nonpref_before_near_crossing": [[0.0666, 0.479], [0.0873, 0.448], [0.1145, 0.423], [0.1501, 0.44]],
+      "attend_nonpref_after_near_crossing": [[0.0666, 0.341], [0.0873, 0.382], [0.1145, 0.418], [0.1501, 0.442]],
+      "attend_pref_before_near_crossing": [[0.0508, 0.293], [0.0666, 0.395], [0.0873, 0.545]],
+      "attend_pref_after_near_crossing": [[0.0508, 0.417], [0.0666, 0.48], [0.0873, 0.539]],
+      "percent_modulation_before_dip": [[0.0666, 47.9], [0.0873, 38.3], [0.1145, 41.7]],
+      "percent_modulation_after": [[0.0666, 47.1], [0.0873, 44.9], [0.1145, 42.4]]
     }
   }
 }
