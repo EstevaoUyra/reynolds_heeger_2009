@@ -216,5 +216,31 @@
         ]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "line/curve CRF, log-x; twin-y (left 0-1 normalized response, right 0-100 attentional modulation %)",
+    "tools": ["detect_plot_box", "build_calibration", "trace_darkest_in_band", "resample_pchip", "overlay", "crop_region"],
+    "tool_rationale": "Mode-1 quantitative CRF plot: two solid sigmoids on the left axis plus one dashed % curve on the right axis. detect_plot_box gave a frame hint; final calibration is tick/frame-anchored from pixel-measured axis lines (see calibration). overlay + crop_region used for the adversarial alignment check.",
+    "calibration": {
+      "image": "../panel_A.jpg",
+      "image_size_wh": [306, 371],
+      "x": [[33, 0.01], [250, 1.0]],
+      "y_left": [[332, 0.0], [40, 1.0]],
+      "y_right": [[333, 0.0], [41, 100.0]],
+      "x_scale": "log",
+      "anchor_method": "Axis lines measured by longest-consecutive-dark-run per column/row on panel_A.jpg. Left y-axis = cols 33-34 (rows 40-332); right y-axis = cols 250-251 (rows 41-333); bottom x-axis = row 331-333. Tick labels verified by crop: left '1'/'0' and right '100'/'0' sit at the top/bottom frame corners respectively. x has NO numeric ticks on the paper (stimulus glyphs only), so x anchors are the frame edges set to the swept range [0.01, 1.0] per panel_A.md.",
+      "right_axis_render_note": "overlay() takes one calibration; the right-axis percent_modulation curve (0-100) is rendered by passing value/100 through the left 0-1 calibration. Left and right axis pixel rows coincide (332<->40 vs 333<->41), so this lands the dashed curve on the right-axis ink to within ~1px."
+    },
+    "per_curve": {
+      "attended": "solid CRF, traced; left/upper of unattended in the mid-contrast rise (contrast-gain shift). Spot-checked: x=0.1,y=0.5 -> row ~186 matches paper ink rows 187-190.",
+      "unattended": "solid CRF, traced; right/lower of attended. Spot-checked: x=0.1,y=0.41 -> row ~212 matches paper ink rows 213-217. Shared plateau ~0.615 -> row ~152 matches paper ink rows 151-154 at high contrast.",
+      "percent_modulation": "dashed right-axis curve, traced; 100 at low contrast falling monotonically to ~0. Rendered value/100 on the left calibration to hit the right axis."
+    },
+    "normalization": "Paper shared sub-1.0 scale (shared with 2B): solid CRFs converge to ~0.615, NOT pinned to 1.0. Confirmed against paper ink at high contrast.",
+    "caveats": [
+      "x has no numeric ticks on the paper; x_range [0.01, 1.0] is taken from the frame edges per panel_A.md, not from labelled ticks.",
+      "DATA was confirmed faithful by pixel spot-checks (plateau, mid-rise of both CRFs); only the overlay's pixel mapping was wrong before this pass. The previous overlay used an approximate frame-edge calibration with no provenance block, producing a whole-curve shift. This pass re-rendered with the tick/frame-anchored calibration above.",
+      "percent_modulation dashed ink is broken/thick; its read values carry ~+/-3% uncertainty (e.g. x=0.1 reads ~19-23%)."
+    ]
   }
 }
