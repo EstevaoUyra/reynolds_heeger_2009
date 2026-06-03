@@ -197,8 +197,13 @@ figure_3F.baseline_unmodulated:
   note: "Figure 3F unmodulated baseline."
 
 # ---------------------------------------------------------------------------
-# Figure 4 — 1D suppressive-pooling + the SQ-004 per-protocol suppressive
-# tuning width (vs the cited C-011 180 deg).
+# Figure 4 — 1D suppressive-pooling. The SQ-004 per-protocol suppressive
+# tuning width (75°) and the figure_4C.sigma override are RETIRED
+# (phaseA-contract-update-2026-06-03 Finding 2 / A-012): they were symptoms of
+# the wrong (suppression) 4C regime produced by a narrow feature-tuned-on-θ=180°
+# attention field. Under the correct SPATIAL attention field (A-012) 4C
+# saturates/recovers with the cited 180° suppressive tuning (C-011) and the
+# global σ, so the overrides are removed.
 # ---------------------------------------------------------------------------
 
 figure_4C.suppressive_drive_gain:
@@ -207,18 +212,6 @@ figure_4C.suppressive_drive_gain:
   source: SQ-001
   audited: false
   note: "Figure 4C suppressive-drive gain."
-figure_4C.sigma:
-  value: 0.05
-  units: "contrast (c in [0,1])"
-  source: SQ-001
-  audited: false
-  note: "Figure-4C-only sigma override (two colocated stimuli; sharper half-saturation needed for the contrast-gain recovery claim)."
-figure_4C.suppressive_tuning_width:
-  value: 75.0
-  units: "degrees"
-  source: SQ-004
-  audited: false
-  note: "Per-protocol effective suppressive TUNING width for Figure 4C only (mid of the robust 60-90 deg green band). The cited C-011 180 deg leaves 4C unable to satisfy the contrast-gain recovery/saturation claims (Q-027/Q-029) and no other sanctioned knob moves it. Figure 4C green is PROVISIONAL, soft-blocked on SQ-004. article_aware/spec and the C-011 constant are left unchanged."
 
 figure_4E.suppressive_drive_gain:
   value: 8.0

@@ -1,6 +1,8 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-> ⚠️ **NOT a faithful reproduction (corrected 2026-06-03).** This model previously
+> ⚠️ **NOT a faithful reproduction (corrected 2026-06-03).** A later model-improvement pass
+> (see **Model improvement pass** below) corrected Fig 4C's *direction* and the shared-scale
+> normalization; the magnitude divergences remain. This model previously
 > shipped as "FAITHFUL across all 7 figures." That verdict was **wrong**: the schematic
 > (Fig 1) is faithful, but **Figures 2–7 carry real divergences** in the model's curve
 > shapes and attention-gain magnitudes — the quantitative error that matters precisely
@@ -270,6 +272,67 @@ provenance/tool-trail (the `digitize-figure` skill now requires a `provenance` b
 digitized JSON), and `detect_plot_box` mis-detected some frames off axis-label text (it now
 scores axis lines by longest *run*, not dark density — which is exactly what exposed Fig 3's
 calibration artifact).
+
+## Model improvement pass — 4C corrected, normalization fixed (2026-06-03)
+
+Once the digitization was made faithful, a **faithfulness audit of the implementation**
+against those references (and the paper) drove a phase-separated improvement pass —
+paper-aware audit → paper-blind fix → re-verify, with the organizer *routing*, not coding.
+It produced two real corrections and held the line on the rest. Reports in
+[`logs/faithfulness_audit/`](logs/faithfulness_audit/).
+
+**Fixed (a bug, not a tune):**
+- **Fig 4C had the wrong sign.** The implementation rendered *suppression* where the paper's
+  panel shows *facilitation* (contrast-gain left-shift) — and the spec/tests had been
+  **laundered** to assert that wrong direction (citing 4E mechanism prose C-021, with an
+  unsanctioned 75° suppressive-tuning override forcing it). The auditor's escalation ladder
+  resolved it *from the paper itself* (a fixable mis-mapping, **not** a paper issue): 4C uses
+  a **spatial** attention cue, not a feature-based one. The field was swapped and the override
+  deleted; **4C now shows facilitation** (attended above, positive %-modulation, left-shift).
+- **Normalization.** The view per-pair-normalized every CRF panel to 1.0, hiding the paper's
+  shared scale. Now rendered on one shared response scale: **Fig 2's 2B plateaus ~0.86, above
+  2A's ~0.34** — the response-gain claim is finally visible. This *surfaced* a new genuine
+  divergence (2A under-saturates, ~0.34 vs the paper's ~0.62) the old normalization concealed.
+
+**Held flagged, not fitted:** the genuine magnitude divergences (5C/7C gain too strong, 6C
+sharpening too weak, 4E %-mod overflow, and now 4C's +101% mod and 2A's under-saturation)
+stay red. **No parameters were tuned to match a figure** — the phase separation (Phase B
+implements the spec'd mechanism blind and reports what emerges) is what prevents the
+laundering that produced the original wrong 4C.
+
+### Up-to-date audit (post-change, separate auditor)
+
+A fresh faithfulness audit of the *changed* model — separate auditor, re-rendered, vs the
+paper + the digitized references ([report](logs/faithfulness_audit/post-change-audit-2026-06-03.md)).
+It independently confirmed all three fixes are faithful, and the remaining divergences are
+**magnitude, not direction**:
+
+| Figure / panel | Status | Evidence |
+|---|---|---|
+| Fig 1 | ✅ FAITHFUL | `E×A÷S→R` schematic |
+| Fig 2A | ❌ DIVERGENT (minor) | convention now faithful, but surfaces 2A **under-saturation**: plateau 0.34 vs digitized 0.615 |
+| Fig 2B | ✅ FAITHFUL | ceiling ~0.86 renders **above** 2A on one shared axis — the response-gain claim |
+| Fig 3C / 3F | ✅ FAITHFUL | %-mod converges (3C) / sustained, gap largest at high contrast (3F) |
+| Fig 4C | ❌ DIVERGENT (major) — **direction now FAITHFUL** | facilitation / left-shift **fixed**; magnitude +101% vs ~36%, no plateau |
+| Fig 4E | ❌ DIVERGENT (minor) | ordering faithful; %-mod overflows the 0–100 axis |
+| Fig 5C | ❌ DIVERGENT (minor) | multiplicative shape faithful; peak ratio 1.59 vs ~1.1–1.4 |
+| Fig 6C | ❌ DIVERGENT (minor) | sharpening direction faithful; only ~7% narrowing |
+| Fig 7C | ❌ DIVERGENT (minor) | ordering faithful; variable/fixation 3.3× vs ~1.4 |
+| Equations / kernel / attention field | ✅ FAITHFUL | operator-by-operator; 4C remap is condition-mapping, not an equation change |
+
+Tests: **100 passed / 9 red** — every red a genuine or intended divergence, none re-greening
+or asserting a paper-contradicting direction.
+
+**Open finding the audit surfaced (pre-existing — *not* introduced by this pass):** the
+per-figure `suppressive_drive_gain`s are `audited:false` and **retuned above the
+paper-reuse default** (2A=12, 2B=6, 3F=12, 4C/4E=8 vs the frozen `regime.*`=4) to make the
+CRFs saturate. It is disclosed in the calibration ledger but unaudited against the paper — a
+candidate for the next faithfulness scrutiny (free parameter, or a fit?). Verified by diff
+that this pass only *removed* the SQ-004 override and changed none of these gains.
+
+> The detailed per-figure tables further below predate this improvement pass (their
+> *implementation* images are refreshed, but the VLM/tier verdict text for Fig 2 and Fig 4
+> still describes the pre-fix model — the table above is the current verdict of record).
 
 ## How it was verified — and how it slipped through
 

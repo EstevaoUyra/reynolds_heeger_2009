@@ -94,8 +94,118 @@ def ref_peak(figure: int, panel: str, name: str) -> float:
 
 # --- implementation-record normalization (matches the view) ---------------
 
+# --- SHARED-SCALE normalization convention (binding contract) -------------
+# The paper renders each CRF figure-GROUP (e.g. Fig 2's 2A + 2B) on ONE shared
+# response axis: 2A's plateau (~0.615) and 2B's attended plateau (~0.85) sit on
+# the SAME sub-1.0 scale, and that height difference IS the response-gain claim.
+# The digitized references encode this shared sub-1.0 scale directly.
+#
+# Therefore CRF model curves must be placed on a SINGLE common scale across all
+# panels in the group — NOT per-pair-renormalized to 1.0 (which pins every panel's
+# top curve to 1.0 and erases the cross-panel ceiling difference). The common
+# scale is chosen so the model group's overall peak maps onto the reference
+# group's overall peak, i.e. the digitized shared-scale values are the target.
+
+# Figure-group membership: every CRF panel that shares one response axis with its
+# siblings. Keyed by group name -> the (figure, panel) members rendered together.
+CRF_FIGURE_GROUPS = {
+    "figure_2": [(2, "A"), (2, "B")],
+    "figure_3": [(3, "C"), (3, "F")],
+    "figure_4": [(4, "C"), (4, "E")],
+}
+
+
+def group_of(figure: int, panel: str) -> str | None:
+    """Return the CRF figure-group name a panel belongs to, or None."""
+    for name, members in CRF_FIGURE_GROUPS.items():
+        if (figure, panel) in members:
+            return name
+    return None
+
+
+def _reference_group_peak(figure: int, panel: str) -> float:
+    """Max digitized left-axis (response) value across ALL panels in the group.
+
+    This is the reference's shared-scale ceiling; the model group is scaled so
+    its overall peak lands here, preserving cross-panel ceiling differences.
+    """
+    members = CRF_FIGURE_GROUPS[group_of(figure, panel)]
+    peak = 0.0
+    for fig, pan in members:
+        dig = load_digitized(fig, pan)
+        for cname, cdata in dig["curves"].items():
+            if cdata.get("axis") == "right":
+                continue  # right axis is percent, not the response scale
+            ys = np.asarray(cdata["points"], dtype=float)[:, 1]
+            peak = max(peak, float(ys.max()))
+    return peak if peak > 1e-12 else 1.0
+
+
+def _model_group_peak(figure: int, panel: str) -> float:
+    """Max RAW model response across ALL panels in the same CRF group.
+
+    Computed from the same protocol records the tier tests measure, so every
+    panel in the group is divided by ONE common model scale.
+    """
+    from rh_model import protocols  # local import: keep helper import light
+
+    members = CRF_FIGURE_GROUPS[group_of(figure, panel)]
+    runners = {
+        (2, "A"): lambda: protocols.run_figure_2A(n_contrasts=24),
+        (2, "B"): lambda: protocols.run_figure_2B(n_contrasts=24),
+        (3, "C"): lambda: protocols.run_figure_3C(n_contrasts=24),
+        (3, "F"): lambda: protocols.run_figure_3F(n_contrasts=24),
+        (4, "C"): lambda: protocols.run_figure_4C(n_contrasts=24),
+        (4, "E"): lambda: protocols.run_figure_4E(n_contrasts=24),
+    }
+    pair_keys = {
+        (4, "E"): ("attend_pref_CRF", "attend_nonpref_CRF"),
+    }
+    peak = 0.0
+    for fig, pan in members:
+        r = runners[(fig, pan)]()
+        a_key, b_key = pair_keys.get((fig, pan), ("attended_CRF", "unattended_CRF"))
+        peak = max(peak, float(np.max(r[a_key])), float(np.max(r[b_key])))
+    return peak if peak > 1e-12 else 1.0
+
+
+@functools.lru_cache(maxsize=None)
+def group_scale(figure: int, panel: str) -> float:
+    """Common divisor placing a model CRF group onto the reference shared scale.
+
+    model_curve / group_scale lands the model group's overall peak at the
+    reference group's overall peak, so each panel's plateau renders at its TRUE
+    relative height (2B above 2A), matching the digitized references. This is the
+    binding shared-scale convention; ``views`` (Phase B) renders with the same
+    rule. Do NOT divide each pair independently by its own max.
+    """
+    if group_of(figure, panel) is None:
+        raise KeyError(f"panel {figure}{panel} is not in a CRF figure-group")
+    return _model_group_peak(figure, panel) / _reference_group_peak(figure, panel)
+
+
+def norm_pair_shared(attended: np.ndarray, unattended: np.ndarray,
+                     figure: int, panel: str):
+    """Place a CRF pair on the GROUP's shared response scale (binding convention).
+
+    Divides by the single group-wide ``group_scale`` so cross-panel ceiling
+    differences survive and the curves land on the digitized shared sub-1.0
+    scale. This REPLACES the old per-pair-to-1.0 ``norm_pair`` for the figure
+    tests (see Finding 1, improvement-pass-2026-06-03).
+    """
+    scale = group_scale(figure, panel)
+    return (np.asarray(attended, dtype=float) / scale,
+            np.asarray(unattended, dtype=float) / scale)
+
+
 def norm_pair(attended: np.ndarray, unattended: np.ndarray):
-    """Normalize a CRF pair to the larger plotted peak (== views._normalized_pair)."""
+    """DEPRECATED per-pair-to-1.0 normalization (the Finding-1 defect).
+
+    Pins each panel's top curve to 1.0, erasing the paper's cross-panel response
+    ceiling claim (2B's plateau above 2A's). Retained only for non-CRF callers
+    that genuinely want a self-normalized pair; the Fig-2/3/4 CRF tier tests now
+    use ``norm_pair_shared`` instead. Do NOT use for CRF figure-group panels.
+    """
     attended = np.asarray(attended, dtype=float)
     unattended = np.asarray(unattended, dtype=float)
     scale = float(max(attended.max(), unattended.max(), 1e-12))
@@ -141,47 +251,50 @@ def panel_model_curves(figure: int, panel: str):
     """Return ``(x_model, log_x, {digitized_curve_name: y_model})`` for one panel.
 
     The model curves are placed in EXACTLY the frame the view renders and the
-    digitized JSON lives in: left-axis main curves normalized to [0, 1] by the
-    shared plotted peak (``norm_pair`` / ``norm_curves``); the right-axis
-    ``percent_modulation`` curve as the model percent. Keys match the digitized
-    curve names so ``shape_deviation`` can pair them up.
+    digitized JSON lives in: CRF figure-group panels (2A/2B, 3C/3F, 4C/4E) are
+    placed on the GROUP's shared response scale (``norm_pair_shared`` — Finding
+    1), so cross-panel ceiling differences survive; tuning panels use the
+    shared-peak-within-panel ``norm_curves``; the right-axis ``percent_modulation``
+    curve is the model percent. Keys match the digitized curve names so
+    ``shape_deviation`` can pair them up.
     """
     from rh_model import protocols  # local: keep helper import light
 
     key = (figure, panel)
     if key == (2, "A"):
         r = protocols.run_figure_2A(n_contrasts=24)
-        att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+        att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 2, "A")
         return (np.asarray(r["c"], float), True, {
             "attended": att, "unattended": una,
             "percent_modulation": np.abs(np.asarray(r["percent_modulation"], float))})
     if key == (2, "B"):
         r = protocols.run_figure_2B(n_contrasts=24)
-        att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+        att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 2, "B")
         return (np.asarray(r["c"], float), True, {
             "attended": att, "unattended": una,
             "percent_modulation": np.abs(np.asarray(r["percent_modulation"], float))})
     if key == (3, "C"):
         r = protocols.run_figure_3C(n_contrasts=24)
-        att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+        att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 3, "C")
         return (np.asarray(r["c"], float), True, {
             "attended": att, "unattended": una,
             "percent_modulation": np.abs(np.asarray(r["percent_modulation"], float))})
     if key == (3, "F"):
         r = protocols.run_figure_3F(n_contrasts=24)
-        att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+        att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 3, "F")
         return (np.asarray(r["c"], float), True, {
             "attended": att, "unattended": una,
             "percent_modulation": np.abs(np.asarray(r["percent_modulation"], float))})
     if key == (4, "C"):
         r = protocols.run_figure_4C(n_contrasts=24)
-        att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+        att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 4, "C")
         return (np.asarray(r["c_pref"], float), True, {
             "attended": att, "unattended": una,
             "percent_modulation": np.abs(np.asarray(r["percent_modulation"], float))})
     if key == (4, "E"):
         r = protocols.run_figure_4E(n_contrasts=24)
-        pref, nonpref = norm_pair(r["attend_pref_CRF"], r["attend_nonpref_CRF"])
+        pref, nonpref = norm_pair_shared(
+            r["attend_pref_CRF"], r["attend_nonpref_CRF"], 4, "E")
         return (np.asarray(r["c"], float), True, {
             "attend_pref": pref, "attend_nonpref": nonpref,
             "percent_modulation": np.abs((np.asarray(r["ratio"], float) - 1.0) * 100.0)})

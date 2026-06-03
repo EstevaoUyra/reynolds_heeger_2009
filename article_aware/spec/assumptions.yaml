@@ -230,6 +230,45 @@
   spec_refs:
     - "pipeline.compute_suppressive_drive"
 
+- id: A-012
+  name: figure_4C_spatial_attention_facilitation
+  description: |
+    Figure 4C's "attend nonpreferred-in-RF" condition is a SPATIAL (location)
+    attention cue to the receptive-field location (the Martinez-Trujillo &
+    Treue 2002 task: attend that RF patch to detect a target). The attention
+    field A(x,θ) is therefore a spatial Gaussian centered at x = 0 that is FLAT
+    (uniform) over θ — it boosts the drives of BOTH colocated stimuli (the swept
+    preferred at θ = 0 and the fixed nonpreferred at θ = 180°). This is the
+    correct 4C mechanism; the result is contrast-gain FACILITATION (attended CRF
+    above attend-away, leftward shift, positive % modulation peaking ~+36% at low
+    contrast). The cited suppressive tuning width (180°, C-011) is used as-is;
+    no per-protocol suppressive-tuning override is needed.
+  rationale: |
+    The paper resolves 4C internally to facilitation: the Fig-4 caption calls it
+    a "contrast gain" change with a "percentage increase" in firing rate, C-019
+    states the contrast-gain regime predicts a LEFTWARD shift, and the panel
+    (panel_C.jpg / panel_C_digitized.json) shows the attended curve ABOVE
+    attend-away with positive declining modulation. The two-stimulus-attention
+    lineage (Martinez-Trujillo & Treue 2002; pestilli_ling_carrasco_2009;
+    ghose_maunsell_2008; ni_maunsell_2017) is unanimous: spatial attention to the
+    in-RF (nonpreferred) stimulus RAISES the recorded neuron's response. C-021
+    ("yielding a smaller output firing rate") is the Fig-4E mechanism (attend
+    preferred vs nonpreferred, contrasts covarying), NOT the 4C panel; applying
+    it to 4C is the mis-mapping that produced the wrong (suppression) sign.
+    See logs/faithfulness_audit/figure_4C_investigation-2026-06-03.md.
+  alternatives_considered:
+    - "Narrow feature-tuned attention field isolated on θ=180° (the RETIRED prior build): lands the gain on the nonpreferred population, feeds only the θ=0 neuron's suppressive pool → suppression / right-shift, the OPPOSITE of the paper's 4C panel. This is the 4E mechanism mis-applied to 4C."
+    - "Per-protocol suppressive_tuning_width = 75° override (RETIRED SQ-004): a symptom of the wrong (suppression) regime; forced a fake 'recovery'. Removed — the spatial-attention regime saturates/recovers correctly with the cited 180°."
+  affects:
+    - "simulation_protocols.figure_4C (attention condition construction)"
+    - "pipeline.build_attention_field (4C: spatial, feature-flat)"
+    - "implementation/calibration.yaml: figure_4C.suppressive_tuning_width and figure_4C.sigma overrides to be DELETED by Phase B"
+    - "extracted_data/test_figure_4C.py (Q-026/Q-027 facilitation direction); test_tier_figure_4.py (4C tier)"
+  spec_refs:
+    - "simulation_protocols.figure_4C"
+    - "pseudocode/figure_4_protocol.md (Procedure 4C)"
+    - "logs/spec_questions.md SQ-004 (resolution_2026-06-03)"
+
 - id: A-010
   name: surround_suppression_scale_beta
   description: |

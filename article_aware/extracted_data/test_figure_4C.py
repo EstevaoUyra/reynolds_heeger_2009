@@ -64,51 +64,63 @@ def test_figure_4C_output_contract_and_percent_modulation():
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-026")
-def test_attending_nonpreferred_decreases_response():
-    """Attending nonpreferred-in-RF decreases the preferred-stimulus response.
+def test_attending_nonpreferred_in_rf_increases_response():
+    """Attending the nonpreferred-in-RF stimulus (a SPATIAL cue to the RF that
+    boosts both colocated stimuli) FACILITATES the recorded neuron: the attended
+    CRF sits ABOVE attend-away, with positive percent modulation (contrast-gain
+    facilitation). This is the paper's Fig-4C panel direction (panel_C.jpg /
+    panel_C_digitized.json): attended above unattended, %-mod peaking ~+36% at
+    low contrast. (Finding 2 / figure_4C_investigation-2026-06-03 reversed the
+    prior suppression assertion; C-021 — the 4E mechanism prose — no longer cited.)
 
-    Citation: C-021
+    Citation: C-015, C-019
     """
     attended, unattended, percent_modulation, _ = _validated_outputs(protocols.run_figure_4C())
 
-    assert np.all(attended <= unattended + 1e-10)
-    assert np.mean(attended <= unattended + 1e-10) >= 0.875
-    assert np.all(percent_modulation <= 1e-8)
-    assert percent_modulation.min() < -1.0
+    assert np.all(attended >= unattended - 1e-10)
+    assert np.mean(attended >= unattended - 1e-10) >= 0.875
+    assert np.all(percent_modulation >= -1e-8)
+    assert percent_modulation.max() > 1.0
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-027")
-def test_attended_crf_is_right_shifted():
-    """Attend-nonpreferred CRF has larger half-max contrast.
+def test_attended_crf_is_left_shifted():
+    """Attend-nonpreferred-in-RF CRF is LEFT-shifted (smaller half-max contrast)
+    — a contrast-gain facilitation. The paper's 4C is a leftward shift (C-019:
+    "contrast gain regime predicts a leftward shift"), the OPPOSITE of the prior
+    right-shift assertion.
 
-    Citation: C-015, C-019, C-021
+    Citation: C-015, C-019
     """
     attended, unattended, _, c_pref = _validated_outputs(protocols.run_figure_4C())
 
     attended_half = half_max_contrast(attended, c_pref)
     unattended_half = half_max_contrast(unattended, c_pref)
-    assert attended_half > 1.05 * unattended_half
-    assert attended[-1] >= 0.80 * unattended[-1]
+    assert attended_half < 0.95 * unattended_half
+    assert attended[-1] >= 0.95 * unattended[-1]
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-028")
-def test_absolute_percent_modulation_does_not_peak_at_highest_contrast():
-    """Suppression is largest before the high-contrast endpoint.
+def test_percent_modulation_does_not_peak_at_highest_contrast():
+    """Facilitation %-modulation is largest at low/intermediate contrast and
+    declines toward saturation — it does NOT peak at the high-contrast endpoint
+    (C-019: largest percentage modulation at intermediate contrasts).
 
     Citation: C-019
     """
     _, _, percent_modulation, _ = _validated_outputs(protocols.run_figure_4C())
 
-    absolute_modulation = np.abs(percent_modulation)
-    peak = int(np.argmax(absolute_modulation))
-    assert 0 <= peak < len(absolute_modulation) - 1
-    assert absolute_modulation[-1] < 0.95 * absolute_modulation[peak]
-    assert absolute_modulation[: len(absolute_modulation) // 2].max() >= absolute_modulation[-1]
+    peak = int(np.argmax(percent_modulation))
+    assert 0 <= peak < len(percent_modulation) - 1
+    assert percent_modulation[-1] < 0.95 * percent_modulation[peak]
+    assert percent_modulation[: len(percent_modulation) // 2].max() >= percent_modulation[-1]
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4C", figure=4, claim_id="Q-029")
-def test_crfs_saturate_and_suppression_weakens_at_high_contrast():
-    """Figure 4C CRFs level off and the high-contrast suppressive gap weakens.
+def test_crfs_saturate_and_facilitation_gap_narrows_at_high_contrast():
+    """Figure 4C CRFs level off and the high-contrast FACILITATION gap (attended
+    above unattended) narrows toward saturation (digitized: gap ~0.10 mid →
+    ~0.04 high).
 
     Citation: C-019, C-020
     """
@@ -118,6 +130,6 @@ def test_crfs_saturate_and_suppression_weakens_at_high_contrast():
         assert curve[-1] > curve[0]
         assert _final_log_slope(curve, c_pref) < 0.95 * _max_log_slope(curve, c_pref)
 
-    normalized_gap = (unattended - attended) / unattended
+    normalized_gap = (attended - unattended) / unattended
     assert normalized_gap[-1] < normalized_gap.max()
     assert normalized_gap[-1] <= 1.10 * normalized_gap[-2]
