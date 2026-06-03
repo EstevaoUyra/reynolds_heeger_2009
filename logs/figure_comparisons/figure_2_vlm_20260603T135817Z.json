@@ -1,0 +1,47 @@
+{
+  "figure_number": "2",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "885f10be21a4a9ebb48b0afea76249e05dc0fc43",
+  "evaluated_at": "2026-06-03T13:58:17Z",
+  "evaluator": "claude-opus-4-8 parent (agent-as-VLM); digitization self-check + final-figure check, panel & figure level",
+  "check_kind": "digitization_self_check + final_figure_check (WORKFLOW \u00a73b)",
+  "digitization_self_check": {
+    "compares": "digitized reference render vs original paper panel",
+    "panels": [
+      {
+        "panel": "2A",
+        "verdict": "faithful",
+        "note": "faithful \u2014 converges at high contrast, %-mod falls (contrast gain)"
+      },
+      {
+        "panel": "2B",
+        "verdict": "faithful",
+        "note": "faithful \u2014 sustained separation, %-mod rises/sustained (response gain)"
+      }
+    ],
+    "figure": {
+      "verdict": "faithful",
+      "note": "reference layout + panels match the paper; validates the reference the tiered tests compare against"
+    }
+  },
+  "final_figure_check": {
+    "compares": "implementation render vs original paper figure",
+    "gates": false,
+    "panels": [
+      {
+        "panel": "2A",
+        "verdict": "divergent",
+        "note": "curves do not fully converge at high contrast; %-mod floors ~30% not ~0"
+      },
+      {
+        "panel": "2B",
+        "verdict": "partial",
+        "note": "response-gain direction correct; separation/gain slightly strong"
+      }
+    ],
+    "figure": {
+      "verdict": "divergent",
+      "note": "implementation diverges from the paper (reported, not a gate \u2014 the quantitative tiers gate)"
+    }
+  }
+}

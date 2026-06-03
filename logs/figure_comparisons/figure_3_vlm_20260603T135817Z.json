@@ -1,0 +1,47 @@
+{
+  "figure_number": "3",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "885f10be21a4a9ebb48b0afea76249e05dc0fc43",
+  "evaluated_at": "2026-06-03T13:58:17Z",
+  "evaluator": "claude-opus-4-8 parent (agent-as-VLM); digitization self-check + final-figure check, panel & figure level",
+  "check_kind": "digitization_self_check + final_figure_check (WORKFLOW \u00a73b)",
+  "digitization_self_check": {
+    "compares": "digitized reference render vs original paper panel",
+    "panels": [
+      {
+        "panel": "3C",
+        "verdict": "faithful",
+        "note": "faithful \u2014 converging CRFs, interior %-mod bump"
+      },
+      {
+        "panel": "3F",
+        "verdict": "faithful",
+        "note": "faithful \u2014 persistent separation, %-mod high-at-low then falling"
+      }
+    ],
+    "figure": {
+      "verdict": "faithful",
+      "note": "reference layout + panels match the paper; validates the reference the tiered tests compare against"
+    }
+  },
+  "final_figure_check": {
+    "compares": "implementation render vs original paper figure",
+    "gates": false,
+    "panels": [
+      {
+        "panel": "3C",
+        "verdict": "divergent",
+        "note": "CRFs too separated, do not converge tightly; %-mod lacks interior bump"
+      },
+      {
+        "panel": "3F",
+        "verdict": "divergent",
+        "note": "separation larger than the paper's; %-mod shape off"
+      }
+    ],
+    "figure": {
+      "verdict": "divergent",
+      "note": "implementation diverges from the paper (reported, not a gate \u2014 the quantitative tiers gate)"
+    }
+  }
+}

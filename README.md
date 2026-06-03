@@ -48,6 +48,15 @@ Each figure is shown **three ways, side by side**:
    (`figures_reproduced/figure_<N>.png`). Phase B cannot change the axes or style; only the
    data differ.
 
+Each figure carries **two VLM checks** (agent-as-VLM, visual judgement), each reported at
+**panel** and **figure** level:
+
+- **Digitization self-check** — does the *digitized reference* faithfully capture the paper?
+  This validates the reference the quantitative tests compare against. All panels pass.
+- **Final-figure check** — does the *implementation* render match the paper? This is the
+  holistic faithfulness read; it is **reported, not a gate** (an over-lenient VLM here is
+  exactly what passed the original wrong figures — the quantitative tiers below are the gate).
+
 Then a **checks** table: **qualitative** + **hard** tiers *gate* the build (a fail is a real
 fail); **soft** tiers are *measured and reported but never block* (a human promotes a soft
 check to hard per panel once the digitization is trusted). Omitted panels (empirical data,
@@ -68,6 +77,12 @@ The `E × A ÷ S → R` pipeline — stimulus drive, a localized attention field
 </table>
 
 Digitized reference (middle) reproduces the paper: 2A converges at high contrast with %-modulation falling (contrast gain); 2B stays separated with %-modulation sustained (response gain). The implementation (right) does **not** fully converge in 2A and its %-modulation bottoms ~30% (not ~0) — the shape divergence the soft dozen-point check quantifies.
+
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 2A | ✅ faithful | ❌ divergent — doesn't fully converge; %-mod floors ~30% |
+| panel 2B | ✅ faithful | ⚠️ partial — response-gain direction right; gain slightly strong |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -93,6 +108,12 @@ Digitized reference (middle) reproduces the paper: 2A converges at high contrast
 
 Digitized reference matches the paper's converging CRFs with an interior %-modulation bump. The implementation diverges in curve shape across the low/mid range and in the %-modulation curve (3F %-mod off by ~57). Empirical panels (B/E) are correctly "not reproduced."
 
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 3C | ✅ faithful | ❌ divergent — CRFs too separated; %-mod lacks interior bump |
+| panel 3F | ✅ faithful | ❌ divergent — separation larger than the paper's |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
+
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 3C attended at or above unattended | ✅ pass |
@@ -115,6 +136,12 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 4C nearly overlaps (faithful). 4E is the headline divergence: %-attentional-modulation reaches ~390% against the paper's 0–100 axis — a **hard gate failure** (also caught by the pinned-axis test that the old auto-scaled view hid).
 
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 4C | ✅ faithful | ⚠️ partial — near-overlap roughly held |
+| panel 4E | ✅ faithful | ❌ divergent — nonpreferred crushed; %-mod ~390% off-axis |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
+
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 4C curves nearly overlap | ✅ pass |
@@ -135,6 +162,11 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 Multiplicative, same-width scaling (the right *kind* of effect), but the attended/unattended **peak ratio is ~1.59 vs the paper's ~1.22** — gain too strong. Hard ratio test gates red.
 
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 5C | ✅ faithful | ❌ divergent — curves too distant (ratio ~1.59 vs ~1.22) |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
+
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 5C attended above unattended over centre | ✅ pass |
@@ -152,6 +184,11 @@ Multiplicative, same-width scaling (the right *kind* of effect), but the attende
 
 The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The implementation's two curves **overlap** (peak gap ~0.009) — the feature-based effect is essentially absent (the opposite failure to Fig 5: too weak rather than too strong). Qualitative + hard tests gate red.
 
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 6C | ✅ faithful | ❌ divergent — curves overlap; sharpening absent |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
+
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 6C attended at least as tall at peak | ✅ pass |
@@ -168,6 +205,11 @@ The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The
 </table>
 
 Ordering is right (attend-variable > fixation > attend-nonpreferred) but the attend-variable/fixation **peak ratio is ~3.3 vs the paper's ~1.4** — the attention gain is more than twice too strong. Hard ratio test gates red.
+
+|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|---|---|---|
+| panel 7C | ✅ faithful | ❌ divergent — fixation & nonpref crushed (ratio ~3.3 vs ~1.4) |
+| **figure** | ✅ **faithful** | ❌ **divergent** |
 
 | Tier | Check | Result |
 |------|-------|--------|
