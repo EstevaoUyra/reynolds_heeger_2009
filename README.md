@@ -40,10 +40,11 @@ S(x,θ) = s(x,θ) ∗ [ A(x,θ)·E(x,θ) ],     ∫ s(x,θ) dx dθ = 1   (Eq. 2)
 Each figure is shown **three ways, side by side**:
 
 1. **Paper** — the original panel image (`article_aware/figures/figure_<N>.jpg`).
-2. **Reproduced from digitization** — the ~dozen points digitized off the paper panel,
-   rendered through the Phase-A-owned view (`figures_reproduced/figure_<N>_reference.png`).
-   This is the *reference the tests compare against*; it passed a VLM self-check vs the
-   paper panel, so it stands in for the paper's curves quantitatively.
+2. **Reproduced from digitization** — the tool-grounded digitized curves drawn **on the
+   paper panel** (the audited overlay, `article_aware/figures/figure_<N>/_retrial/overlay_*.png`).
+   This is the *reference the tests compare against*; it was produced with the digitization
+   tools and passed a **separate-critic audit** (`logs/digitization_audit/`), loops closed
+   2026-06-03 (see *How the digitization was verified* below).
 3. **Reproduced from implementation** — the live model output through the *same* view
    (`figures_reproduced/figure_<N>.png`). Phase B cannot change the axes or style; only the
    data differ.
@@ -51,8 +52,9 @@ Each figure is shown **three ways, side by side**:
 Each figure carries **two VLM checks** (agent-as-VLM, visual judgement), each reported at
 **panel** and **figure** level:
 
-- **Digitization self-check** — does the *digitized reference* faithfully capture the paper?
-  This validates the reference the quantitative tests compare against. All panels pass.
+- **Digitization audit** — a *separate critic* (not the digitizer, not the organizer)
+  re-traced the paper and judged whether the digitized reference is faithful — not a lenient
+  self-check. After one round-trip of fixes, all panels are faithful (`logs/digitization_audit/`).
 - **Final-figure check** — does the *implementation* render match the paper? This is the
   holistic faithfulness read; it is **reported, not a gate** (an over-lenient VLM here is
   exactly what passed the original wrong figures — the quantitative tiers below are the gate).
@@ -61,6 +63,11 @@ Then a **checks** table: **qualitative** + **hard** tiers *gate* the build (a fa
 fail); **soft** tiers are *measured and reported but never block* (a human promotes a soft
 check to hard per panel once the digitization is trusted). Omitted panels (empirical data,
 schematic configs, legends) appear as explicit **"not reproduced"** placeholders.
+
+> **Note.** The tier-check numbers below test the **model vs the digitized reference**; they
+> were computed against the *prior* digitization and will be refreshed when the audited
+> closed-loop digitization is promoted into the test pipeline (the next step). The model
+> verdicts they report — which figures diverge and why — are unaffected by that refresh.
 
 ## Reproduced figures — paper · digitization · implementation
 
@@ -73,12 +80,12 @@ The `E × A ÷ S → R` pipeline — stimulus drive, a localized attention field
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="figures_reproduced/figure_2_reference.png" width="300"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="article_aware/figures/figure_2/_retrial/overlay_2A.png" width="150"><img src="article_aware/figures/figure_2/_retrial/overlay_2B.png" width="150"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
 </table>
 
 Digitized reference (middle) reproduces the paper: 2A converges at high contrast with %-modulation falling (contrast gain); 2B stays separated with %-modulation sustained (response gain). The implementation (right) does **not** fully converge in 2A and its %-modulation bottoms ~30% (not ~0) — the shape divergence the soft dozen-point check quantifies.
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 2A | ✅ faithful | ❌ divergent — doesn't fully converge; %-mod floors ~30% |
 | panel 2B | ✅ faithful | ⚠️ partial — response-gain direction right; gain slightly strong |
@@ -103,12 +110,12 @@ Digitized reference (middle) reproduces the paper: 2A converges at high contrast
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="figures_reproduced/figure_3_reference.png" width="300"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="article_aware/figures/figure_3/_retrial/overlay_3C.png" width="150"><img src="article_aware/figures/figure_3/_retrial/overlay_3F.png" width="150"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
 </table>
 
 Digitized reference matches the paper's converging CRFs with an interior %-modulation bump. The implementation diverges in curve shape across the low/mid range and in the %-modulation curve (3F %-mod off by ~57). Empirical panels (B/E) are correctly "not reproduced."
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 3C | ✅ faithful | ❌ divergent — CRFs too separated; %-mod lacks interior bump |
 | panel 3F | ✅ faithful | ❌ divergent — separation larger than the paper's |
@@ -131,12 +138,12 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="figures_reproduced/figure_4_reference.png" width="300"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="article_aware/figures/figure_4/_retrial/overlay_4C.png" width="150"><img src="article_aware/figures/figure_4/_retrial/overlay_4E.png" width="150"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
 </table>
 
 4C nearly overlaps (faithful). 4E is the headline divergence: %-attentional-modulation reaches ~390% against the paper's 0–100 axis — a **hard gate failure** (also caught by the pinned-axis test that the old auto-scaled view hid).
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 4C | ✅ faithful | ⚠️ partial — near-overlap roughly held |
 | panel 4E | ✅ faithful | ❌ divergent — nonpreferred crushed; %-mod ~390% off-axis |
@@ -157,12 +164,12 @@ Digitized reference matches the paper's converging CRFs with an interior %-modul
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_5.jpg" width="300"></td><td><img src="figures_reproduced/figure_5_reference.png" width="300"></td><td><img src="figures_reproduced/figure_5.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_5.jpg" width="300"></td><td><img src="article_aware/figures/figure_5/_retrial/overlay_5C.png" width="300"></td><td><img src="figures_reproduced/figure_5.png" width="300"></td></tr>
 </table>
 
 Multiplicative, same-width scaling (the right *kind* of effect), but the attended/unattended **peak ratio is ~1.59 vs the paper's ~1.22** — gain too strong. Hard ratio test gates red.
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 5C | ✅ faithful | ❌ divergent — curves too distant (ratio ~1.59 vs ~1.22) |
 | **figure** | ✅ **faithful** | ❌ **divergent** |
@@ -179,12 +186,12 @@ Multiplicative, same-width scaling (the right *kind* of effect), but the attende
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="figures_reproduced/figure_6_reference.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/_retrial/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
 
 The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The implementation's two curves **overlap** (peak gap ~0.009) — the feature-based effect is essentially absent (the opposite failure to Fig 5: too weak rather than too strong). Qualitative + hard tests gate red.
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 6C | ✅ faithful | ❌ divergent — curves overlap; sharpening absent |
 | **figure** | ✅ **faithful** | ❌ **divergent** |
@@ -201,12 +208,12 @@ The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The
 
 <table>
 <tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
-<tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="figures_reproduced/figure_7_reference.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
+<tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="article_aware/figures/figure_7/_retrial/overlay_7C.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
 </table>
 
 Ordering is right (attend-variable > fixation > attend-nonpreferred) but the attend-variable/fixation **peak ratio is ~3.3 vs the paper's ~1.4** — the attention gain is more than twice too strong. Hard ratio test gates red.
 
-|  | Digitization self-check (ref vs paper) | Final figure (impl vs paper) |
+|  | Digitization audit (paper vs digitization) | Final figure (impl vs paper) |
 |---|---|---|
 | panel 7C | ✅ faithful | ❌ divergent — fixation & nonpref crushed (ratio ~3.3 vs ~1.4) |
 | **figure** | ✅ **faithful** | ❌ **divergent** |
@@ -218,9 +225,10 @@ Ordering is right (attend-variable > fixation > attend-nonpreferred) but the att
 | soft | 7C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.41 (curves) |
 | soft | 7C variable over nonpref ratio vs digitized | ⚠️ soft-fail (reported) |
 
-## Digitization re-trial — tool-grounded, critic-audited, loops closed (2026-06-03)
+## How the digitization was verified — closed loop (2026-06-03)
 
-The "reproduced from digitization" panels above were the **first, eyeballed** digitization,
+The "reproduced from digitization" overlays above are the **audited** digitization. They did
+not start that way. The first pass was **eyeballed** digitization,
 self-graded by the agent that drew it — wrong in ways the self-check missed (every solid curve
 pinned to 1.0 where the paper plateaus lower). We re-ran the full set through a **closed loop**:
 a fresh **digitizer agent** per figure re-digitized with the Mode-1 tools (axis calibration,
@@ -252,36 +260,15 @@ not dark density) now prevents that slip. The old self-grade loop would have pas
 figures *and* surfaced none of this. (Provenance and tool-trail are now recorded in each
 digitized JSON — a process gap the round-1 critics flagged.)
 
-### Final digitization, drawn on the paper (overlays)
+The per-figure overlays and audit verdicts are shown in **Reproduced figures** above; the full
+audit trail is in [`logs/digitization_audit/`](logs/digitization_audit/) (per-figure reports +
+the round-2 closure record `round2_adjudication_2026-06-03.md`).
 
-**Figure 2 — ✅ FAITHFUL (2A · 2B re-traced)** · [report](logs/digitization_audit/figure_2_2026-06-03.md)
-<table><tr><th>2A</th><th>2B (%-mod now descends with the paper's dashed)</th></tr><tr>
-<td><img src="article_aware/figures/figure_2/_retrial/overlay_2A.png" width="330"></td>
-<td><img src="article_aware/figures/figure_2/_retrial/overlay_2B.png" width="330"></td></tr></table>
-
-**Figure 3 — ✅ FAITHFUL (round-1 divergence was a calibration artifact)** · [report](logs/digitization_audit/figure_3_2026-06-03.md)
-<table><tr><th>3C</th><th>3F</th></tr><tr>
-<td><img src="article_aware/figures/figure_3/_retrial/overlay_3C.png" width="330"></td>
-<td><img src="article_aware/figures/figure_3/_retrial/overlay_3F.png" width="330"></td></tr></table>
-
-**Figure 4 — ✅ FAITHFUL (4C gap restored · 4E)** · [report](logs/digitization_audit/figure_4_2026-06-03.md)
-<table><tr><th>4C (gap restored)</th><th>4E</th></tr><tr>
-<td><img src="article_aware/figures/figure_4/_retrial/overlay_4C.png" width="330"></td>
-<td><img src="article_aware/figures/figure_4/_retrial/overlay_4E.png" width="330"></td></tr></table>
-
-**Figure 5 — ✅ FAITHFUL (independently re-traced, asymmetry from pixels)** · [report](logs/digitization_audit/figure_5_2026-06-03.md)
-<table><tr><th>5C</th></tr><tr><td><img src="article_aware/figures/figure_5/_retrial/overlay_5C.png" width="330"></td></tr></table>
-
-**Figure 6 — ✅ FAITHFUL (sharpening crossing recovered)** · [report](logs/digitization_audit/figure_6_2026-06-03.md)
-<table><tr><th>6C</th></tr><tr><td><img src="article_aware/figures/figure_6/_retrial/overlay_6C.png" width="330"></td></tr></table>
-
-**Figure 7 — ✅ FAITHFUL** · [report](logs/digitization_audit/figure_7_2026-06-03.md)
-<table><tr><th>7C</th></tr><tr><td><img src="article_aware/figures/figure_7/_retrial/overlay_7C.png" width="330"></td></tr></table>
-
-A recurring **process** finding across the audits: the digitizers wrote JSON + overlays but **no
-provenance / tool-trail** (figure-type → tools chosen → why), so the tool choice is unauditable;
-and `detect_plot_box` mis-detects the frame on a couple of crops (picks up label text / a
-neighbouring panel). Both are fixes for the next iteration, recorded in the reports.
+Two **process** gaps the round-1 critics flagged are **now fixed**: digitizers recorded no
+provenance/tool-trail (the `digitize-figure` skill now requires a `provenance` block in each
+digitized JSON), and `detect_plot_box` mis-detected some frames off axis-label text (it now
+scores axis lines by longest *run*, not dark density — which is exactly what exposed Fig 3's
+calibration artifact).
 
 ## How it was verified — and how it slipped through
 
