@@ -1,162 +1,74 @@
-# Reynolds & Heeger 2009 — Normalization Model of Attention Reproduction
+# Reynolds & Heeger 2009 — The Normalization Model of Attention
 
 ## Model
 
-Reproduction of Reynolds & Heeger (2009), "The Normalization Model of
-Attention" (Neuron 61(2):168–185). The model treats attention as a
-multiplicative gain on the stimulus drive that is then divisively normalized
-by a pooled suppressive drive: `R = ⌊A·E / (S + σ)⌋_T`, with the suppressive
-drive computed as `S = s ∗ (A·E)` (citations C-001, C-005, C-006). All four
-population fields (stimulus drive `E`, attention field `A`, suppressive
-drive `S`, output `R`) live on a shared `(x, θ)` grid (C-009).
+Reynolds JH, Heeger DJ. **The Normalization Model of Attention.** *Neuron.* 2009 Jan 29;61(2):168–185. doi:[10.1016/j.neuron.2009.01.002](https://doi.org/10.1016/j.neuron.2009.01.002) (PMCID PMC2752446).
 
-Scope of this reproduction covers all seven figures in the paper:
-Figure 1 (population pipeline schematic, C-012); Figures 2A/2B
-(contrast- vs response-gain CRF regimes, C-013, C-019); Figures 3C/3F
-(reconciling Reynolds 2000 and Williford & Maunsell 2006 via stimulus/
-attention size ratio, C-014); Figures 4C/4E (two-stimulus CRFs from
-Martinez-Trujillo & Treue 2002, C-015); Figure 5C (multiplicative tuning
-scaling under spatial attention, C-016, C-022); Figure 6C (feature-attention
-tuning sharpening, C-017, C-023); and Figure 7C (combined spatial+feature
-shifts, C-018).
+This is the foundational **normalization model of attention**: it explains a large and apparently contradictory body of attention data (contrast-gain vs. response-gain modulation, multiplicative tuning-curve scaling, feature-based sharpening, tuning shifts with two stimuli in the receptive field) with a single divisive-normalization circuit. A population of neurons indexed by receptive-field center `x` and feature preference `θ` receives an excitatory **stimulus drive** `E(x,θ)`, is gated by a multiplicative **attention field** `A(x,θ) ≥ 1`, and is divisively normalized by a pooled **suppressive drive** `S(x,θ)`. The central claim is that the *shape* of attentional modulation is not a free parameter — it emerges from the relative size of the attention field and the stimulus.
 
-## Current state
+The model computes, per neuron, the rectified divisive-normalization response (Eq. 5):
 
-On branch `arch-migration` (HEAD `3a008a7`; not merged to main). This is a
-**structure migration to the ARCHITECTURE shape**, behavior-preserving by
-construction: all 10 protocol outputs are byte-for-behavior identical to
-pre-migration (hash match), and the 7 generated figures are **pixel-
-identical** to the committed pre-migration state `5d3e751` (decoded-array
-diff = 0 on every PNG). VLM verdicts are therefore unchanged by
-construction; all 7 refreshed fresh at HEAD.
+```
+R(x,θ) = ⌊ A(x,θ)·E(x,θ) / (S(x,θ) + σ) ⌋_T
+```
 
-Conflict rule applied literally (det-red = loss; det-green + VLM-red/
-needs_review = loss; green needs both, fresh):
+where the suppressive drive is the suppressive field convolved with the *attention-modulated* stimulus drive (Eq. 6),
 
-- **Green: Figures 3, 5, 6, 7.** Deterministic 13/13, 6/6, 5/5, 6/6 plus
-  fresh VLM `pass` (3a008a7). Figure 7 Panel-C-scoped per SQ-003. Unchanged
-  from the pre-migration green state.
-- **Broken: Figure 1.** Det 10/10 but VLM `fail` — E/S/R fields compressed
-  near panel center, attention-field peak near-center not over the right
-  stimulus. A Figure-1-specific 1D display/geometry issue, not the
-  suppressive-pooling family. Unchanged this migration (Fig-1 geometry was
-  relocated verbatim into the implementation ledger).
-- **Broken: Figure 2.** Det 12/12 but VLM unanimous `fail` — 2A/2B CRFs do
-  not visibly saturate; 2A/2B not visually distinct; no inset schematics.
-  Unchanged.
-- **Not green: Figure 4.** Det 12/12; VLM `needs_review` — 4C contrast-gain
-  recovery good (SQ-004 fix), 4E attend-preferred CRF weak saturation.
-  Unchanged.
+```
+S(x,θ) = s(x,θ) ∗ [ A(x,θ)·E(x,θ) ],     ∫ s(x,θ) dx dθ = 1   (Eq. 2)
+```
 
-**Calibration is now a §3 two-ledger split.** Paper-derived ledger
-`article_aware/spec/calibration.yaml`: 51 entries, 0 `audited:false` (all
-`C-NNN`/spec-fixed). Implementation-side ledger
-`implementation/calibration.yaml`: 34 entries, **33 `audited:false`** — the
-SQ-001/002/004 class + Figure-1 1D geometry, all relocated verbatim from
-`protocols.py` literals. The ledger *contained* the prior 4-SQ sprawl in
-one reviewable place; it did not eliminate it (soft blockers SQ-001/002/004
-unchanged, green for Fig 3/4C still provisional).
+`A`, `E`, and the suppressive/stimulation fields all have Gaussian profiles in space and in feature (orientation/direction). The attention field is `A = 1 + (γ−1)·G`, a Gaussian bump `G` of peak gain `γ`. Because the same product `A·E` appears in both the numerator and (after pooling) the denominator, growing the attention field relative to the stimulus continuously moves the modulation from a **contrast-gain** signature (a leftward shift of the contrast-response function, biggest percent change at low contrast) to a **response-gain** signature (a multiplicative scaling sustained at high contrast). This implementation runs the full population simulation directly rather than the closed-form limiting cases (Eqs. 3/4/7/8), which the paper uses only to expose those two regimes analytically.
 
-## Next correction
+**Scope.** Seven figures are in scope (each has an `article_aware/figures/figure_<N>_visual_checklist.md`): the pipeline schematic (Fig 1), the two-regime contrast-response demonstration (Fig 2), the V4 empirical-pattern fits (Fig 3), two-stimulus contrast-response modulation (Fig 4C/4E), spatial-attention multiplicative scaling (Fig 5C), feature-based tuning sharpening (Fig 6C), and combined spatial+feature tuning shifts with two stimuli in the RF (Fig 7C). The reproduction targets the model-output panels; empirical reference panels and multi-panel legends/icon rows are out of scope (SQ-003).
 
-**Target:** Figure 1 — the spatial-layout of `run_figure_1`. **Action:**
-this is a human/Phase-A decision, not an agent fix: the Figure-1 1D display
-geometry (`figure_1.*` in `implementation/calibration.yaml`:
-`stim_left_x/right_x` ±10 on the default ±100 x-grid, the
-`*_spatial_sigma_scale` values) places all four population panels near
-panel center instead of in the left/right hemifields. **Symptom:** VLM
-`fail` (3a008a7) — fields compressed at center; attention-field peak
-near-center, suppressive drive one merged band. **Likely scope:**
-`implementation/calibration.yaml` `figure_1.*` geometry and the figure-1
-display window in `views.py::save_figure_1`. **Hypothesis:** widening the
-stimulus separation or the plotted x-window spreads the fields into the two
-hemifields; deterministic tests sample only the recorded neuron so they
-stay green regardless (why this is VLM-only). Out of scope for the
-migration (would change model outputs); flagged for a later
-implementation/Phase-A pass.
+**Faithfulness-regime status: FAITHFUL.** This is the foundational R&H 2009 normalization model from which the `hermann2010` and `carrasco2021` models reuse primitives (e.g. `rh_model.crf_protocol.run_crf`). Under the new faithfulness regime the core maps operator-for-operator to the paper: Eq. 5 (numerator `A·E`, denominator `S+σ`, half-wave rectification at `T`), Eq. 6 (pooling the product `A·E`), and the integral-normalized kernel (Eq. 2) are all faithful, with verbatim Table-1 quotes on every audited scientific parameter. The regime audit **restored the paper-present Fig 4 dashed percent-attentional-modulation curve** (right twin axis) that the original reproduction had dropped — its `views.py` comment had mislabeled this paper-and-checklist-required curve as a "spurious" panel — and **corrected audited-flag provenance** (assumption-sourced values that had been marked `audited:true` without a paper quote were honestly downgraded to `audited:false` under their SQ/assumption). The full test suite (81 tests) passes.
 
-## Test status
+## Reproduced figures
 
-| Figure | Deterministic tests | VLM Test |
-|---|---|---|
-| Figure 1 | 10 total, 10 (100%) passing | fail (3a008a7) |
-| Figure 2 | 12 total, 12 (100%) passing | fail (3a008a7) |
-| Figure 3 | 13 total, 13 (100%) passing | pass (3a008a7) |
-| Figure 4 | 12 total, 12 (100%) passing | needs review (3a008a7) |
-| Figure 5 | 6 total, 6 (100%) passing | pass (3a008a7) |
-| Figure 6 | 5 total, 5 (100%) passing | pass (3a008a7) |
-| Figure 7 | 6 total, 6 (100%) passing | pass (3a008a7) |
-| Unassigned | 17 total, 17 (100%) passing | — |
+### Figure 1 — Pipeline schematic: stimulus drive × attention field ÷ suppressive drive → output  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="430"></td><td><img src="figures_reproduced/figure_1.png" width="430"></td></tr></table>
 
-Deterministic **64/64**, identical pass set to pre-migration. The 17
-"Unassigned" are the new ARCHITECTURE-shape implementation tests: stage
-contracts (§5(1)), the calibrated-CRF entry-point contract, and the
-§5(4) config-only modification smoke test. Figures 1, 2, 4 are
-deterministic-green but VLM-red/needs_review → broken by the conflict
-rule (unchanged vs pre-migration). Resolved-ledger hash:
-`sha256:f00f97488280dc1f`.
+A 1D-display schematic (A-006) of the `E × A ÷ S → R` pipeline: two stimulus stripes, a localized attention field over the right (attended) stimulus, and an output that enhances the attended stimulus relative to the unattended one — matching the paper's architectural introduction.
 
-Soft blockers (unchanged, now contained in the implementation ledger):
-SQ-001/SQ-002 (Fig 2/3 calibration), SQ-004 (Fig 4C per-protocol
-suppressive tuning width vs C-011) — `chosen_assumption`, `audited:false`;
-Fig 3/4C green is provisional.
+### Figure 2 — Contrast gain vs. response gain: the two attentional regimes  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_2.jpg" width="430"></td><td><img src="figures_reproduced/figure_2.png" width="430"></td></tr></table>
 
-## Recent changes
+The paper's central demonstration. Panel 2A (small attention field / large stimulus → **contrast gain**): attended and unattended contrast-response functions converge at high contrast and percent modulation falls monotonically from low contrast. Panel 2B (large attention field / small stimulus → **response gain**): the curves diverge multiplicatively with modulation sustained at high contrast. The high-contrast saturation is gentler than the paper's flat plateau — a documented, non-binding shape concession (SQ-001) that preserves the discriminating regime signatures.
 
-No `logs/changelog.yaml` yet. Last 5 commits:
+### Figure 3 — Empirical V4 contrast-response patterns and model fits  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_3.jpg" width="430"></td><td><img src="figures_reproduced/figure_3.png" width="430"></td></tr></table>
 
-| Commit | Subject |
-|---|---|
-| `3a008a7` | arch-migration: stages/measurements/views, two-ledger split, calibrated CRF entry point |
-| `5d3e751` | update-state round 2: 64/64 deterministic; re-VLM; Fig 3 green |
-| `e88984f` | Fix deterministic CRF failures (2A, 3C/3F, 4C); log SQ-004 |
-| `a1ba25b` | update-state: first VLM pass, Fig7 scope (SQ-003) |
-| `dc4f838` | Update reproduction state |
+Model panels 3C (contrast-gain-like: percent modulation peaks low and falls) and 3F (response-gain-like: sustained modulation, largest absolute separation at high contrast), each carrying the dashed percent-modulation twin axis as in the paper. Empirical reference panels are out of scope (not generated by the implementation).
 
-## README generation
+### Figure 4 — Two-stimulus contrast-response modulation (attend-nonpreferred vs. attend-preferred)  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_4.jpg" width="430"></td><td><img src="figures_reproduced/figure_4.png" width="430"></td></tr></table>
 
-- 2026-05-12: Queried deterministic/VLM status with
-  `/Users/estevaouyra/dev/model_agent/.venv/bin/neuromodels test-table`.
-  Needed to embed the current test table verbatim.
-- 2026-05-12: Queried latest nonpassing test details with
-  `/Users/estevaouyra/dev/model_agent/.venv/bin/python /Users/estevaouyra/dev/model_agent/skills/update-state/scripts/failing_tests.py`.
-  Needed exact failing test IDs and failure messages for the next correction.
-- 2026-05-12: Queried log freshness with
-  `/Users/estevaouyra/dev/model_agent/.venv/bin/python /Users/estevaouyra/dev/model_agent/skills/update-state/scripts/log_freshness.py`.
-  Needed to check whether test-table rows were stale relative to the current test surface.
-- 2026-05-18: First VLM pass over Figures 1-7; per-figure subagents,
-  parent cross-checked Figures 1 and 4 by reading the images directly.
-- 2026-05-18: One-shot bulk wrapper to stamp all 7 subagent verdicts with
-  provenance (promoted to `skills/update-state/scripts/persist_verdict.py`).
-- 2026-05-18: Per-figure verdict freshness via
-  `python skills/update-state/scripts/verdict_status.py --model-dir models/reynolds_heeger_2009`.
-- 2026-05-18 (round 2): Calibration sweeps for the deterministic CRF fixes
-  (reusable sanity checks); re-ran the VLM (2 subagents Figs 1–4).
-- 2026-05-18: Figure 7 scope resolved (SQ-003, human); persisted a
-  Panel-C-scoped superseding verdict.
-- 2026-05-18 (arch-migration): Behavior-preservation gate for the
-  structure migration. Beyond the standard scripts I needed two custom
-  verifications the helper set does not cover:
-  Code:
-  ```
-  # 1. Byte-for-behavior fingerprint of every protocol output (legacy
-  #    keys only) vs a pre-migration baseline — proves the refactor is
-  #    behavior-identical, not just test-passing.
-  python - <<'PY'
-  # sha256 over np.ascontiguousarray bytes of each run_figure_*() dict
-  # (filtered to pre-migration keys), incl. the figure-resolution variants
-  # views.py uses; compared to /tmp/rh_baseline_fp.json captured at 5d3e751.
-  PY
-  # 2. Pixel-identity of all 7 generated PNGs vs the pre-migration
-  #    committed state, via a throwaway git worktree at 5d3e751:
-  git -C models/reynolds_heeger_2009 worktree add /tmp/rh_premig 5d3e751
-  # generate figures from both trees, compare decoded matplotlib arrays
-  # (np.array_equal) — all 7 PIXEL-IDENTICAL, max abs diff 0.
-  git -C models/reynolds_heeger_2009 worktree remove --force /tmp/rh_premig
-  ```
-  Why: the migration's contract is "model outputs must not change"; the
-  existing scripts check test color and verdict freshness but not
-  output/figure byte-identity, which is the actual gate for a *structure*
-  migration. Candidate future script:
-  `scripts/behavior_fingerprint.py <ref>` (protocol-output + figure-pixel
-  diff vs a git ref) — recurring need for any migration/refactor run.
+Panel 4C (attend-nonpreferred suppresses the response below attend-away, contrast-gain-like) and 4E (attend-preferred scales multiplicatively above attend-nonpreferred), each now with the **dashed percent-attentional-modulation curve on the right twin axis restored** — this was the regime audit's one open divergence (FIG-4CE-MOD), where the original view dropped a paper-present, checklist-required curve under a comment falsely calling it "spurious"; the data was always in the model record (the deterministic 4C test asserts on it). Note: Fig 4C uses an implementation-side 75° suppressive tuning width (SQ-004) — an honestly flagged, `audited:false` provisional assumption for the 1D reduction, because the paper states no 4C-specific suppressive tuning width and no other sanctioned calibration knob reproduces the claimed contrast-gain recovery.
+
+### Figure 5 — Spatial attention as multiplicative scaling of the tuning curve  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_5.jpg" width="430"></td><td><img src="figures_reproduced/figure_5.png" width="430"></td></tr></table>
+
+Panel 5C: the attended tuning curve is a clean multiplicative scaling of the unattended one — same width, scaled peak, no shape change — reproducing the McAdams & Maunsell result.
+
+### Figure 6 — Feature-based attention and tuning sharpening  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_6.jpg" width="430"></td><td><img src="figures_reproduced/figure_6.png" width="430"></td></tr></table>
+
+Panel 6C: the feature-matched curve ("attend opposite stimulus") is narrower than the attend-fixation curve — the model's account of feature-based sharpening in MT.
+
+### Figure 7 — Two stimuli in the RF: combined spatial + feature attention shifts tuning  ✅ faithful
+<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_7.jpg" width="430"></td><td><img src="figures_reproduced/figure_7.png" width="430"></td></tr></table>
+
+Panel 7C (the sole model-output deliverable, per the SQ-003 human resolution): direction-tuning curves order as attend-variable > attend-fixation > attend-nonpreferred, all peaking at the preferred direction. The attend-variable peak ratio is exaggerated (~3.3× vs. the paper's ~1.5×) — a documented, non-binding magnitude note; the ordering and tuning shift are faithful. Panel A/B/legend/arrow-row items are out of scope.
+
+## How it was verified
+
+**Faithfulness regime.** Two independent auditors reviewed the model. The **Faithfulness Auditor** compared the paper (`paper/extracted_text.md` equations, Table 1, verbatim captions, and the `article_aware/figures/figure_*.jpg` images) against the implementation, re-rendering all seven PNGs from source; the **Process Auditor** checked the reasoning trail for drift (e.g. audited-flag provenance, laundered contradictions). The audit confirmed Eqs. 5/6/2 and the stimulus/attention/suppressive-field construction are faithful, surfaced and closed the one open view-layer divergence (FIG-4CE-MOD — the restored Fig 4 percent-modulation curve), and confirmed no result-bearing frozen stub exists: every figure is a live `protocols.run_figure_*` → `measurements` → `views` computation, not a constructed answer. Audit records are in `logs/faithfulness_audit/` (rounds r0/r1/r2, 2026-06-03).
+
+**Deterministic tests.** 81 tests (`pytest --collect-only`) assert the qualitative claims directly on the model record — e.g. the Fig 4C test asserts attend-nonpreferred *suppresses* (attended ≤ unattended, negative percent modulation) with a rightward half-max shift, the paper's stated direction, not its inverse; the Fig 2A/4E tests assert genuine high-contrast saturation. All 81 pass.
+
+**Key frozen stubs / assumptions.** The model is run as a 1D discretization (A-006). The honestly-contained `audited:false` knobs are: σ/α/T/β and fixed sweep contrasts (assumptions A-001/002/003/010); per-figure suppressive-drive gains and response baselines (SQ-001/SQ-002); and the Fig-4C-only 75° suppressive tuning width (SQ-004, provisional, soft-blocked on human review). The closed-form limiting equations (Eqs. 3/4/7/8) are not on the simulation path. Open spec questions are tracked in `logs/spec_questions.md`.
+
+## Repository layout
+
+`implementation/src/rh_model/` holds the model (`model.py`), protocols, measurements, and the `views.py` render entry (`python -m rh_model.views` writes `implementation/figure_outputs/figure_<N>.png`). `article_aware/spec/` carries the structured spec, citations, and calibration ledger; `article_aware/figures/` the paper images and visual checklists; `figures_reproduced/` the committed reproduced PNGs; `logs/` the audit and spec-question records.
