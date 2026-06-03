@@ -148,25 +148,40 @@ def _plot_normalized_crf_with_modulation(
     *,
     title: str,
     xlabel: str = "log contrast",
+    attended_label: str = "attended",
+    unattended_label: str = "ignored / unattended",
 ) -> None:
     """Plot article-style normalized CRFs with dashed modulation on twin axis.
 
-    Citation: C-013, C-014, C-019, C-020
+    The paper's model panels (Figs 2/3/4C/4E) overlay a dashed
+    percent-attentional-modulation curve on a right twin axis labelled
+    "Attentional Modulation (%)" with a positive 0..100 scale; this helper
+    reproduces that twin-axis layout. The percent_modulation argument is the
+    raw (un-normalized) signed modulation curve from the protocol record;
+    following the paper, the dashed curve is drawn as a *magnitude* (absolute
+    percent) so a suppressive panel like Fig 4C (where attending the
+    nonpreferred stimulus lowers the response, giving a negative signed
+    modulation) reads on the same positive axis as the facilitatory panels.
+    The discriminating signature — modulation largest at low contrast and
+    falling toward zero at high contrast — is preserved by the magnitude.
+
+    Citation: C-013, C-014, C-015, C-019, C-020
     """
+    percent_modulation = np.abs(np.asarray(percent_modulation, dtype=float))
     attended_norm, unattended_norm = _normalized_pair(attended, unattended)
     ax.semilogx(
         x,
         unattended_norm,
         color=COLORS["unattended"],
         linewidth=1.9,
-        label="ignored / unattended",
+        label=unattended_label,
     )
     ax.semilogx(
         x,
         attended_norm,
         color=COLORS["attended"],
         linewidth=2.1,
-        label="attended",
+        label=attended_label,
     )
     _finish_axes(ax, xlabel=xlabel, ylabel="normalized model response", title=title)
     ax.set_ylim(-0.02, 1.05)
@@ -181,7 +196,12 @@ def _plot_normalized_crf_with_modulation(
         label="% attentional modulation",
     )
     ax_mod.set_ylabel("attentional modulation (%)")
-    ax_mod.set_ylim(0.0, max(100.0, float(np.max(percent_modulation)) * 1.1))
+    # Paper-style positive axis anchored at 0. Default 0..100 like the paper;
+    # if the model's response-gain modulation magnitude exceeds 100% (e.g. the
+    # strong Fig 4E covarying-contrast effect), the axis grows to keep the
+    # dashed curve fully visible rather than clipping it.
+    pm_max = float(np.max(percent_modulation))
+    ax_mod.set_ylim(0.0, max(100.0, pm_max * 1.1))
     ax_mod.spines["top"].set_visible(False)
     ax_mod.grid(False)
 
@@ -432,18 +452,23 @@ def save_figure_4(output_dir: str | Path | None = None) -> Path:
     Citation: C-015
     """
     plt = _pyplot()
-    # Paper Fig 4 model panels (C, E) are single CRF plots. MODEL-PANELS-ONLY:
-    # no separate "percent modulation" or "ratio" panel (those were spurious
-    # analysis panels the paper figure does not contain).
+    # Paper Fig 4 model panels (C, E) each overlay the dashed percent-
+    # attentional-modulation curve on a right twin axis (see the verbatim
+    # caption "Dashed gray curve, percentage increase in firing rate at each
+    # contrast" and figure_4.md / figure_4_visual_checklist.md, which require
+    # "The dashed curve is percent attentional modulation"). The model record
+    # already carries this curve: percent_modulation for 4C, and the
+    # attend_pref/attend_nonpref ratio for 4E (percent = (ratio - 1) * 100).
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.6), constrained_layout=True)
     path = _output_dir(output_dir) / "figure_4.png"
 
     fig4c = protocols.run_figure_4C(n_contrasts=24)
-    _plot_crf(
+    _plot_normalized_crf_with_modulation(
         axes[0],
         fig4c["c_pref"],
         fig4c["attended_CRF"],
         fig4c["unattended_CRF"],
+        fig4c["percent_modulation"],
         attended_label="attend nonpreferred",
         unattended_label="attend away",
         title="4C: nonpreferred attention suppresses preferred response",
@@ -451,11 +476,16 @@ def save_figure_4(output_dir: str | Path | None = None) -> Path:
     )
 
     fig4e = protocols.run_figure_4E(n_contrasts=24)
-    _plot_crf(
+    # Percent attentional modulation for 4E follows the same definition as the
+    # crf_pair_record helper, 100*(attended - unattended)/unattended, which for
+    # the attend-pref vs attend-nonpref pair equals (ratio - 1) * 100.
+    fig4e_pct_mod = (np.asarray(fig4e["ratio"], dtype=float) - 1.0) * 100.0
+    _plot_normalized_crf_with_modulation(
         axes[1],
         fig4e["c"],
         fig4e["attend_pref_CRF"],
         fig4e["attend_nonpref_CRF"],
+        fig4e_pct_mod,
         attended_label="attend preferred",
         unattended_label="attend nonpreferred",
         title="4E: attention to preferred scales response",
