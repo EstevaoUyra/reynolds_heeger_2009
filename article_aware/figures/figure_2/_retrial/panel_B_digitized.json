@@ -1,7 +1,7 @@
 {
   "panel": "2B",
   "figure": 2,
-  "description": "Predominantly response gain. Two solid CRFs with little/no horizontal (contrast) shift: attended is scaled UP to a plateau ~0.85, ignored to a LOWER plateau ~0.60, and they DO NOT converge at high contrast (sustained vertical separation ~0.25 = the response-gain signature). Dashed percent-modulation curve on the right axis is comparatively flat/elevated: ~99% at low contrast, dips toward ~58% near the crossing (~x=0.09), then recovers and stays elevated ~80% at high contrast. Shared sub-1.0 scale with 2A: 2B's attended plateau (~0.85) is HIGHER than 2A's (~0.62) - that height difference is the figure's scientific claim.",
+  "description": "Predominantly response gain. Two solid CRFs with little/no horizontal (contrast) shift: attended is scaled UP to a plateau ~0.85, ignored to a LOWER plateau ~0.60, and they DO NOT converge at high contrast (sustained vertical separation ~0.25 = the response-gain signature). Dashed percent-modulation curve on the right axis DESCENDS MONOTONICALLY: ~99% at low contrast, through ~60% near the crossing (~x=0.09), continuing DOWN to a low ~42% plateau at high contrast (it does NOT recover). Sanity: high-contrast %mod ~= (attended-ignored)/ignored ~= (0.86-0.60)/0.60 ~= 43%. Shared sub-1.0 scale with 2A: 2B's attended plateau (~0.85) is HIGHER than 2A's (~0.62) - that height difference is the figure's scientific claim.",
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
@@ -131,54 +131,95 @@
       ],
       "points": [
         [
-          0.013,
+          0.011,
           99.0
         ],
         [
-          0.02,
-          97.0
+          0.017,
+          95.0
         ],
         [
-          0.03,
-          90.0
+          0.028,
+          92.0
         ],
         [
-          0.045,
-          78.0
+          0.04,
+          86.5
         ],
         [
-          0.065,
-          66.0
+          0.055,
+          76.5
         ],
         [
-          0.085,
-          59.0
+          0.066,
+          71.0
         ],
         [
-          0.12,
-          65.0
+          0.078,
+          63.5
         ],
         [
-          0.17,
-          73.0
+          0.092,
+          59.8
+        ],
+        [
+          0.109,
+          57.0
+        ],
+        [
+          0.129,
+          49.5
+        ],
+        [
+          0.18,
+          46.0
         ],
         [
           0.25,
-          78.0
+          44.0
         ],
         [
           0.4,
-          81.0
+          42.5
         ],
         [
           0.6,
-          81.0
+          42.0
         ],
         [
           1.0,
-          79.0
+          42.0
         ]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "line/curve CRF, log-x; two solid CRFs (left axis 0-1) + one dashed attentional-modulation curve (right axis 0-100)",
+    "tools": [
+      "build_calibration",
+      "trace_darkest_in_band",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "ONE targeted re-trace of the dashed percent_modulation curve only. The dashed is style/region-separable from the two solid CRFs and is the lowest dark line at high contrast, so trace_darkest_in_band in a moving band that follows the dashed isolates it cleanly. Right-axis calibration shares the same pixel rows as the left axis (frame 0 at row 332, 100/1.0 at row 41).",
+    "calibration": {
+      "x": [[39, 0.01], [257, 1.0]],
+      "y_left": [[332, 0.0], [41, 1.0]],
+      "y_right": [[332, 0.0], [41, 100.0]],
+      "x_scale": "log",
+      "frame_source": "panel 306x371 px; left axis col~39, right axis col~257, bottom frame row 332 = 0/0.0, top frame row 41 = 1.0/100 (matches independent audit calibration)"
+    },
+    "per_curve": {
+      "attended": "UNCHANGED from prior digitization (audited FAITHFUL: plateau ~0.86)",
+      "unattended": "UNCHANGED from prior digitization (audited FAITHFUL: plateau ~0.60)",
+      "percent_modulation": "RE-TRACED this pass. trace_darkest_in_band column-by-column in a band following the dashed from top-left down to its high-contrast plateau. Monotone descent: row ~64 (col 54, ~92%) -> row ~158 (col 144, ~60% at the crossing x~0.09) -> row ~210 (cols 224-248, ~42% plateau). Low-x anchor x=0.011 set to ~99% from faint dashed pixels at rows 42-44 in cols 45-51 (emerging just under the 100 line). High-contrast plateau confirmed at pixel row ~210 -> 41.8-42.3% across cols 200-248."
+    },
+    "normalization": "paper shared sub-1.0 scale (solids), unchanged; dashed on independent right axis 0-100, anchored to labelled 0 and 100 (same rows as left 0 and 1).",
+    "caveats": [
+      "Fix scope: only percent_modulation was changed. attended/unattended solids untouched (prior audit found them faithful).",
+      "Dashed low-contrast head (x<0.02) is partly hidden against the top frame / 100 line; the x=0.011 -> 99% anchor is read from faint top-left pixels (rows 42-44) and is the least pixel-anchored point. The monotone-descending body (x>=0.04) and the ~42% high-contrast plateau are well pixel-supported.",
+      "x has no numeric ticks; x_range [0.01, 1.0] inherited from the frame (not independently checkable), consistent with the prior digitization and the audit.",
+      "Dashed has gaps (it is a dashed line); some columns dropped as expected. Centroid reads taken at columns where a dashed segment is present."
+    ]
   }
 }

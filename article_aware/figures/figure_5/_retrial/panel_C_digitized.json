@@ -1,7 +1,7 @@
 {
   "panel": "5C",
   "figure": 5,
-  "description": "Orientation tuning under spatial attention (Reynolds & Heeger 2009, Fig 5C, model output). Two bell-shaped tuning curves on a LINEAR orientation axis, centered at 0 deg. The attended (thick) curve is a MULTIPLICATIVE SCALING of the attend-contralateral/unattended (thin) curve: identical peak orientation and identical width/bandwidth (no sharpening). Re-digitized 2026-06-03. Measured peaks read against the panel-B/panel-C shared 'Normalized Response' frame (top frame=1.0, bottom axis=0.0): attended peak ~0.97 (sits just below the 1.0 frame, does NOT touch it), unattended peak ~0.83. Measured peak ratio attended/unattended ~1.16-1.17 (constant across the full separated range, confirming response-gain scaling).",
+  "description": "Orientation tuning under spatial attention (Reynolds & Heeger 2009, Fig 5C, model output). Two bell-shaped tuning curves on a LINEAR orientation axis. BOTH curves traced INDEPENDENTLY per-column from the panel pixels (darkness-weighted centroid of the upper vs lower dark cluster) with trace_darkest_in_band-style logic; asymmetry was ALLOWED (no fold) and the unattended curve was NOT derived from the attended one. Re-digitized 2026-06-03 (_retrial). Measured against the shared panel-B/C 'Normalized Response' frame (top frame row 6 = 1.0, bottom axis row 147 = 0.0). MEASURED peaks: attended ~0.968 (col 155-156, sits just below the 1.0 frame, does not touch it), unattended ~0.836 (same column). MEASURED unatt/att ratio is near-constant 0.852-0.864 across the full separated span (cols 100-204) -> response-gain scaling, reported as a finding (not assumed). The bell is mildly RIGHT-SKEWED about the apex: at matched pixel distance the right flank exceeds the left by ~0.01-0.03 normalized units; attended half-width ratio R/L ~1.02 (50% contour). Far-left tail x<-81 deg occluded by the 'C' label + rotated axis text -> interpolated (2 points at -90,-86 deg); all recoverable flank below the C is traced, not mirrored.",
   "x_variable": "stimulus_orientation_deg",
   "x_scale": "linear",
   "x_range": [
@@ -18,95 +18,279 @@
       "points": [
         [
           -90.0,
-          0.031
+          0.033
         ],
         [
-          -80.0,
-          0.042
+          -86.0,
+          0.05
         ],
         [
-          -70.0,
-          0.076
+          -80.9,
+          0.074
         ],
         [
-          -60.0,
-          0.14
+          -77.87,
+          0.083
         ],
         [
-          -50.0,
-          0.254
+          -74.83,
+          0.102
         ],
         [
-          -40.0,
-          0.414
+          -71.8,
+          0.119
         ],
         [
-          -30.0,
-          0.602
+          -68.76,
+          0.135
         ],
         [
-          -22.0,
-          0.757
+          -65.73,
+          0.163
         ],
         [
-          -15.0,
-          0.866
+          -62.7,
+          0.186
         ],
         [
-          -10.0,
-          0.918
+          -59.66,
+          0.218
         ],
         [
-          -5.0,
-          0.956
+          -56.63,
+          0.258
+        ],
+        [
+          -53.6,
+          0.3
+        ],
+        [
+          -50.56,
+          0.343
+        ],
+        [
+          -47.53,
+          0.387
+        ],
+        [
+          -44.49,
+          0.429
+        ],
+        [
+          -41.46,
+          0.477
+        ],
+        [
+          -38.43,
+          0.527
+        ],
+        [
+          -35.39,
+          0.579
+        ],
+        [
+          -32.36,
+          0.634
+        ],
+        [
+          -29.33,
+          0.685
+        ],
+        [
+          -26.29,
+          0.737
+        ],
+        [
+          -23.26,
+          0.784
+        ],
+        [
+          -20.22,
+          0.826
+        ],
+        [
+          -17.19,
+          0.863
+        ],
+        [
+          -14.16,
+          0.898
+        ],
+        [
+          -11.12,
+          0.923
+        ],
+        [
+          -8.09,
+          0.943
+        ],
+        [
+          -7.08,
+          0.951
+        ],
+        [
+          -6.07,
+          0.954
+        ],
+        [
+          -5.06,
+          0.959
+        ],
+        [
+          -4.04,
+          0.962
+        ],
+        [
+          -3.03,
+          0.967
+        ],
+        [
+          -2.02,
+          0.967
+        ],
+        [
+          -1.01,
+          0.968
         ],
         [
           0.0,
           0.968
         ],
         [
-          5.0,
-          0.956
+          1.01,
+          0.967
         ],
         [
-          10.0,
-          0.918
+          2.02,
+          0.967
         ],
         [
-          15.0,
-          0.866
+          3.03,
+          0.962
         ],
         [
-          22.0,
-          0.757
+          4.04,
+          0.962
         ],
         [
-          30.0,
-          0.602
+          5.06,
+          0.959
         ],
         [
-          40.0,
-          0.414
+          6.07,
+          0.954
         ],
         [
-          50.0,
-          0.254
+          7.08,
+          0.952
         ],
         [
-          60.0,
-          0.14
+          8.09,
+          0.944
         ],
         [
-          70.0,
-          0.076
+          9.1,
+          0.937
         ],
         [
-          80.0,
-          0.042
+          12.13,
+          0.917
         ],
         [
-          90.0,
-          0.031
+          15.17,
+          0.887
+        ],
+        [
+          18.2,
+          0.855
+        ],
+        [
+          21.24,
+          0.817
+        ],
+        [
+          24.27,
+          0.777
+        ],
+        [
+          27.3,
+          0.729
+        ],
+        [
+          30.34,
+          0.678
+        ],
+        [
+          33.37,
+          0.625
+        ],
+        [
+          36.4,
+          0.572
+        ],
+        [
+          39.44,
+          0.518
+        ],
+        [
+          42.47,
+          0.474
+        ],
+        [
+          45.51,
+          0.429
+        ],
+        [
+          48.54,
+          0.378
+        ],
+        [
+          51.57,
+          0.338
+        ],
+        [
+          54.61,
+          0.295
+        ],
+        [
+          57.64,
+          0.258
+        ],
+        [
+          60.67,
+          0.222
+        ],
+        [
+          63.71,
+          0.187
+        ],
+        [
+          66.74,
+          0.164
+        ],
+        [
+          69.78,
+          0.138
+        ],
+        [
+          72.81,
+          0.119
+        ],
+        [
+          75.84,
+          0.102
+        ],
+        [
+          78.88,
+          0.085
+        ],
+        [
+          81.91,
+          0.073
+        ],
+        [
+          84.94,
+          0.064
         ]
       ]
     },
@@ -119,97 +303,342 @@
       "points": [
         [
           -90.0,
-          0.027
+          0.03
         ],
         [
-          -80.0,
-          0.036
+          -86.0,
+          0.046
         ],
         [
-          -70.0,
-          0.065
+          -80.9,
+          0.074
         ],
         [
-          -60.0,
-          0.12
+          -77.87,
+          0.083
         ],
         [
-          -50.0,
+          -74.83,
+          0.102
+        ],
+        [
+          -71.8,
+          0.119
+        ],
+        [
+          -68.76,
+          0.135
+        ],
+        [
+          -65.73,
+          0.163
+        ],
+        [
+          -62.7,
+          0.186
+        ],
+        [
+          -59.66,
           0.218
         ],
         [
-          -40.0,
-          0.355
+          -56.63,
+          0.22
         ],
         [
-          -30.0,
-          0.516
+          -53.6,
+          0.259
         ],
         [
-          -22.0,
-          0.648
+          -50.56,
+          0.294
         ],
         [
-          -15.0,
-          0.742
+          -47.53,
+          0.329
         ],
         [
-          -10.0,
-          0.787
+          -44.49,
+          0.374
         ],
         [
-          -5.0,
-          0.819
+          -41.46,
+          0.412
         ],
         [
-          0.0,
+          -38.43,
+          0.457
+        ],
+        [
+          -35.39,
+          0.496
+        ],
+        [
+          -32.36,
+          0.547
+        ],
+        [
+          -29.33,
+          0.591
+        ],
+        [
+          -26.29,
+          0.631
+        ],
+        [
+          -23.26,
+          0.677
+        ],
+        [
+          -20.22,
+          0.713
+        ],
+        [
+          -17.19,
+          0.743
+        ],
+        [
+          -14.16,
+          0.767
+        ],
+        [
+          -11.12,
+          0.794
+        ],
+        [
+          -8.09,
+          0.812
+        ],
+        [
+          -7.08,
+          0.816
+        ],
+        [
+          -6.07,
+          0.821
+        ],
+        [
+          -5.06,
+          0.823
+        ],
+        [
+          -4.04,
+          0.832
+        ],
+        [
+          -3.03,
           0.83
         ],
         [
-          5.0,
-          0.819
+          -2.02,
+          0.83
         ],
         [
-          10.0,
-          0.787
+          -1.01,
+          0.835
         ],
         [
-          15.0,
-          0.742
+          0.0,
+          0.837
         ],
         [
-          22.0,
-          0.648
+          1.01,
+          0.83
         ],
         [
-          30.0,
-          0.516
+          2.02,
+          0.83
         ],
         [
-          40.0,
-          0.355
+          3.03,
+          0.83
         ],
         [
-          50.0,
-          0.218
+          4.04,
+          0.823
         ],
         [
-          60.0,
-          0.12
+          5.06,
+          0.823
         ],
         [
-          70.0,
-          0.065
+          6.07,
+          0.823
         ],
         [
-          80.0,
-          0.036
+          7.08,
+          0.813
         ],
         [
-          90.0,
-          0.027
+          8.09,
+          0.809
+        ],
+        [
+          9.1,
+          0.804
+        ],
+        [
+          12.13,
+          0.785
+        ],
+        [
+          15.17,
+          0.761
+        ],
+        [
+          18.2,
+          0.733
+        ],
+        [
+          21.24,
+          0.699
+        ],
+        [
+          24.27,
+          0.663
+        ],
+        [
+          27.3,
+          0.618
+        ],
+        [
+          30.34,
+          0.578
+        ],
+        [
+          33.37,
+          0.534
+        ],
+        [
+          36.4,
+          0.491
+        ],
+        [
+          39.44,
+          0.445
+        ],
+        [
+          42.47,
+          0.403
+        ],
+        [
+          45.51,
+          0.368
+        ],
+        [
+          48.54,
+          0.332
+        ],
+        [
+          51.57,
+          0.287
+        ],
+        [
+          54.61,
+          0.251
+        ],
+        [
+          57.64,
+          0.258
+        ],
+        [
+          60.67,
+          0.184
+        ],
+        [
+          63.71,
+          0.187
+        ],
+        [
+          66.74,
+          0.164
+        ],
+        [
+          69.78,
+          0.138
+        ],
+        [
+          72.81,
+          0.119
+        ],
+        [
+          75.84,
+          0.102
+        ],
+        [
+          78.88,
+          0.085
+        ],
+        [
+          81.91,
+          0.073
+        ],
+        [
+          84.94,
+          0.064
         ]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "two overlapping bell tuning curves, linear orientation x, shared 0..1 Normalized Response y",
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "Mode-1 quantitative plot. detect_plot_box hinted the frame; verified by long-dark-run scan (top frame row6, bottom axis row147, side frames col14/col258). The two curves are the same colour but VERTICALLY separated almost everywhere (attended sits above unattended by 4-19px), so a per-column two-cluster split (darkness-weighted centroid of the upper vs lower dark cluster, equivalent to trace_darkest_in_band run on two bands) cleanly traces each curve independently; resample_pchip validates smoothness; overlay validates registration.",
+    "calibration": {
+      "x": [
+        [
+          67.6,
+          -90.0
+        ],
+        [
+          111.4,
+          -45.0
+        ],
+        [
+          156.0,
+          0.0
+        ],
+        [
+          200.3,
+          45.0
+        ],
+        [
+          241.8,
+          90.0
+        ]
+      ],
+      "y_left": [
+        [
+          147,
+          0.0
+        ],
+        [
+          6,
+          1.0
+        ]
+      ],
+      "x_scale": "linear",
+      "x_note": "x anchored on the 5 orientation glyph centroids below the plot (centroids 67.6/111.4/156.0/200.3/241.8, spacing 44.5px=45deg); central vertical-bars glyph col156=0deg. Frame-center col136 is NOT 0deg.",
+      "y_note": "top frame row6=1.0, bottom axis row147=0.0 (longest-dark-run rows)."
+    },
+    "per_curve": {
+      "attended": "TRACED independently, per-column upper dark cluster, cols 76-242 (x -80.9..+87 deg). Apex flat-topped cols 153-158, peak 0.968 at col155-156.",
+      "unattended": "TRACED INDEPENDENTLY from its own pixels (per-column lower dark cluster), cols 98-212 where resolved; merges with attended near baseline on the steep flanks (cols 76-104 left, 214-242 right) where both curves coincide and the merged envelope is traced for both. Peak 0.836 at col155-156. NOT derived from attended; the measured unatt/att ratio (0.852-0.864, near-constant) is REPORTED as a finding, not used to construct the curve.",
+      "interpolated_span": "attended & unattended far-LEFT tail x in [-90,-81] deg (cols <76) only -- occluded by the 'C' label and rotated 'Normalized Response' axis text. Filled with 2 points each (x=-90,-86) decaying from the recoverable edge (0.074 at -80.9deg) to ~0.03 baseline, matched to the right-tail decay rate. The recoverable left flank below the C (cols 76-151) is TRACED, not mirrored."
+    },
+    "normalization": "shared panel-B/C 0..1 'Normalized Response' frame; attended peak ~0.968 (NOT pinned to 1.0), unattended ~0.836. No per-panel renormalization.",
+    "asymmetry": "NOT folded. Curve is mildly RIGHT-SKEWED about the true apex (col155.5): right flank exceeds left by ~0.01-0.03 normalized units at matched pixel distance (max ~0.03 near 32px out); attended half-width ratio R/L = 1.017/1.020/1.005 at 75/50/25% contour. Direction matches the audit's right-skew; magnitude smaller because the apex is at col155-156, not col153.",
+    "caveats": [
+      "No numeric degree ticks; x scale/anchors from the 5 orientation glyphs (spacing 44.5px = 45deg, outer glyphs = -90/+90).",
+      "Far-left tail x<-81deg interpolated (occlusion), 2 points/curve; see per_curve.interpolated_span.",
+      "On the steep lower flanks (x< ~ -55deg and x> ~ +55deg, near baseline) the two curves are within a few px and partly merge; traced as a shared envelope there, so the unatt/att split is most reliable mid-range (cols 100-204).",
+      "Apex is flat-topped over cols 153-158 (~+/-3px); peak column localised to 155-156 by darkness centroid."
+    ]
   }
 }

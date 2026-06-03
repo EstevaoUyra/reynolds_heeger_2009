@@ -218,54 +218,61 @@ Ordering is right (attend-variable > fixation > attend-nonpreferred) but the att
 | soft | 7C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.41 (curves) |
 | soft | 7C variable over nonpref ratio vs digitized | ⚠️ soft-fail (reported) |
 
-## Digitization re-trial — tool-grounded + independently audited (2026-06-03)
+## Digitization re-trial — tool-grounded, critic-audited, loops closed (2026-06-03)
 
 The "reproduced from digitization" panels above were the **first, eyeballed** digitization,
-self-graded by the agent that drew it — and it was wrong in ways the self-check missed (every
-solid curve pinned to 1.0 where the paper plateaus lower). We re-ran the full set through a
-**tool + separate-critic** process: a **fresh digitizer agent** per figure re-digitized with
-the Mode-1 tools — axis calibration, a guided curve tracer, an overlay, PCHIP smoothing (parent
-repo `neuromodels/framework/figures/digitize.py`), one pass — then a **separate critic agent**
-(the `audit-digitization` skill) re-traced the paper *itself* and audited. Neither was the
-organizer. Overlays draw the new digitized curves **on the actual paper pixels** (the critic's
-key view); full reports in [`logs/digitization_audit/`](logs/digitization_audit/).
+self-graded by the agent that drew it — wrong in ways the self-check missed (every solid curve
+pinned to 1.0 where the paper plateaus lower). We re-ran the full set through a **closed loop**:
+a fresh **digitizer agent** per figure re-digitized with the Mode-1 tools (axis calibration,
+guided tracer, overlay, PCHIP — parent repo `neuromodels/framework/figures/`, via the
+`digitize-figure` skill); a separate **critic agent** (`audit-digitization`) re-traced the paper
+*itself* and audited; each divergence was fed back for a **targeted re-digitize**; and the
+organizer **adjudicated** the result with the tools. Digitizer ≠ critic ≠ organizer. Overlays
+draw the digitized curves **on the actual paper pixels**; reports in
+[`logs/digitization_audit/`](logs/digitization_audit/).
 
-| Figure | Old 1.0-pinning | Critic verdict | What the independent critic caught |
+| Figure | Round-1 critic finding | Resolution | Final |
 |---|---|---|---|
-| **2** (2A/2B) | ✅ fixed → shared sub-1.0 | 2A faithful · 2B divergent | 2B %-modulation digitized ~80% vs the paper's ~43% |
-| **3** (3C/3F) | ✅ fixed | divergent (minor) | systematic c50 / rising-flank shift on the CRFs |
-| **4** (4C/4E) | ✅ fixed | 4C divergent (major) · 4E faithful | 4C attentional gap understated 3–5× |
-| **5** (5C) | ✅ fixed | divergent + **tool-misuse** | fabricated symmetry (paper is right-skewed); `unattended = attended×0.857` bakes the model's own claim into the reference |
-| **6** (6C) | ✅ fixed | divergent (**critical**) | **overturned the digitizer** — the flank crossing *is* in the paper; curve identity transposed past ~60°, missing the figure's main effect |
-| **7** (7C) | ✅ fixed | ✅ **faithful** | peak ratio 1.32 confirmed (the old 1.4 refuted); tails honestly scoped |
+| **2** (2A/2B) | 2B %-modulation read ~80% vs paper ~43% | re-traced the descending dashed → 99%→42% | ✅ faithful |
+| **3** (3C/3F) | "c50 / rising-flank too high" | **false positive** — the round-1 critic calibrated off the tick-label edge (col 41), not the axis line (col 56); the curves were faithful. Only a 3C dashed-bump kink was real. | ✅ faithful |
+| **4** (4C/4E) | 4C attentional gap understated 3–5× | re-traced both solids separately → gap 0.10→0.05 restored, plateau 0.78 | ✅ faithful |
+| **5** (5C) | fabricated symmetry + `unattended = attended×0.857` | re-traced both curves independently — no fold, no baked ratio (asymmetry now read from pixels) | ✅ faithful |
+| **6** (6C) | **critical** — flank-crossing sharpening missing (curve identity transposed past ~60°) | re-digitized so the curves cross (contralateral narrower, σ 53 vs 61; fixation higher past ~60°) | ✅ faithful¹ |
+| **7** (7C) | none — ratio 1.32 confirmed (old 1.4 refuted) | — | ✅ faithful |
 
-**The normalization error was fixed everywhere** — all curves now sit on the paper's true sub-1.0
-scale. But the digitizers then made *fresh, varied* errors (a c50 shift, an understated gap,
-fabricated symmetry, a baked-in ratio, a critical label transposition), and the **separate critic
-caught every one, grounded in re-traced pixels.** Only 7C and the 4E/2A panels came back clean —
-the old self-grade loop would have passed all of them. That contrast is the result.
+¹ 6C's left flank is mirrored from the right — defensible for a symmetric direction-tuning curve, flagged in the digitization provenance.
 
-### New digitization, drawn on the paper (overlays)
+**What the closed loop demonstrates.** The normalization error (every curve pinned to 1.0) was
+fixed on every figure. The round-1 audit then caught a spread of *fresh* errors — a %-mod
+misread, an understated gap, fabricated symmetry, a baked-in ratio, and a **critical missed
+effect** (6C's crossing) — *and* produced **one false positive** (3, from the critic's own
+calibration slip). Round-2 re-digitization fixed the real errors; tool-grounded adjudication
+cleared the artifact, and the hardened `detect_plot_box` (scores axis lines by longest *run*,
+not dark density) now prevents that slip. The old self-grade loop would have passed the wrong
+figures *and* surfaced none of this. (Provenance and tool-trail are now recorded in each
+digitized JSON — a process gap the round-1 critics flagged.)
 
-**Figure 2 — FAITHFUL (2A) · DIVERGENT (2B)** · [report](logs/digitization_audit/figure_2_2026-06-03.md)
-<table><tr><th>2A</th><th>2B (blue %-mod floats above the paper's dashed)</th></tr><tr>
+### Final digitization, drawn on the paper (overlays)
+
+**Figure 2 — ✅ FAITHFUL (2A · 2B re-traced)** · [report](logs/digitization_audit/figure_2_2026-06-03.md)
+<table><tr><th>2A</th><th>2B (%-mod now descends with the paper's dashed)</th></tr><tr>
 <td><img src="article_aware/figures/figure_2/_retrial/overlay_2A.png" width="330"></td>
 <td><img src="article_aware/figures/figure_2/_retrial/overlay_2B.png" width="330"></td></tr></table>
 
-**Figure 3 — DIVERGENT (minor; normalization fixed, CRF rising-flank shifted)** · [report](logs/digitization_audit/figure_3_2026-06-03.md)
+**Figure 3 — ✅ FAITHFUL (round-1 divergence was a calibration artifact)** · [report](logs/digitization_audit/figure_3_2026-06-03.md)
 <table><tr><th>3C</th><th>3F</th></tr><tr>
 <td><img src="article_aware/figures/figure_3/_retrial/overlay_3C.png" width="330"></td>
 <td><img src="article_aware/figures/figure_3/_retrial/overlay_3F.png" width="330"></td></tr></table>
 
-**Figure 4 — 4C DIVERGENT (major) · 4E FAITHFUL** · [report](logs/digitization_audit/figure_4_2026-06-03.md)
-<table><tr><th>4C (gap understated)</th><th>4E</th></tr><tr>
+**Figure 4 — ✅ FAITHFUL (4C gap restored · 4E)** · [report](logs/digitization_audit/figure_4_2026-06-03.md)
+<table><tr><th>4C (gap restored)</th><th>4E</th></tr><tr>
 <td><img src="article_aware/figures/figure_4/_retrial/overlay_4C.png" width="330"></td>
 <td><img src="article_aware/figures/figure_4/_retrial/overlay_4E.png" width="330"></td></tr></table>
 
-**Figure 5 — DIVERGENT + TOOL-MISUSE (fabricated symmetry; ratio baked in)** · [report](logs/digitization_audit/figure_5_2026-06-03.md)
+**Figure 5 — ✅ FAITHFUL (independently re-traced, asymmetry from pixels)** · [report](logs/digitization_audit/figure_5_2026-06-03.md)
 <table><tr><th>5C</th></tr><tr><td><img src="article_aware/figures/figure_5/_retrial/overlay_5C.png" width="330"></td></tr></table>
 
-**Figure 6 — DIVERGENT (critical: flank crossing missed)** · [report](logs/digitization_audit/figure_6_2026-06-03.md)
+**Figure 6 — ✅ FAITHFUL (sharpening crossing recovered)** · [report](logs/digitization_audit/figure_6_2026-06-03.md)
 <table><tr><th>6C</th></tr><tr><td><img src="article_aware/figures/figure_6/_retrial/overlay_6C.png" width="330"></td></tr></table>
 
 **Figure 7 — ✅ FAITHFUL** · [report](logs/digitization_audit/figure_7_2026-06-03.md)

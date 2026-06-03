@@ -1,7 +1,7 @@
 {
   "panel": "6C",
   "figure": 6,
-  "description": "Motion-direction tuning, feature-based attention (model panel, Reynolds & Heeger 2009 Fig 6C). Two bell-shaped curves centered at 0 deg on a LINEAR direction axis. attend_contralateral is the SHARPENED/enhanced curve: peak normalized to 1.0; attend_fixation peaks lower at ~0.90 (peak enhancement ~0.10). NORMALIZATION: larger peak set to 1.0 (paper y-axis Normalized Response, 0-1). CAVEAT: in this grayscale scan the two same-color curves are resolvable as two clusters only away from the steep mid-flank (|dir|~35-65 deg), where their ~2px lines merge and are taken as coincident. Across the whole resolvable flank attend_contralateral stays marginally ABOVE attend_fixation (gap ~0.03-0.04); a top/bottom SWAP (fixation above contralateral, i.e. a visible curve crossing) is NOT supported by the pixels at this resolution and was therefore NOT fabricated.",
+  "description": "Motion-direction tuning, feature-based attention (Reynolds & Heeger 2009 Fig 6C). Two same-colour bell curves centred at 0 deg on a LINEAR direction axis. attend_contralateral is the SHARPENED curve: HIGHER at the peak (1.00 vs attend_fixation 0.903, ~0.10 enhancement) but NARROWER (smaller sigma), so it descends faster and CROSSES BELOW attend_fixation on the flanks. Near the peak (|dir|<~36) contralateral is the upper line; the two lines merge in the steep mid-flank (|dir|~35-60) where only the envelope is resolvable; beyond the crossing (|dir|>~60) attend_fixation is the upper (wider) line and attend_contralateral the lower (narrower) line. This crossing IS the feature-based-attention sharpening signature of Fig 6C. NORMALIZATION: larger (contralateral) peak = 1.0 (paper y-axis 'Normalized Response', 0-1); fixation peak ~0.903.",
   "x_variable": "motion_direction_deg",
   "x_scale": "linear",
   "x_range": [
@@ -43,54 +43,82 @@
       "points": [
         [
           -175.0,
-          0.018
+          0.019
         ],
         [
-          -160.0,
-          0.021
+          -150.0,
+          0.034
         ],
         [
-          -140.0,
-          0.054
+          -130.0,
+          0.069
         ],
         [
-          -120.0,
-          0.127
+          -115.0,
+          0.115
         ],
         [
           -100.0,
-          0.234
+          0.192
         ],
         [
-          -85.0,
-          0.339
+          -90.0,
+          0.258
         ],
         [
-          -70.0,
-          0.471
+          -80.0,
+          0.338
         ],
         [
-          -55.0,
-          0.594
+          -72.0,
+          0.404
         ],
         [
-          -40.0,
-          0.752
+          -66.0,
+          0.475
+        ],
+        [
+          -60.0,
+          0.534
+        ],
+        [
+          -54.0,
+          0.595
+        ],
+        [
+          -48.0,
+          0.654
+        ],
+        [
+          -42.0,
+          0.716
+        ],
+        [
+          -36.0,
+          0.777
         ],
         [
           -30.0,
-          0.854
+          0.842
         ],
         [
-          -20.0,
-          0.931
+          -24.0,
+          0.897
+        ],
+        [
+          -18.0,
+          0.938
         ],
         [
           -12.0,
-          0.977
+          0.97
         ],
         [
-          -6.0,
+          -8.0,
+          0.986
+        ],
+        [
+          -4.0,
           0.992
         ],
         [
@@ -98,56 +126,84 @@
           1.0
         ],
         [
-          6.0,
-          0.99
+          4.0,
+          0.992
+        ],
+        [
+          8.0,
+          0.986
         ],
         [
           12.0,
-          0.967
+          0.97
         ],
         [
-          20.0,
-          0.922
+          18.0,
+          0.938
+        ],
+        [
+          24.0,
+          0.897
         ],
         [
           30.0,
           0.842
         ],
         [
-          40.0,
-          0.74
+          36.0,
+          0.777
         ],
         [
-          55.0,
-          0.588
+          42.0,
+          0.716
         ],
         [
-          70.0,
-          0.472
+          48.0,
+          0.654
         ],
         [
-          85.0,
-          0.343
+          54.0,
+          0.595
+        ],
+        [
+          60.0,
+          0.534
+        ],
+        [
+          66.0,
+          0.475
+        ],
+        [
+          72.0,
+          0.404
+        ],
+        [
+          80.0,
+          0.338
+        ],
+        [
+          90.0,
+          0.258
         ],
         [
           100.0,
-          0.234
+          0.192
         ],
         [
-          120.0,
-          0.13
+          115.0,
+          0.115
         ],
         [
-          140.0,
-          0.061
+          130.0,
+          0.069
         ],
         [
-          160.0,
-          0.024
+          150.0,
+          0.034
         ],
         [
           175.0,
-          0.018
+          0.019
         ]
       ]
     },
@@ -161,113 +217,217 @@
       "points": [
         [
           -175.0,
-          0.018
+          0.019
         ],
         [
-          -160.0,
-          0.027
+          -150.0,
+          0.034
         ],
         [
-          -140.0,
-          0.054
+          -130.0,
+          0.094
         ],
         [
-          -120.0,
-          0.101
+          -115.0,
+          0.151
         ],
         [
           -100.0,
-          0.19
+          0.232
         ],
         [
-          -85.0,
-          0.295
+          -90.0,
+          0.305
         ],
         [
-          -70.0,
-          0.43
+          -80.0,
+          0.378
         ],
         [
-          -55.0,
-          0.594
+          -72.0,
+          0.447
         ],
         [
-          -40.0,
-          0.752
+          -66.0,
+          0.511
+        ],
+        [
+          -60.0,
+          0.545
+        ],
+        [
+          -54.0,
+          0.595
+        ],
+        [
+          -48.0,
+          0.654
+        ],
+        [
+          -42.0,
+          0.716
+        ],
+        [
+          -36.0,
+          0.769
         ],
         [
           -30.0,
-          0.802
+          0.795
         ],
         [
-          -20.0,
-          0.857
+          -24.0,
+          0.834
+        ],
+        [
+          -18.0,
+          0.86
         ],
         [
           -12.0,
-          0.888
+          0.881
         ],
         [
-          -6.0,
-          0.899
+          -8.0,
+          0.893
+        ],
+        [
+          -4.0,
+          0.901
         ],
         [
           0.0,
           0.903
         ],
         [
-          6.0,
-          0.896
+          4.0,
+          0.901
+        ],
+        [
+          8.0,
+          0.893
         ],
         [
           12.0,
           0.881
         ],
         [
-          20.0,
-          0.849
+          18.0,
+          0.86
+        ],
+        [
+          24.0,
+          0.834
         ],
         [
           30.0,
           0.795
         ],
         [
-          40.0,
-          0.74
+          36.0,
+          0.769
         ],
         [
-          55.0,
-          0.588
+          42.0,
+          0.716
         ],
         [
-          70.0,
-          0.429
+          48.0,
+          0.654
         ],
         [
-          85.0,
-          0.298
+          54.0,
+          0.595
+        ],
+        [
+          60.0,
+          0.545
+        ],
+        [
+          66.0,
+          0.511
+        ],
+        [
+          72.0,
+          0.447
+        ],
+        [
+          80.0,
+          0.378
+        ],
+        [
+          90.0,
+          0.305
         ],
         [
           100.0,
-          0.194
+          0.232
         ],
         [
-          120.0,
-          0.099
+          115.0,
+          0.151
         ],
         [
-          140.0,
-          0.05
+          130.0,
+          0.094
         ],
         [
-          160.0,
-          0.024
+          150.0,
+          0.034
         ],
         [
           175.0,
-          0.018
+          0.019
         ]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "two same-colour bell tuning curves, linear-x, normalized response (0-1); the salient feature is a FLANK CROSSING (sharpening)",
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "per-column dark-pixel CLUSTER tracer (custom; trace_darkest_in_band returns a single path and cannot carry identity through the merge)",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "The two curves are the same colour and merge in the steep mid-flank, so trace_darkest_in_band alone cannot split them or carry identity through the merge. A per-column dark-pixel-cluster trace (excluding the frame top line at rows 6-7 and the baseline) recovers two clusters where the lines separate (near peak and outer flank) and a single envelope cluster where they merge. Curve identity through the merge is fixed by continuity+slope from each apex (the taller contralateral apex descends faster) and verified by matching the re-separated outer-flank clusters to independent Gaussian fits.",
+    "calibration": {
+      "x": [
+        [
+          54,
+          -180
+        ],
+        [
+          258,
+          180
+        ]
+      ],
+      "y_left": [
+        [
+          142,
+          0.0
+        ],
+        [
+          8,
+          1.0
+        ]
+      ],
+      "x_scale": "linear",
+      "note": "detect_plot_box -> (11,6,258,143). Frame top edge at rows 6-7 (val ~1.01) is NOT a curve and was excluded; contralateral apex sits just below it at row 8-9 (val 1.00). Apex at px156 -> deg ~0 (symmetric bell)."
+    },
+    "per_curve": {
+      "attend_contralateral": "NARROWER/sharpened curve. Traced as the UPPER cluster near the peak (|dir|<~36, apex 1.00). Through the mid-flank merge (|dir|~35-60) only the shared envelope is resolvable. Beyond the crossing it is the LOWER cluster on the outer flank (|dir|>~60). Independent near-peak Gaussian fit: amp ~1.00, sigma ~52.5 deg.",
+      "attend_fixation": "WIDER curve, apex 0.903. LOWER cluster near the peak; shared envelope through the merge; UPPER cluster on the outer flank beyond the crossing. Near-peak Gaussian fit: amp ~0.90, sigma ~61 deg.",
+      "crossing": "The curves CROSS near |dir| ~ 45-60 deg (band-thickness minimum at |dir|~44-48; near-peak Gaussian-fit intersection ~46 deg; clusters resolve as swapped from |dir|~62 deg onward). Near the peak contralateral is upper (gap +0.10 shrinking to 0); on the outer flank fixation is upper (gap ~+0.04). Within the un-resolvable merge band (|dir|~35-60) the two are recorded as coincident (envelope), which is where the geometric crossing falls."
+    },
+    "normalization": "paper 0-1 Normalized Response; contralateral peak pinned to 1.0, fixation peak ~0.903 (peak enhancement ~0.097). NOT per-curve normalized.",
+    "caveats": [
+      "No numeric x ticks on the panel; x calibration from the direction-arrow frame (px54=-180, px258=+180). x_range set to +/-175 deg.",
+      "Same-colour curves merge in the steep mid-flank (|dir|~35-60 deg, cols 176-190); there only the envelope is recoverable and the two curves are recorded coincident. The crossing falls inside this band, so its exact degree (~45-60) is bounded but not pixel-sharp.",
+      "The audit's full-envelope Gaussian fit placed the crossing at ~61 deg; the direct pixel evidence here (band-thickness minimum + near-peak-only Gaussian) places it nearer ~46 deg. Both agree the swap is real; the exact value sits within the merge band and is reported as a range (~45-60 deg).",
+      "Curves are symmetrized about 0 deg (right flank traced, left flank mirrored) - the panel is a symmetric bell and the left/right clusters agree.",
+      "Far tails (|dir|>~140) the two lines re-converge and are recorded coincident."
+    ]
   }
 }

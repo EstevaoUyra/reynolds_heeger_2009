@@ -1,7 +1,7 @@
 {
   "panel": "3F",
   "figure": 3,
-  "description": "Mixed attention effect (row 2, smaller attention field). Two solid CRFs: attended (thick) plateaus ABOVE unattended (thin); separation persists at high contrast (attended ~0.74, unattended ~0.62; neither reaches 1.0). Dashed percent-modulation (right axis) is largest at low contrast (~93%) and declines monotonically to a ~21% plateau at high contrast, crossing the rising solids near mid contrast.",
+  "description": "Mixed attention effect (row 2, smaller attention field). Two solid CRFs: attended (thick) plateaus ABOVE unattended (thin); separation persists at high contrast (attended ~0.74, unattended ~0.61; neither reaches 1.0). Dashed percent-modulation (right axis) is largest at low contrast (~93%) and declines monotonically to a ~21% plateau at high contrast, crossing the rising solids near mid contrast.",
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
@@ -16,86 +16,26 @@
         1.0
       ],
       "points": [
-        [
-          0.01,
-          0.034
-        ],
-        [
-          0.0144,
-          0.045
-        ],
-        [
-          0.0177,
-          0.067
-        ],
-        [
-          0.0226,
-          0.088
-        ],
-        [
-          0.0288,
-          0.13
-        ],
-        [
-          0.0354,
-          0.183
-        ],
-        [
-          0.0451,
-          0.267
-        ],
-        [
-          0.0575,
-          0.36
-        ],
-        [
-          0.0707,
-          0.466
-        ],
-        [
-          0.0871,
-          0.542
-        ],
-        [
-          0.1109,
-          0.62
-        ],
-        [
-          0.1464,
-          0.671
-        ],
-        [
-          0.1802,
-          0.697
-        ],
-        [
-          0.2296,
-          0.716
-        ],
-        [
-          0.2925,
-          0.728
-        ],
-        [
-          0.3728,
-          0.733
-        ],
-        [
-          0.475,
-          0.739
-        ],
-        [
-          0.6053,
-          0.742
-        ],
-        [
-          0.745,
-          0.744
-        ],
-        [
-          1.0,
-          0.742
-        ]
+        [0.01, 0.034],
+        [0.0144, 0.045],
+        [0.0177, 0.067],
+        [0.0226, 0.088],
+        [0.0288, 0.13],
+        [0.0354, 0.183],
+        [0.0451, 0.266],
+        [0.0575, 0.36],
+        [0.0707, 0.465],
+        [0.0871, 0.541],
+        [0.1109, 0.605],
+        [0.1464, 0.671],
+        [0.1802, 0.697],
+        [0.2296, 0.716],
+        [0.2925, 0.728],
+        [0.3728, 0.733],
+        [0.475, 0.739],
+        [0.6053, 0.742],
+        [0.745, 0.744],
+        [1.0, 0.742]
       ]
     },
     "unattended": {
@@ -105,86 +45,26 @@
         1.0
       ],
       "points": [
-        [
-          0.01,
-          0.03
-        ],
-        [
-          0.0144,
-          0.04
-        ],
-        [
-          0.0177,
-          0.046
-        ],
-        [
-          0.0226,
-          0.052
-        ],
-        [
-          0.0288,
-          0.078
-        ],
-        [
-          0.0354,
-          0.107
-        ],
-        [
-          0.0451,
-          0.16
-        ],
-        [
-          0.0575,
-          0.233
-        ],
-        [
-          0.0707,
-          0.312
-        ],
-        [
-          0.0871,
-          0.39
-        ],
-        [
-          0.1109,
-          0.469
-        ],
-        [
-          0.1414,
-          0.525
-        ],
-        [
-          0.1802,
-          0.565
-        ],
-        [
-          0.2218,
-          0.587
-        ],
-        [
-          0.2826,
-          0.598
-        ],
-        [
-          0.3478,
-          0.607
-        ],
-        [
-          0.4588,
-          0.612
-        ],
-        [
-          0.5847,
-          0.615
-        ],
-        [
-          0.7197,
-          0.615
-        ],
-        [
-          1.0,
-          0.612
-        ]
+        [0.01, 0.03],
+        [0.0144, 0.04],
+        [0.0177, 0.046],
+        [0.0226, 0.052],
+        [0.0288, 0.078],
+        [0.0354, 0.107],
+        [0.0451, 0.16],
+        [0.0575, 0.233],
+        [0.0707, 0.312],
+        [0.0871, 0.39],
+        [0.1109, 0.469],
+        [0.1414, 0.525],
+        [0.1802, 0.565],
+        [0.2218, 0.587],
+        [0.2826, 0.598],
+        [0.3478, 0.607],
+        [0.4588, 0.612],
+        [0.5847, 0.615],
+        [0.7197, 0.615],
+        [1.0, 0.612]
       ]
     },
     "percent_modulation": {
@@ -194,103 +74,62 @@
         100.0
       ],
       "points": [
-        [
-          0.01,
-          90.0
-        ],
-        [
-          0.0125,
-          93.0
-        ],
-        [
-          0.0144,
-          93.5
-        ],
-        [
-          0.0177,
-          92.0
-        ],
-        [
-          0.0226,
-          86.0
-        ],
-        [
-          0.0288,
-          81.0
-        ],
-        [
-          0.033,
-          77.0
-        ],
-        [
-          0.0379,
-          72.0
-        ],
-        [
-          0.0436,
-          69.0
-        ],
-        [
-          0.05,
-          64.0
-        ],
-        [
-          0.0575,
-          58.0
-        ],
-        [
-          0.066,
-          52.0
-        ],
-        [
-          0.076,
-          46.0
-        ],
-        [
-          0.087,
-          41.0
-        ],
-        [
-          0.1,
-          36.0
-        ],
-        [
-          0.1149,
-          32.0
-        ],
-        [
-          0.1515,
-          27.2
-        ],
-        [
-          0.1865,
-          24.4
-        ],
-        [
-          0.2377,
-          22.8
-        ],
-        [
-          0.3028,
-          21.9
-        ],
-        [
-          0.3601,
-          21.3
-        ],
-        [
-          0.4917,
-          21.1
-        ],
-        [
-          0.745,
-          20.6
-        ],
-        [
-          1.0,
-          20.5
-        ]
+        [0.01, 90.0],
+        [0.0125, 93.5],
+        [0.0144, 93.0],
+        [0.0177, 92.0],
+        [0.0226, 86.0],
+        [0.0288, 81.0],
+        [0.033, 77.0],
+        [0.0379, 72.0],
+        [0.044, 69.0],
+        [0.0489, 64.0],
+        [0.0543, 60.0],
+        [0.0603, 55.0],
+        [0.067, 50.0],
+        [0.0743, 47.0],
+        [0.087, 41.0],
+        [0.1, 36.0],
+        [0.1149, 32.0],
+        [0.1515, 27.2],
+        [0.1865, 24.4],
+        [0.2377, 22.8],
+        [0.3028, 21.9],
+        [0.3601, 21.3],
+        [0.4917, 21.1],
+        [0.745, 20.6],
+        [1.0, 20.5]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "line/curve CRF, log-x, two solid sigmoids (left axis, attended thick > unattended thin, both sub-1.0) plus one descending dashed (% modulation, right axis)",
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "Mode-1 quantitative plot. detect_plot_box for the axis-rectangle hint; verified by longest-dark-run profile. trace_darkest_in_band, one band per solid by row; the dashed isolated as the topmost cluster at low contrast (it starts highest, ~93%, and descends). resample_pchip for the flat plateaus; overlay for the single validation pass.",
+    "calibration": {
+      "x": [[57.5, 0.01], [189.5, 1.0]],
+      "y_left": [[202.0, 0.0], [23.5, 1.0]],
+      "y_right": [[202.0, 0.0], [23.5, 100.0]],
+      "x_scale": "log",
+      "axis_lines_measured": "left axis col 57.5 (NOT the label-text edge ~col 41), right axis col 189.5, plot top row 23.5, bottom row 202 — read off the longest-consecutive-dark-run profile."
+    },
+    "per_curve": {
+      "attended": "upper-right solid cluster centroid per column; rises later/steeper, plateaus ~0.74. Clearly separable from unattended through the rise and at the plateau (the panel's whole claim).",
+      "unattended": "lower solid cluster centroid; plateaus ~0.61, distinctly below attended at every contrast.",
+      "percent_modulation": "dashed, traced as the topmost cluster at low contrast (~93% peak), descending monotonically; past x~0.07 it falls below the rising solids and crosses them, after which the topmost-cluster tracer picks up a solid, so the descending tail (to the ~21% plateau) is read from the dashed's own band below the solids and PCHIP-joined through the crossover."
+    },
+    "normalization": "paper shared sub-1.0 scale; attended plateau ~0.74, unattended ~0.61, NOT pinned to 1.0; the attended>unattended height difference (the panel's claim) is preserved. Right axis % modulation 0-100 read independently.",
+    "calibration_note_vs_prior_audit": "The 2026-06-03 audit's 'rising-flank-too-high / c50-too-low' finding for 3F traces to the same wrong left-axis column (41.5, the tick-label edge) used in that audit instead of the true axis line col 57.5. Re-checked with the correct calibration, the solid attended rising-flank values match the true pixel cluster centroids to within ~0.01 (e.g. x=0.0871 -> y 0.541 measured vs 0.542 prior; x=0.0707 -> 0.465 vs 0.466). The solid CRFs were already faithful; this pass re-verifies them with recorded anchors.",
+    "caveats": [
+      "No numeric x ticks (only Log Contrast tick marks); x_range [0.01,1.0], 2 log decades, from the frame, consistent across 3A-3F.",
+      "Dashed crossover (x~0.05-0.10): where the descending dashed crosses the two rising solids the three same-colour lines bundle; the dashed there is PCHIP-interpolated through the bundle rather than column-traced (minor, ~+/-2%).",
+      "Right-axis % modulation calibration assumes the right tick frame shares the plot top/bottom rows (no legible intermediate numeric ticks)."
+    ]
   }
 }
