@@ -1,0 +1,37 @@
+{
+  "panel": "3F",
+  "figure": 3,
+  "description": "Mixed attention effect (row 2, smaller attention field). Two solid CRFs: attend-in-RF (thick) sits ABOVE attend-contralateral (thin) with a separation that persists toward high contrast (attended peak 1.0, ignored ~0.85). Dashed percent-modulation curve is LARGEST AT LOW CONTRAST (~100 on the 0-100 right axis) and declines monotonically toward high contrast.",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [0.01, 1.0],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.04], [0.0152, 0.06], [0.0231, 0.10], [0.0351, 0.16],
+        [0.0534, 0.26], [0.0811, 0.40], [0.1233, 0.56], [0.1874, 0.72],
+        [0.2848, 0.85], [0.4329, 0.93], [0.6579, 0.98], [1.0, 1.0]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.02], [0.0152, 0.03], [0.0231, 0.05], [0.0351, 0.08],
+        [0.0534, 0.13], [0.0811, 0.21], [0.1233, 0.33], [0.1874, 0.47],
+        [0.2848, 0.61], [0.4329, 0.73], [0.6579, 0.81], [1.0, 0.85]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [0.0, 100.0],
+      "points": [
+        [0.01, 98.0], [0.0152, 96.0], [0.0231, 92.0], [0.0351, 85.0],
+        [0.0534, 75.0], [0.0811, 62.0], [0.1233, 48.0], [0.1874, 36.0],
+        [0.2848, 27.0], [0.4329, 20.0], [0.6579, 16.0], [1.0, 14.0]
+      ]
+    }
+  }
+}

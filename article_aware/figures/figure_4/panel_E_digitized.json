@@ -1,0 +1,37 @@
+{
+  "panel": "4E",
+  "figure": 4,
+  "description": "Two stimuli colocated in RF, contrasts covary; attend preferred vs attend nonpreferred. Two solid CRFs: attend-preferred (upper, peak 1.0) sits above attend-nonpreferred (lower, peak ~0.78) with a sustained separation (response-gain-like). Dashed percent-modulation curve stays WITHIN 0-100 in the paper (roughly 40-55, gently declining). KNOWN MODEL DIVERGENCE: the implementation's percent modulation reaches ~300-400%, overflowing this 0-100 axis (intended failing test).",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [0.01, 1.0],
+  "curves": {
+    "attend_pref": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.06], [0.0152, 0.09], [0.0231, 0.14], [0.0351, 0.21],
+        [0.0534, 0.31], [0.0811, 0.44], [0.1233, 0.58], [0.1874, 0.72],
+        [0.2848, 0.84], [0.4329, 0.93], [0.6579, 0.98], [1.0, 1.0]
+      ]
+    },
+    "attend_nonpref": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.03], [0.0152, 0.05], [0.0231, 0.08], [0.0351, 0.13],
+        [0.0534, 0.20], [0.0811, 0.29], [0.1233, 0.40], [0.1874, 0.52],
+        [0.2848, 0.63], [0.4329, 0.71], [0.6579, 0.76], [1.0, 0.78]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [0.0, 100.0],
+      "points": [
+        [0.01, 48.0], [0.0152, 50.0], [0.0231, 52.0], [0.0351, 53.0],
+        [0.0534, 52.0], [0.0811, 50.0], [0.1233, 47.0], [0.1874, 43.0],
+        [0.2848, 39.0], [0.4329, 35.0], [0.6579, 32.0], [1.0, 30.0]
+      ]
+    }
+  }
+}

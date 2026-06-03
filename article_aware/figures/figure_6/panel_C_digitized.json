@@ -1,0 +1,28 @@
+{
+  "panel": "6C",
+  "figure": 6,
+  "description": "Motion-direction tuning, feature-based attention. Two bell-shaped curves centered at 0 deg: attend-contralateral-stimulus (peak 1.0) vs attend-fixation (peak ~0.9). The feature-based effect SHARPENS the attended curve: it is enhanced near the peak but relatively SUPPRESSED at the flanks, so the attended curve is narrower than attend-fixation and the two curves differ (and cross) at the flanks. The flank difference (attend-fixation above attend-contralateral at |dir| >= ~90 deg) is the binding signature.",
+  "x_variable": "motion_direction_deg",
+  "x_scale": "linear",
+  "x_range": [-180.0, 175.0],
+  "curves": {
+    "attend_contralateral": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-180.0, 0.02], [-150.0, 0.04], [-120.0, 0.10], [-90.0, 0.22],
+        [-60.0, 0.45], [-30.0, 0.78], [0.0, 1.00], [30.0, 0.78],
+        [60.0, 0.45], [90.0, 0.22], [120.0, 0.10], [150.0, 0.04], [175.0, 0.02]
+      ]
+    },
+    "attend_fixation": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-180.0, 0.04], [-150.0, 0.07], [-120.0, 0.15], [-90.0, 0.30],
+        [-60.0, 0.51], [-30.0, 0.76], [0.0, 0.90], [30.0, 0.76],
+        [60.0, 0.51], [90.0, 0.30], [120.0, 0.15], [150.0, 0.07], [175.0, 0.04]
+      ]
+    }
+  }
+}

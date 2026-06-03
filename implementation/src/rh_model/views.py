@@ -13,6 +13,7 @@ compatibility shim re-exporting these renderers.)
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -25,6 +26,14 @@ from . import protocols
 
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parents[2] / "figure_outputs"
 
+# Phase-A digitized references (WORKFLOW.md §3b). The view is Phase-A-owned and
+# renders EITHER the implementation's measurement record OR the paper-digitized
+# reference through the SAME pinned axes. The digitized JSONs live under
+# article_aware/figures/figure_<N>/panel_<X>_digitized.json.
+ARTICLE_AWARE_FIGURES = (
+    Path(__file__).resolve().parents[3] / "article_aware" / "figures"
+)
+
 COLORS = {
     "attended": "#2f6fbb",
     "unattended": "#555555",
@@ -32,6 +41,76 @@ COLORS = {
     "accent": "#2a9d8f",
     "third": "#7a5195",
 }
+
+
+# ---------------------------------------------------------------------------
+# Paper-panel axis limits (WORKFLOW.md §3: axis limits are a HARD, code-checkable
+# requirement per plot panel). Each entry is read OFF THE PAPER FIGURE IMAGE and
+# mirrored in article_aware/figures/figure_<N>/panel_<X>.md. The view sets these
+# limits EXPLICITLY (never autoscale); the deterministic axis tests assert the
+# rendered Axes limits equal these, and that the plotted data lies within them.
+#
+# `right` is the twin (attentional-modulation) axis; `None` means no twin axis.
+# These are the paper's numbers — they are deliberately NOT widened to fit the
+# model's curves. Fig 4E's modulation magnitude overflows (0, 100): that overflow
+# is the intended deterministic FAILURE (see panel_E.md).
+# ---------------------------------------------------------------------------
+PAPER_PANEL_LIMITS: dict[str, dict] = {
+    # Figure 2 — model CRF panels (Normalized Model Response / Attentional Mod %).
+    "2A": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "2B": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # Figure 3 — model CRF panels.
+    "3C": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "3F": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # Figure 4 — model CRF panels. 4E's right axis is the paper's (0, 100); the
+    # model's modulation curve overflows it (intended failure).
+    "4C": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "4E": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # Figure 5/6/7 — model tuning panels (Normalized Response, no twin axis).
+    "5C": {"xlim": (-90.0, 90.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},
+    "6C": {"xlim": (-180.0, 175.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},
+    "7C": {"xlim": (-180.0, 175.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},
+}
+
+
+def paper_panel_limits(panel_id: str) -> dict:
+    """Return the declared paper-panel axis limits for a model panel id.
+
+    The single source of the per-panel axis numbers the view pins and the
+    deterministic axis tests assert against (WORKFLOW.md §3).
+    """
+    return PAPER_PANEL_LIMITS[panel_id]
+
+
+# ---------------------------------------------------------------------------
+# Digitized-reference loading (WORKFLOW.md §3b). A digitized JSON stores, per
+# curve, ~a dozen [x, y] points read off the paper panel in the panel's pinned
+# frame (left axis normalized 0-1; right axis 0-100). We resample those points
+# onto a dense grid in the panel's pinned x-range so the reference renders as a
+# smooth curve through the SAME view helpers the implementation record uses.
+# ---------------------------------------------------------------------------
+
+def load_digitized(figure: int, panel: str) -> dict:
+    """Load the digitized reference JSON for figure_<N>/panel_<X>."""
+    path = ARTICLE_AWARE_FIGURES / f"figure_{figure}" / f"panel_{panel}_digitized.json"
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _resample_curve(points: list, x_grid: np.ndarray, *, log_x: bool) -> np.ndarray:
+    """Interpolate digitized [x, y] points onto ``x_grid`` (log-x if requested)."""
+    pts = np.asarray(points, dtype=float)
+    xs, ys = pts[:, 0], pts[:, 1]
+    if log_x:
+        return np.interp(np.log(x_grid), np.log(xs), ys)
+    return np.interp(x_grid, xs, ys)
+
+
+def _digitized_x_grid(dig: dict, n: int = 64) -> np.ndarray:
+    lo, hi = dig["x_range"]
+    if dig.get("x_scale") == "log":
+        return np.logspace(np.log10(lo), np.log10(hi), n)
+    return np.linspace(lo, hi, n)
 
 
 def _pyplot():
@@ -141,91 +220,147 @@ def _normalized_pair(attended: np.ndarray, unattended: np.ndarray) -> tuple[np.n
 
 def _plot_normalized_crf_with_modulation(
     ax,
+    panel_id: str,
     x: np.ndarray,
     attended: np.ndarray,
     unattended: np.ndarray,
     percent_modulation: np.ndarray,
     *,
     title: str,
-    xlabel: str = "log contrast",
+    xlabel: str = "Log Contrast",
     attended_label: str = "attended",
     unattended_label: str = "ignored / unattended",
-) -> None:
-    """Plot article-style normalized CRFs with dashed modulation on twin axis.
+) -> dict:
+    """Plot a paper-style normalized CRF panel with dashed modulation on a twin axis.
 
     The paper's model panels (Figs 2/3/4C/4E) overlay a dashed
     percent-attentional-modulation curve on a right twin axis labelled
-    "Attentional Modulation (%)" with a positive 0..100 scale; this helper
-    reproduces that twin-axis layout. The percent_modulation argument is the
-    raw (un-normalized) signed modulation curve from the protocol record;
-    following the paper, the dashed curve is drawn as a *magnitude* (absolute
-    percent) so a suppressive panel like Fig 4C (where attending the
-    nonpreferred stimulus lowers the response, giving a negative signed
-    modulation) reads on the same positive axis as the facilitatory panels.
-    The discriminating signature — modulation largest at low contrast and
-    falling toward zero at high contrast — is preserved by the magnitude.
+    "Attentional Modulation (%)". This helper reproduces that twin-axis layout
+    and PINS every axis limit to the paper panel's declared values
+    (``PAPER_PANEL_LIMITS[panel_id]``) — autoscale is OFF on both axes.
+
+    The percent_modulation argument is the raw (un-normalized) signed
+    modulation curve from the record; the dashed curve is drawn as a
+    *magnitude* (absolute percent) so a suppressive panel reads on the same
+    positive axis as a facilitatory one. Crucially the right axis is NOT widened
+    to fit the curve: for Fig 4E the magnitude exceeds the paper's 100% top, so
+    the curve overflows — the intended deterministic failure (panel_E.md).
+
+    Returns an introspection dict (Axes + plotted arrays + declared limits) so a
+    deterministic test can assert rendered limits and data-within-limits without
+    re-rendering.
 
     Citation: C-013, C-014, C-015, C-019, C-020
     """
+    limits = paper_panel_limits(panel_id)
     percent_modulation = np.abs(np.asarray(percent_modulation, dtype=float))
     attended_norm, unattended_norm = _normalized_pair(attended, unattended)
-    ax.semilogx(
-        x,
-        unattended_norm,
-        color=COLORS["unattended"],
-        linewidth=1.9,
+    ax.plot(
+        x, unattended_norm, color=COLORS["unattended"], linewidth=1.9,
         label=unattended_label,
     )
-    ax.semilogx(
-        x,
-        attended_norm,
-        color=COLORS["attended"],
-        linewidth=2.1,
+    ax.plot(
+        x, attended_norm, color=COLORS["attended"], linewidth=2.1,
         label=attended_label,
     )
-    _finish_axes(ax, xlabel=xlabel, ylabel="normalized model response", title=title)
-    ax.set_ylim(-0.02, 1.05)
+    _finish_axes(ax, xlabel=xlabel, ylabel="Normalized Model Response", title=title)
+    # PIN the paper panel's limits explicitly; autoscale OFF.
+    ax.set_xscale(limits["xscale"])
+    ax.set_xlim(*limits["xlim"])
+    ax.set_ylim(*limits["ylim"])
+    ax.set_autoscale_on(False)
 
     ax_mod = ax.twinx()
-    ax_mod.semilogx(
-        x,
-        percent_modulation,
-        color="#222222",
-        linestyle=(0, (4, 3)),
-        linewidth=1.7,
-        label="% attentional modulation",
+    ax_mod.plot(
+        x, percent_modulation, color="#222222", linestyle=(0, (4, 3)),
+        linewidth=1.7, label="% attentional modulation",
     )
-    ax_mod.set_ylabel("attentional modulation (%)")
-    # Paper-style positive axis anchored at 0. Default 0..100 like the paper;
-    # if the model's response-gain modulation magnitude exceeds 100% (e.g. the
-    # strong Fig 4E covarying-contrast effect), the axis grows to keep the
-    # dashed curve fully visible rather than clipping it.
-    pm_max = float(np.max(percent_modulation))
-    ax_mod.set_ylim(0.0, max(100.0, pm_max * 1.1))
+    ax_mod.set_ylabel("Attentional Modulation (%)")
+    ax_mod.set_xscale(limits["xscale"])
+    ax_mod.set_xlim(*limits["xlim"])
+    ax_mod.set_ylim(*limits["right"])  # paper's (0, 100) — NOT widened to fit.
+    ax_mod.set_autoscale_on(False)
     ax_mod.spines["top"].set_visible(False)
     ax_mod.grid(False)
 
     lines, labels = ax.get_legend_handles_labels()
     mod_lines, mod_labels = ax_mod.get_legend_handles_labels()
-    ax.legend(lines + mod_lines, labels + mod_labels, frameon=False, fontsize=8, loc="lower right")
+    ax.legend(lines + mod_lines, labels + mod_labels, frameon=False, fontsize=7, loc="lower right")
+
+    return {
+        "panel_id": panel_id,
+        "ax": ax,
+        "ax_right": ax_mod,
+        "limits": limits,
+        "x": np.asarray(x, dtype=float),
+        "left_curves": [attended_norm, unattended_norm],
+        "right_curve": percent_modulation,
+    }
 
 
 def _plot_tuning(
     ax,
+    panel_id: str,
     x: np.ndarray,
     curves: Iterable[tuple[str, np.ndarray, str]],
     *,
     title: str,
     xlabel: str,
-) -> None:
-    """Plot one or more orientation or direction tuning curves.
+) -> dict:
+    """Plot one or more tuning curves on the PAPER-PINNED axes for ``panel_id``.
+
+    The paper tuning panels (5C/6C/7C) plot "Normalized Response" with the
+    largest curve's peak at 1.0; this helper normalizes every curve by that
+    shared peak and PINS x/y to ``PAPER_PANEL_LIMITS[panel_id]`` (autoscale OFF).
+    Returns an introspection dict for the deterministic axis test.
 
     Citation: C-016, C-017, C-018
     """
+    limits = paper_panel_limits(panel_id)
+    curves = list(curves)
+    peak = float(max((np.max(np.asarray(y, dtype=float)) for _, y, _ in curves), default=1.0))
+    peak = peak if peak > 1e-12 else 1.0
+    normed: list[np.ndarray] = []
     for label, y, color in curves:
-        ax.plot(x, y, marker="o", markersize=3, linewidth=1.8, label=label, color=color)
-    _finish_axes(ax, xlabel=xlabel, ylabel="response", title=title)
+        yn = np.asarray(y, dtype=float) / peak
+        normed.append(yn)
+        ax.plot(x, yn, marker="o", markersize=3, linewidth=1.8, label=label, color=color)
+    _finish_axes(ax, xlabel=xlabel, ylabel="Normalized Response", title=title)
+    ax.set_xscale(limits["xscale"])
+    ax.set_xlim(*limits["xlim"])
+    ax.set_ylim(*limits["ylim"])
+    ax.set_autoscale_on(False)
     ax.legend(frameon=False, fontsize=8)
+    return {
+        "panel_id": panel_id,
+        "ax": ax,
+        "ax_right": None,
+        "limits": limits,
+        "x": np.asarray(x, dtype=float),
+        "left_curves": normed,
+        "right_curve": None,
+    }
+
+
+def _draw_not_reproduced(ax, label: str = "not reproduced") -> None:
+    """Render an explicit empty placeholder panel for a paper panel we do not
+    reproduce (config / empirical-data / legend), preserving the paper's layout.
+
+    WORKFLOW.md §3: the reassembled figure must line up with the paper's, with an
+    explicit ``not reproduced`` cell wherever the paper had a panel we omit —
+    omissions visible and honest, never a clean panel masquerading as the figure.
+    """
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(True)
+        spine.set_color("#bbbbbb")
+        spine.set_linestyle((0, (3, 3)))
+    ax.set_facecolor("#f6f6f6")
+    ax.text(
+        0.5, 0.5, label, ha="center", va="center", fontsize=9,
+        color="#888888", style="italic", transform=ax.transAxes,
+    )
 
 
 def _draw_stimulus_schematic(ax) -> None:
@@ -385,190 +520,449 @@ def save_figure_1(output_dir: str | Path | None = None) -> Path:
     return _save(fig, path)
 
 
-def save_figure_2(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 2-style contrast-gain and response-gain panels.
+def render_figure_2(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-2 paper grid; return per-panel introspection.
+
+    Layout (article_aware/figures/figure_2_layout.yaml): top row = two model CRF
+    panels [2A | 2B], bottom row = the paper's legend rendered as a single
+    ``not reproduced`` placeholder spanning both columns.
+
+    Returns ``{"path": Path, "panels": {panel_id: introspection_dict}}`` so the
+    deterministic axis tests can read the rendered Axes limits and plotted data
+    from the same render the PNG was made from.
 
     Citation: C-013
     """
     plt = _pyplot()
-    fig, axes = plt.subplots(1, 2, figsize=(10.2, 4.8), constrained_layout=True)
+    fig = plt.figure(figsize=(10.2, 6.0), constrained_layout=True)
+    grid = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.18])
     path = _output_dir(output_dir) / "figure_2.png"
 
+    panels: dict[str, dict] = {}
+
     fig2a = protocols.run_figure_2A(n_contrasts=32)
-    _plot_normalized_crf_with_modulation(
-        axes[0],
-        fig2a["c"],
-        fig2a["attended_CRF"],
-        fig2a["unattended_CRF"],
+    panels["2A"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[0, 0]), "2A",
+        fig2a["c"], fig2a["attended_CRF"], fig2a["unattended_CRF"],
         fig2a["percent_modulation"],
-        title="2A: predominantly contrast gain",
+        title="A — predominantly contrast gain",
     )
 
     fig2b = protocols.run_figure_2B(n_contrasts=32)
-    _plot_normalized_crf_with_modulation(
-        axes[1],
-        fig2b["c"],
-        fig2b["attended_CRF"],
-        fig2b["unattended_CRF"],
+    panels["2B"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[0, 1]), "2B",
+        fig2b["c"], fig2b["attended_CRF"], fig2b["unattended_CRF"],
         fig2b["percent_modulation"],
-        title="2B: predominantly response gain",
+        title="B — predominantly response gain",
     )
+
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+
     fig.suptitle("Figure 2: attention can produce contrast or response gain", fontsize=12)
-    return _save(fig, path)
+    return {"path": _save(fig, path), "panels": panels}
 
 
-def save_figure_3(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 3-style baseline CRF reproductions.
+def save_figure_2(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 2 and return only the PNG path."""
+    return render_figure_2(output_dir)["path"]
+
+
+def render_figure_3(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-3 paper grid (2 rows x 3 cols + legend row).
+
+    Layout (figure_3_layout.yaml):
+      Row0: [A config (NR) | B empirical R,P&D 2000 (NR) | C MODEL]
+      Row1: [D config (NR) | E empirical Williford&Maunsell (NR) | F MODEL]
+      Row2: legend (NR, spanning).
+    Reproduced model panels: 3C, 3F. Returns per-panel introspection.
 
     Citation: C-014
     """
     plt = _pyplot()
-    # Paper Fig 3 model panels (C, F) are single normalized-CRF plots with a
-    # dashed percent-modulation overlay on a twin axis — no separate
-    # "absolute difference" panel. MODEL-PANELS-ONLY: one panel per model row.
-    fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.6), constrained_layout=True)
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
     path = _output_dir(output_dir) / "figure_3.png"
 
-    panels = [
-        ("3C: mixed attention effect", protocols.run_figure_3C(n_contrasts=32)),
-        ("3F: mixed attention effect", protocols.run_figure_3F(n_contrasts=32)),
-    ]
-    for col, (title, out) in enumerate(panels):
-        _plot_normalized_crf_with_modulation(
-            axes[col],
-            out["c"],
-            out["attended_CRF"],
-            out["unattended_CRF"],
-            out["percent_modulation"],
-            title=title,
-        )
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nReynolds et al. 2000\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "E · empirical\nWilliford & Maunsell 2006\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+
+    panels: dict[str, dict] = {}
+    out_c = protocols.run_figure_3C(n_contrasts=32)
+    panels["3C"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[0, 2]), "3C",
+        out_c["c"], out_c["attended_CRF"], out_c["unattended_CRF"],
+        out_c["percent_modulation"],
+        title="C — mixed attention effect",
+        attended_label="attend in RF", unattended_label="attend contralateral",
+    )
+    out_f = protocols.run_figure_3F(n_contrasts=32)
+    panels["3F"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[1, 2]), "3F",
+        out_f["c"], out_f["attended_CRF"], out_f["unattended_CRF"],
+        out_f["percent_modulation"],
+        title="F — mixed attention effect",
+        attended_label="attend in RF", unattended_label="attend contralateral",
+    )
     fig.suptitle("Figure 3: baseline shifts attentional modulation across contrast", fontsize=12)
-    return _save(fig, path)
+    return {"path": _save(fig, path), "panels": panels}
 
 
-def save_figure_4(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 4-style two-stimulus contrast-response panels.
+def save_figure_3(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 3 and return only the PNG path."""
+    return render_figure_3(output_dir)["path"]
+
+
+def render_figure_4(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-4 paper grid (2 rows x 3 cols + legend row).
+
+    Layout (figure_4_layout.yaml):
+      Row0: [A config (NR) | B empirical M-T&Treue 2002 (NR) | C MODEL]
+      Row1: [D config (NR) | blank (NR)                      | E MODEL]
+      Row2: legend (NR, spanning).
+    Reproduced model panels: 4C, 4E.
+
+    ⚠️ 4E's right (Attentional Modulation %) axis is PINNED to the paper's
+    (0, 100) with autoscale OFF. The model's 4E modulation magnitude reaches
+    ~300-400%, so the dashed curve OVERFLOWS the axis — visible in the PNG and
+    caught by ``test_figure_4E_modulation_within_paper_axis`` as the intended
+    deterministic FAILURE. Do not widen the axis (panel_E.md).
 
     Citation: C-015
     """
     plt = _pyplot()
-    # Paper Fig 4 model panels (C, E) each overlay the dashed percent-
-    # attentional-modulation curve on a right twin axis (see the verbatim
-    # caption "Dashed gray curve, percentage increase in firing rate at each
-    # contrast" and figure_4.md / figure_4_visual_checklist.md, which require
-    # "The dashed curve is percent attentional modulation"). The model record
-    # already carries this curve: percent_modulation for 4C, and the
-    # attend_pref/attend_nonpref ratio for 4E (percent = (ratio - 1) * 100).
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.6), constrained_layout=True)
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
     path = _output_dir(output_dir) / "figure_4.png"
 
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMartinez-Trujillo & Treue 2002\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "not reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+
+    panels: dict[str, dict] = {}
     fig4c = protocols.run_figure_4C(n_contrasts=24)
-    _plot_normalized_crf_with_modulation(
-        axes[0],
-        fig4c["c_pref"],
-        fig4c["attended_CRF"],
-        fig4c["unattended_CRF"],
+    panels["4C"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[0, 2]), "4C",
+        fig4c["c_pref"], fig4c["attended_CRF"], fig4c["unattended_CRF"],
         fig4c["percent_modulation"],
-        attended_label="attend nonpreferred",
-        unattended_label="attend away",
-        title="4C: nonpreferred attention suppresses preferred response",
-        xlabel="preferred-stimulus contrast",
+        attended_label="attend nonpreferred", unattended_label="attend away",
+        title="C — attend nonpreferred in RF",
     )
 
     fig4e = protocols.run_figure_4E(n_contrasts=24)
-    # Percent attentional modulation for 4E follows the same definition as the
+    # Percent attentional modulation for 4E uses the same definition as the
     # crf_pair_record helper, 100*(attended - unattended)/unattended, which for
     # the attend-pref vs attend-nonpref pair equals (ratio - 1) * 100.
     fig4e_pct_mod = (np.asarray(fig4e["ratio"], dtype=float) - 1.0) * 100.0
-    _plot_normalized_crf_with_modulation(
-        axes[1],
-        fig4e["c"],
-        fig4e["attend_pref_CRF"],
-        fig4e["attend_nonpref_CRF"],
+    panels["4E"] = _plot_normalized_crf_with_modulation(
+        fig.add_subplot(grid[1, 2]), "4E",
+        fig4e["c"], fig4e["attend_pref_CRF"], fig4e["attend_nonpref_CRF"],
         fig4e_pct_mod,
-        attended_label="attend preferred",
-        unattended_label="attend nonpreferred",
-        title="4E: attention to preferred scales response",
+        attended_label="attend preferred", unattended_label="attend nonpreferred",
+        title="E — attend preferred scales response",
     )
     fig.suptitle("Figure 4: attention changes two-stimulus competition", fontsize=12)
-    return _save(fig, path)
+    return {"path": _save(fig, path), "panels": panels}
 
 
-def save_figure_5(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 5-style spatial-attention orientation tuning.
+def save_figure_4(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 4 and return only the PNG path."""
+    return render_figure_4(output_dir)["path"]
+
+
+def _render_tuning_figure(
+    *, fig_n: int, panel_id: str, run, curves_from, title: str, xlabel: str,
+    suptitle: str, output_dir, b_label: str,
+) -> dict:
+    """Shared 1x3+legend paper grid for the tuning figures (5/6/7).
+
+    Row0: [A config (NR) | B empirical (NR) | C MODEL]; Row1: legend (NR).
+    """
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / f"figure_{fig_n}.png"
+
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), b_label)
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+
+    out = run()
+    panel = _plot_tuning(
+        fig.add_subplot(grid[0, 2]), panel_id,
+        out[curves_from["x"]], curves_from["curves"](out),
+        title=title, xlabel=xlabel,
+    )
+    fig.suptitle(suptitle, fontsize=12)
+    return {"path": _save(fig, path), "panels": {panel_id: panel}}
+
+
+def render_figure_5(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-5 paper grid; model panel 5C reproduced.
 
     Citation: C-016
     """
-    plt = _pyplot()
-    # Paper Fig 5C is a single orientation-tuning panel (attended vs
-    # unattended). MODEL-PANELS-ONLY: no separate "ratio" analysis panel.
-    fig, ax = plt.subplots(figsize=(6.7, 4.6), constrained_layout=True)
-    path = _output_dir(output_dir) / "figure_5.png"
-    out = protocols.run_figure_5C(n_orientations=61)
-
-    _plot_tuning(
-        ax,
-        out["theta_0_grid"],
-        [
-            ("unattended", out["unattended_tuning"], COLORS["unattended"]),
-            ("attended", out["attended_tuning"], COLORS["attended"]),
-        ],
-        title="5C: spatial attention scales orientation tuning",
+    return _render_tuning_figure(
+        fig_n=5, panel_id="5C",
+        run=lambda: protocols.run_figure_5C(n_orientations=61),
+        curves_from={
+            "x": "theta_0_grid",
+            "curves": lambda out: [
+                ("attend contralateral", out["unattended_tuning"], COLORS["unattended"]),
+                ("attend in RF", out["attended_tuning"], COLORS["attended"]),
+            ],
+        },
+        title="C — spatial attention scales orientation tuning",
         xlabel="stimulus orientation (deg)",
+        suptitle="Figure 5: multiplicative scaling without tuning-width change",
+        output_dir=output_dir,
+        b_label="B · empirical\nMcAdams & Maunsell 1999\nnot reproduced",
     )
-    fig.suptitle("Figure 5: multiplicative scaling without tuning-width change", fontsize=12)
-    return _save(fig, path)
 
 
-def save_figure_6(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 6-style feature-attention tuning sharpening.
+def save_figure_5(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 5 and return only the PNG path."""
+    return render_figure_5(output_dir)["path"]
+
+
+def render_figure_6(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-6 paper grid; model panel 6C reproduced.
 
     Citation: C-017
     """
-    plt = _pyplot()
-    fig, ax = plt.subplots(figsize=(6.7, 4.6), constrained_layout=True)
-    path = _output_dir(output_dir) / "figure_6.png"
-    out = protocols.run_figure_6C(n_directions=73)
-
-    _plot_tuning(
-        ax,
-        out["theta_stim_grid"],
-        [
-            ("attend fixation", out["attend_fixation_tuning"], COLORS["unattended"]),
-            (
-                "attend opposite stimulus",
-                out["attend_opposite_stimulus_tuning"],
-                COLORS["attended"],
-            ),
-        ],
-        title="6C: feature-based attention narrows tuning",
+    return _render_tuning_figure(
+        fig_n=6, panel_id="6C",
+        run=lambda: protocols.run_figure_6C(n_directions=73),
+        curves_from={
+            "x": "theta_stim_grid",
+            "curves": lambda out: [
+                ("attend fixation", out["attend_fixation_tuning"], COLORS["unattended"]),
+                ("attend contralateral", out["attend_opposite_stimulus_tuning"], COLORS["attended"]),
+            ],
+        },
+        title="C — feature-based attention scales tuning",
         xlabel="motion direction (deg)",
+        suptitle="Figure 6: feature-based attention",
+        output_dir=output_dir,
+        b_label="B · empirical\nMartinez-Trujillo & Treue 2004\nnot reproduced",
     )
-    return _save(fig, path)
 
 
-def save_figure_7(output_dir: str | Path | None = None) -> Path:
-    """Render Figure 7-style three-condition direction tuning.
+def save_figure_6(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 6 and return only the PNG path."""
+    return render_figure_6(output_dir)["path"]
+
+
+def render_figure_7(output_dir: str | Path | None = None) -> dict:
+    """Render the FULL Figure-7 paper grid; model panel 7C reproduced.
 
     Citation: C-018
     """
-    plt = _pyplot()
-    fig, ax = plt.subplots(figsize=(7.0, 4.6), constrained_layout=True)
-    path = _output_dir(output_dir) / "figure_7.png"
-    out = protocols.run_figure_7C(n_directions=73)
-
-    _plot_tuning(
-        ax,
-        out["theta_var_grid"],
-        [
-            ("fixation", out["fixation_tuning"], COLORS["unattended"]),
-            ("attend nonpreferred", out["attend_nonpref_tuning"], COLORS["suppressed"]),
-            ("attend variable", out["attend_variable_tuning"], COLORS["attended"]),
-        ],
-        title="7C: attention shifts two-stimulus direction tuning",
+    return _render_tuning_figure(
+        fig_n=7, panel_id="7C",
+        run=lambda: protocols.run_figure_7C(n_directions=73),
+        curves_from={
+            "x": "theta_var_grid",
+            "curves": lambda out: [
+                ("ignored / fixation", out["fixation_tuning"], COLORS["unattended"]),
+                ("attend nonpreferred", out["attend_nonpref_tuning"], COLORS["suppressed"]),
+                ("attend variable", out["attend_variable_tuning"], COLORS["attended"]),
+            ],
+        },
+        title="C — two-stimulus direction tuning",
         xlabel="variable stimulus direction (deg)",
+        suptitle="Figure 7: attention shifts two-stimulus direction tuning",
+        output_dir=output_dir,
+        b_label="B · empirical\nTreue & Martinez-Trujillo 1999\nnot reproduced",
     )
-    return _save(fig, path)
+
+
+def save_figure_7(output_dir: str | Path | None = None) -> Path:
+    """Backward-compatible wrapper: render Figure 7 and return only the PNG path."""
+    return render_figure_7(output_dir)["path"]
+
+
+# ---------------------------------------------------------------------------
+# Reference figures rendered FROM THE DIGITIZATION (WORKFLOW.md §3b). These use
+# the SAME _plot_* helpers and the SAME pinned axes as the implementation
+# renders above, so (paper panel) vs (digitized reference) vs (implementation)
+# line up cell-for-cell on identical axes.
+# ---------------------------------------------------------------------------
+
+def _crf_reference_panel(ax, figure: int, panel: str, *, title: str,
+                         attended_key: str, unattended_key: str,
+                         attended_label: str, unattended_label: str) -> dict:
+    """Render one digitized CRF panel (left curves + dashed % modulation)."""
+    dig = load_digitized(figure, panel)
+    x = _digitized_x_grid(dig)
+    att = _resample_curve(dig["curves"][attended_key]["points"], x, log_x=True)
+    una = _resample_curve(dig["curves"][unattended_key]["points"], x, log_x=True)
+    pm = _resample_curve(dig["curves"]["percent_modulation"]["points"], x, log_x=True)
+    return _plot_normalized_crf_with_modulation(
+        ax, f"{figure}{panel}", x, att, una, pm, title=title,
+        attended_label=attended_label, unattended_label=unattended_label,
+    )
+
+
+def render_figure_2_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 2 grid rendered from the digitized paper curves. Citation: C-013"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(10.2, 6.0), constrained_layout=True)
+    grid = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_2_reference.png"
+    panels = {
+        "2A": _crf_reference_panel(
+            fig.add_subplot(grid[0, 0]), 2, "A", title="A — predominantly contrast gain",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attended", unattended_label="ignored / unattended"),
+        "2B": _crf_reference_panel(
+            fig.add_subplot(grid[0, 1]), 2, "B", title="B — predominantly response gain",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attended", unattended_label="ignored / unattended"),
+    }
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    fig.suptitle("Figure 2 (digitized reference): contrast vs response gain", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def render_figure_3_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 3 grid rendered from the digitized paper curves. Citation: C-014"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
+    path = _output_dir(output_dir) / "figure_3_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nReynolds et al. 2000\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "E · empirical\nWilliford & Maunsell 2006\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+    panels = {
+        "3C": _crf_reference_panel(
+            fig.add_subplot(grid[0, 2]), 3, "C", title="C — mixed attention effect",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend in RF", unattended_label="attend contralateral"),
+        "3F": _crf_reference_panel(
+            fig.add_subplot(grid[1, 2]), 3, "F", title="F — mixed attention effect",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend in RF", unattended_label="attend contralateral"),
+    }
+    fig.suptitle("Figure 3 (digitized reference): baseline shift across contrast", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def render_figure_4_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 4 grid rendered from the digitized paper curves. Citation: C-015"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
+    path = _output_dir(output_dir) / "figure_4_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMartinez-Trujillo & Treue 2002\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "not reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+    panels = {
+        "4C": _crf_reference_panel(
+            fig.add_subplot(grid[0, 2]), 4, "C", title="C — attend nonpreferred in RF",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend nonpreferred", unattended_label="attend away"),
+        "4E": _crf_reference_panel(
+            fig.add_subplot(grid[1, 2]), 4, "E", title="E — attend preferred scales response",
+            attended_key="attend_pref", unattended_key="attend_nonpref",
+            attended_label="attend preferred", unattended_label="attend nonpreferred"),
+    }
+    fig.suptitle("Figure 4 (digitized reference): two-stimulus competition", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def _tuning_reference_panel(ax, figure: int, panel: str, curve_specs: list,
+                            *, title: str, xlabel: str) -> dict:
+    """Render one digitized tuning panel from a list of (json_key, label, color)."""
+    dig = load_digitized(figure, panel)
+    x = _digitized_x_grid(dig)
+    curves = [
+        (label, _resample_curve(dig["curves"][key]["points"], x, log_x=False), color)
+        for key, label, color in curve_specs
+    ]
+    return _plot_tuning(ax, f"{figure}{panel}", x, curves, title=title, xlabel=xlabel)
+
+
+def render_figure_5_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 5 grid rendered from the digitized paper curves. Citation: C-016"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_5_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMcAdams & Maunsell 1999\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 5, "C",
+        [("unattended", "attend contralateral", COLORS["unattended"]),
+         ("attended", "attend in RF", COLORS["attended"])],
+        title="C — spatial attention scales orientation tuning",
+        xlabel="stimulus orientation (deg)")
+    fig.suptitle("Figure 5 (digitized reference): multiplicative scaling", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"5C": panel}}
+
+
+def render_figure_6_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 6 grid rendered from the digitized paper curves. Citation: C-017"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_6_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMartinez-Trujillo & Treue 2004\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 6, "C",
+        [("attend_fixation", "attend fixation", COLORS["unattended"]),
+         ("attend_contralateral", "attend contralateral", COLORS["attended"])],
+        title="C — feature-based attention scales tuning",
+        xlabel="motion direction (deg)")
+    fig.suptitle("Figure 6 (digitized reference): feature-based attention", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"6C": panel}}
+
+
+def render_figure_7_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 7 grid rendered from the digitized paper curves. Citation: C-018"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_7_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nTreue & Martinez-Trujillo 1999\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 7, "C",
+        [("fixation", "ignored / fixation", COLORS["unattended"]),
+         ("attend_nonpref", "attend nonpreferred", COLORS["suppressed"]),
+         ("attend_variable", "attend variable", COLORS["attended"])],
+        title="C — two-stimulus direction tuning",
+        xlabel="variable stimulus direction (deg)")
+    fig.suptitle("Figure 7 (digitized reference): two-stimulus direction tuning", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"7C": panel}}
+
+
+_REFERENCE_RENDERERS = {
+    2: render_figure_2_reference,
+    3: render_figure_3_reference,
+    4: render_figure_4_reference,
+    5: render_figure_5_reference,
+    6: render_figure_6_reference,
+    7: render_figure_7_reference,
+}
+
+
+def save_all_references(output_dir: str | Path | None = None) -> list[Path]:
+    """Render every digitized-reference figure (WORKFLOW.md §3b)."""
+    target = _output_dir(output_dir)
+    return [render(target)["path"] for render in _REFERENCE_RENDERERS.values()]
 
 
 def save_all_figures(output_dir: str | Path | None = None) -> list[Path]:
@@ -591,10 +985,15 @@ def save_all_figures(output_dir: str | Path | None = None) -> list[Path]:
 def main() -> int:
     """Command-line entry point for rendering all figure PNGs.
 
+    Renders BOTH the implementation figures (model record → view) and the
+    digitized-reference figures (paper digitization → same view), so the
+    §3b four-up comparison is available from one command.
+
     Assumption: a simple module entry point is sufficient for local
     reproduction runs.
     """
     paths = save_all_figures()
+    paths += save_all_references()
     for path in paths:
         print(path)
     return 0

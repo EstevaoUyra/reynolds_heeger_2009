@@ -1,0 +1,9 @@
+# Figure 1 is the model SCHEMATIC flow diagram
+# (Stimulus -> Stimulus drive x Attention field -> pool -> Suppressive drive ÷ -> Output).
+# It has no data panels and no axis limits; it is kept as the single schematic
+# figure. No panel cropping / axis-limit tests apply.
+figure: 1
+rows: 1
+cols: 1
+cells:
+  - {row: 0, col: 0, panel: schematic, reproduced: true, role: schematic}

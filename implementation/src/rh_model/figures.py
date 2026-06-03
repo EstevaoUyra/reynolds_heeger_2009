@@ -10,7 +10,15 @@ from __future__ import annotations
 
 from .views import (  # noqa: F401
     DEFAULT_OUTPUT_DIR,
+    PAPER_PANEL_LIMITS,
     main,
+    paper_panel_limits,
+    render_figure_2,
+    render_figure_3,
+    render_figure_4,
+    render_figure_5,
+    render_figure_6,
+    render_figure_7,
     save_all_figures,
     save_figure_1,
     save_figure_2,
@@ -23,6 +31,8 @@ from .views import (  # noqa: F401
 
 __all__ = [
     "DEFAULT_OUTPUT_DIR",
+    "PAPER_PANEL_LIMITS",
+    "paper_panel_limits",
     "save_figure_1",
     "save_figure_2",
     "save_figure_3",
@@ -30,6 +40,12 @@ __all__ = [
     "save_figure_5",
     "save_figure_6",
     "save_figure_7",
+    "render_figure_2",
+    "render_figure_3",
+    "render_figure_4",
+    "render_figure_5",
+    "render_figure_6",
+    "render_figure_7",
     "save_all_figures",
     "main",
 ]

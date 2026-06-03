@@ -1,0 +1,28 @@
+{
+  "panel": "5C",
+  "figure": 5,
+  "description": "Orientation tuning, spatial attention. Two bell-shaped curves centered at 0 deg; the attended curve (peak 1.0) is a MULTIPLICATIVE SCALING of the attend-contralateral curve (peak ~0.82) — same peak orientation, same width/bandwidth (no sharpening). The paper's enhancement is modest: peak ratio attended/unattended ~ 1.22.",
+  "x_variable": "stimulus_orientation_deg",
+  "x_scale": "linear",
+  "x_range": [-90.0, 90.0],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-90.0, 0.02], [-70.0, 0.07], [-50.0, 0.22], [-35.0, 0.45],
+        [-20.0, 0.72], [-10.0, 0.90], [0.0, 1.00], [10.0, 0.90],
+        [20.0, 0.72], [35.0, 0.45], [50.0, 0.22], [70.0, 0.07], [90.0, 0.02]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-90.0, 0.015], [-70.0, 0.057], [-50.0, 0.18], [-35.0, 0.37],
+        [-20.0, 0.59], [-10.0, 0.74], [0.0, 0.82], [10.0, 0.74],
+        [20.0, 0.59], [35.0, 0.37], [50.0, 0.18], [70.0, 0.057], [90.0, 0.015]
+      ]
+    }
+  }
+}

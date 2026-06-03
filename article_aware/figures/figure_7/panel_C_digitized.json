@@ -1,0 +1,37 @@
+{
+  "panel": "7C",
+  "figure": 7,
+  "description": "Direction tuning, two stimuli in RF, three attention conditions, all centered at 0 deg. Curve heights reorder: attend-variable is tallest (peak 1.0), ignored/fixation intermediate (peak ~0.72), attend-nonpreferred lowest (peak ~0.50). The paper's attention gain is modest: attend-variable/ignored peak ratio ~ 1.4 (and attend-variable/attend-nonpreferred ~ 2.0). KNOWN MODEL DIVERGENCE: the implementation's attend-variable/ignored peak ratio is ~3.3 — more than twice too strong.",
+  "x_variable": "variable_stimulus_direction_deg",
+  "x_scale": "linear",
+  "x_range": [-180.0, 175.0],
+  "curves": {
+    "attend_variable": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-180.0, 0.01], [-150.0, 0.02], [-120.0, 0.06], [-90.0, 0.15],
+        [-60.0, 0.35], [-30.0, 0.72], [0.0, 1.00], [30.0, 0.72],
+        [60.0, 0.35], [90.0, 0.15], [120.0, 0.06], [150.0, 0.02], [175.0, 0.01]
+      ]
+    },
+    "fixation": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-180.0, 0.01], [-150.0, 0.02], [-120.0, 0.05], [-90.0, 0.12],
+        [-60.0, 0.27], [-30.0, 0.52], [0.0, 0.72], [30.0, 0.52],
+        [60.0, 0.27], [90.0, 0.12], [120.0, 0.05], [150.0, 0.02], [175.0, 0.01]
+      ]
+    },
+    "attend_nonpref": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [-180.0, 0.01], [-150.0, 0.01], [-120.0, 0.04], [-90.0, 0.09],
+        [-60.0, 0.19], [-30.0, 0.37], [0.0, 0.50], [30.0, 0.37],
+        [60.0, 0.19], [90.0, 0.09], [120.0, 0.04], [150.0, 0.01], [175.0, 0.01]
+      ]
+    }
+  }
+}

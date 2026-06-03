@@ -1,0 +1,329 @@
+{
+  "panel": "4C",
+  "figure": 4,
+  "description": "Two stimuli colocated in RF; attend nonpreferred (attended-away preferred) vs attend away, preferred contrast swept. Two solid CRFs are CLEARLY SEPARATED with a visible white gap through the whole rising portion (re-traced separately per curve at ~6-8x zoom). The upper (attended) solid sits above the lower (unattended) solid by ~0.10 at mid-contrast, narrowing to ~0.04 near the top. The pair merges only in the low-contrast toe (x<~0.025). Attended saturates ~0.80, unattended ~0.77 of left-axis full scale (NOT 1.0). Dashed percent-modulation (right axis 0-100) peaks ~36% at low contrast and declines monotonically to a few % at high contrast.",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [
+    0.01,
+    1.0
+  ],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [
+        0.0,
+        1.0
+      ],
+      "points": [
+        [
+          0.01,
+          0.019
+        ],
+        [
+          0.0131,
+          0.032
+        ],
+        [
+          0.0172,
+          0.041
+        ],
+        [
+          0.0225,
+          0.045
+        ],
+        [
+          0.0296,
+          0.065
+        ],
+        [
+          0.0387,
+          0.088
+        ],
+        [
+          0.0508,
+          0.117
+        ],
+        [
+          0.0666,
+          0.161
+        ],
+        [
+          0.0873,
+          0.216
+        ],
+        [
+          0.1145,
+          0.289
+        ],
+        [
+          0.1501,
+          0.366
+        ],
+        [
+          0.1968,
+          0.449
+        ],
+        [
+          0.2581,
+          0.53
+        ],
+        [
+          0.3384,
+          0.616
+        ],
+        [
+          0.4437,
+          0.683
+        ],
+        [
+          0.5817,
+          0.733
+        ],
+        [
+          0.7627,
+          0.772
+        ],
+        [
+          1.0,
+          0.815
+        ]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [
+        0.0,
+        1.0
+      ],
+      "points": [
+        [
+          0.01,
+          0.019
+        ],
+        [
+          0.0131,
+          0.032
+        ],
+        [
+          0.0172,
+          0.041
+        ],
+        [
+          0.0225,
+          0.045
+        ],
+        [
+          0.0296,
+          0.046
+        ],
+        [
+          0.0387,
+          0.061
+        ],
+        [
+          0.0508,
+          0.082
+        ],
+        [
+          0.0666,
+          0.112
+        ],
+        [
+          0.0873,
+          0.154
+        ],
+        [
+          0.1145,
+          0.205
+        ],
+        [
+          0.1501,
+          0.267
+        ],
+        [
+          0.1968,
+          0.355
+        ],
+        [
+          0.2581,
+          0.433
+        ],
+        [
+          0.3384,
+          0.519
+        ],
+        [
+          0.4437,
+          0.601
+        ],
+        [
+          0.5817,
+          0.672
+        ],
+        [
+          0.7627,
+          0.724
+        ],
+        [
+          1.0,
+          0.773
+        ]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [
+        0.0,
+        100.0
+      ],
+      "points": [
+        [
+          0.01,
+          33.8
+        ],
+        [
+          0.0131,
+          36.4
+        ],
+        [
+          0.0172,
+          36.3
+        ],
+        [
+          0.0225,
+          35.7
+        ],
+        [
+          0.0296,
+          35.3
+        ],
+        [
+          0.0387,
+          34.6
+        ],
+        [
+          0.0508,
+          33.7
+        ],
+        [
+          0.0666,
+          32.5
+        ],
+        [
+          0.0873,
+          30.4
+        ],
+        [
+          0.1145,
+          28.8
+        ],
+        [
+          0.1501,
+          24.2
+        ],
+        [
+          0.1968,
+          21.8
+        ],
+        [
+          0.2581,
+          18.4
+        ],
+        [
+          0.3384,
+          15.0
+        ],
+        [
+          0.4437,
+          11.1
+        ],
+        [
+          0.5817,
+          8.3
+        ],
+        [
+          0.7627,
+          5.9
+        ],
+        [
+          1.0,
+          2.9
+        ]
+      ]
+    }
+  },
+  "provenance": {
+    "figure_type": "line/curve attentional CRF pair (two solids) + declining %-modulation dashed on right axis, log-x",
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band (column-band per curve)",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "Mode-1 quantitative plot. Two same-color solid CRFs that are visibly separated for most of the range -> traced SEPARATELY, each in its own row-band (upper band = attended, lower band = unattended), splitting wherever the white gap is resolvable (down to x~0.025) and treating them as a merged envelope only in the deep toe. Dashed isolated by its own region/gaps and right-axis calibration. PCHIP for rounded saturation/flat toe.",
+    "calibration": {
+      "x": [
+        [
+          50,
+          0.01
+        ],
+        [
+          178,
+          1.0
+        ]
+      ],
+      "y_left": [
+        [
+          167,
+          0.0
+        ],
+        [
+          13,
+          1.0
+        ]
+      ],
+      "y_right": [
+        [
+          167,
+          0.0
+        ],
+        [
+          13,
+          100.0
+        ]
+      ],
+      "x_scale": "log",
+      "plot_box": {
+        "left_col": 50,
+        "right_col": 178,
+        "top_row": 13,
+        "bottom_row": 167
+      },
+      "plot_box_note": "detect_plot_box auto-returned left=12, which is the leftover right edge of adjacent panel B; true left frame is col 50 (verified by longest-dark-run scan). Top/bottom/right verified by horizontal long-run scan within frame columns."
+    },
+    "per_curve": {
+      "attended": "traced as the UPPER solid in its own band, separated from unattended wherever the white gap resolves (x>=~0.025); deep toe (x<~0.025) merges into the envelope with the unattended curve.",
+      "unattended": "traced as the LOWER solid in its own band; well-resolved across the rising portion and plateau.",
+      "percent_modulation": "dashed, isolated by region and right-axis calibration; monotone decline, no rising-solid crossover wobble (the prior x~0.11-0.15 bump was removed by tracing the dashed in its own band)."
+    },
+    "normalization": "paper shared sub-1.0 left scale; attended saturates ~0.80, unattended ~0.77 at top contrast (NOT pinned to 1.0).",
+    "gap_record": {
+      "x~0.15": 0.099,
+      "x~0.26": 0.098,
+      "x~0.44": 0.082,
+      "x~0.58": 0.062,
+      "x~0.76": 0.048,
+      "x~1.0": 0.042,
+      "note": "gap ~0.10 mid-contrast narrowing to ~0.04 at high contrast; matches the independent critic trace (0.101@0.23, 0.068@0.54, 0.042@0.84). This CORRECTS the prior digitization which collapsed the gap to ~0.01-0.03 (3-5x understated) and placed the attended plateau ~0.04-0.05 low (0.748)."
+    },
+    "caveats": [
+      "No numeric x ticks on the panel; x_range [0.01,1.0] log is taken from the model sweep range / panel .md (same assumption as the prior digitization and the critic; relative gap is independent of it).",
+      "Left y-max=1.0 assumed at the top frame (row 13), consistent with the right axis 0-100 mapping over the same span; no explicit left-axis numeric tick beyond the implied 0..1.",
+      "Two solids merge in the deep toe (x<~0.025); the split there is set to 0 (envelope), not an invented gap.",
+      "Curves were re-traced only to col 176 (x~0.93, the rightmost dark pixels); values at x=1.0 are a mild PCHIP continuation of the still-rising CRF, not a flat plateau."
+    ],
+    "re_trace_note": "Targeted re-trace (2026-06-03) addressing audit figure_4_2026-06-03.md panel-4C DIGITIZATION-DIVERGENT finding. Panel 4E untouched."
+  }
+}
