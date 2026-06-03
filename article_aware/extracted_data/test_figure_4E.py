@@ -119,7 +119,12 @@ def test_attend_pref_crf_saturates_at_high_contrast():
     attend_pref, _, _, contrast = _validated_outputs(protocols.run_figure_4E())
 
     attend_pref_at_half = value_at(contrast, attend_pref, 0.5)
-    assert (attend_pref[-1] - attend_pref_at_half) / attend_pref_at_half < 0.3
+    # Genuine plateau: with sigma=0.1 the response is within ~15% of its
+    # half-max value by c=1. The 0.15 bound (vs the previous 0.3) makes this
+    # a real saturation referent — the pre-fix gain=4 config (rising ~13%+
+    # but with the curve still climbing) is tightened toward the closed-form
+    # r(1) ~ 0.9*alpha expectation; the saturating gain=8 config passes (~8%).
+    assert (attend_pref[-1] - attend_pref_at_half) / attend_pref_at_half < 0.15
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-052")

@@ -105,11 +105,11 @@ figure_1.attention_spatial_center:
 # ---------------------------------------------------------------------------
 
 figure_2A.suppressive_drive_gain:
-  value: 4.0
+  value: 12.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "1D discretized suppressive pooling makes S too small vs A*E; gain restores CRF saturation. Shared 2A/2B default."
+  note: "1D discretized suppressive pooling makes S too small vs A*E so the CRF does not bend over; gain restores genuine CRF saturation (plateau). Raised 4->12 (2026-06-03 faithfulness fix): at gain 4 the unattended CRF was still rising ~22% from half-max to c=1, contradicting the paper's 'responses saturate at high stimulus contrasts'; 12 brings the plateau to ~10%. Shared 2A/2B default."
 figure_2A.suppressive_spatial_sigma_scale:
   value: 0.55
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
@@ -124,11 +124,11 @@ figure_2A.baseline_unmodulated:
   note: "Small unmodulated baseline so the normalized CRFs have a finite low-contrast floor."
 
 figure_2B.suppressive_drive_gain:
-  value: 4.0
+  value: 6.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 2B suppressive-drive gain (response-gain regime); shared 2A/2B default."
+  note: "Figure 2B suppressive-drive gain (response-gain regime); raised 4->6 (2026-06-03 faithfulness fix) so the CRFs reach a high-contrast plateau (rise from half-max to c=1 ~23% vs ~30% at gain 4) while KEEPING the response-gain signature — attentional modulation stays sustained at high contrast (pm[-1] >= 0.45*peak, high-contrast mean modulation > 0.55x rising mean). A larger gain over-saturates and erodes that sustained high-contrast modulation, the defining 2B-vs-2A difference."
 figure_2B.suppressive_spatial_sigma_scale:
   value: 1.0
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
@@ -147,11 +147,11 @@ figure_2B.baseline_unmodulated:
 # ---------------------------------------------------------------------------
 
 figure_3C.suppressive_drive_gain:
-  value: 5.0
+  value: 8.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 3 suppressive-drive gain (shared 3C/3F default base)."
+  note: "Figure 3C suppressive-drive gain; raised 5->8 (2026-06-03 faithfulness fix) so the contrast-gain-mix CRFs reach a genuine high-contrast plateau (~15%). Left-shift (attended half-max below unattended) is preserved and stays weaker than 3F."
 figure_3C.suppressive_spatial_sigma_scale:
   value: 0.45
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
@@ -172,17 +172,17 @@ figure_3C.baseline_unmodulated:
   note: "Figure 3C unmodulated baseline (added to R)."
 
 figure_3F.suppressive_drive_gain:
-  value: 8.0
+  value: 12.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 3F response-gain regime suppressive-drive gain."
+  note: "Figure 3F response-gain regime suppressive-drive gain; raised 8->12 with a narrowed suppressive width (see suppressive_spatial_sigma_scale below) so the CRF bends over by c=1 (rise from half-max to c=1 ~21% vs ~26% at gain 8) instead of staying near-linear. Response-gain CRFs still plateau more gently than the contrast-gain panels and the percent-modulation peak stays in the low-contrast half (< n/2), matching the paper's Fig 3F."
 figure_3F.suppressive_spatial_sigma_scale:
-  value: 1.0
+  value: 0.7
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
   source: SQ-001
   audited: false
-  note: "Figure 3F keeps the unscaled suppressive width (response-gain regime retains the larger high-contrast separation)."
+  note: "Figure 3F effective suppressive width narrowed 1.0->0.7 (2026-06-03 faithfulness fix) so S grows fast enough that the response-gain CRF bends over within [0.01,1]; the attended/unattended high-contrast separation and the sustained modulation that distinguish the response-gain regime are preserved."
 figure_3F.baseline_modulated_by_attention:
   value: 0.05
   units: "R&H response units (additive, pre-normalization, attention-modulated)"
@@ -221,11 +221,11 @@ figure_4C.suppressive_tuning_width:
   note: "Per-protocol effective suppressive TUNING width for Figure 4C only (mid of the robust 60-90 deg green band). The cited C-011 180 deg leaves 4C unable to satisfy the contrast-gain recovery/saturation claims (Q-027/Q-029) and no other sanctioned knob moves it. Figure 4C green is PROVISIONAL, soft-blocked on SQ-004. article_aware/spec and the C-011 constant are left unchanged."
 
 figure_4E.suppressive_drive_gain:
-  value: 4.0
+  value: 8.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 4E suppressive-drive gain."
+  note: "Figure 4E suppressive-drive gain; raised 4->8 (2026-06-03 faithfulness fix) so the two-stimulus attend-pref/attend-nonpref CRFs genuinely saturate (plateau ~7-9%) rather than rising steeply at c=1. Multiplicative-scaling and ordering predicates preserved."
 
 # ---------------------------------------------------------------------------
 # Formalized calibrated 1D-CRF entry point (rh_model.crf_protocol.run_crf).
