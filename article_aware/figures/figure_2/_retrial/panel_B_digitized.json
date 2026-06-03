@@ -1,0 +1,184 @@
+{
+  "panel": "2B",
+  "figure": 2,
+  "description": "Predominantly response gain. Two solid CRFs with little/no horizontal (contrast) shift: attended is scaled UP to a plateau ~0.85, ignored to a LOWER plateau ~0.60, and they DO NOT converge at high contrast (sustained vertical separation ~0.25 = the response-gain signature). Dashed percent-modulation curve on the right axis is comparatively flat/elevated: ~99% at low contrast, dips toward ~58% near the crossing (~x=0.09), then recovers and stays elevated ~80% at high contrast. Shared sub-1.0 scale with 2A: 2B's attended plateau (~0.85) is HIGHER than 2A's (~0.62) - that height difference is the figure's scientific claim.",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [
+    0.01,
+    1.0
+  ],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [
+        0.0,
+        1.0
+      ],
+      "points": [
+        [
+          0.013,
+          0.02
+        ],
+        [
+          0.02,
+          0.04
+        ],
+        [
+          0.03,
+          0.1
+        ],
+        [
+          0.045,
+          0.22
+        ],
+        [
+          0.065,
+          0.4
+        ],
+        [
+          0.09,
+          0.58
+        ],
+        [
+          0.13,
+          0.72
+        ],
+        [
+          0.18,
+          0.8
+        ],
+        [
+          0.25,
+          0.835
+        ],
+        [
+          0.4,
+          0.852
+        ],
+        [
+          0.6,
+          0.858
+        ],
+        [
+          1.0,
+          0.852
+        ]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [
+        0.0,
+        1.0
+      ],
+      "points": [
+        [
+          0.013,
+          0.018
+        ],
+        [
+          0.02,
+          0.03
+        ],
+        [
+          0.03,
+          0.065
+        ],
+        [
+          0.045,
+          0.12
+        ],
+        [
+          0.065,
+          0.2
+        ],
+        [
+          0.09,
+          0.3
+        ],
+        [
+          0.13,
+          0.42
+        ],
+        [
+          0.18,
+          0.5
+        ],
+        [
+          0.25,
+          0.55
+        ],
+        [
+          0.4,
+          0.585
+        ],
+        [
+          0.6,
+          0.6
+        ],
+        [
+          1.0,
+          0.605
+        ]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [
+        0.0,
+        100.0
+      ],
+      "points": [
+        [
+          0.013,
+          99.0
+        ],
+        [
+          0.02,
+          97.0
+        ],
+        [
+          0.03,
+          90.0
+        ],
+        [
+          0.045,
+          78.0
+        ],
+        [
+          0.065,
+          66.0
+        ],
+        [
+          0.085,
+          59.0
+        ],
+        [
+          0.12,
+          65.0
+        ],
+        [
+          0.17,
+          73.0
+        ],
+        [
+          0.25,
+          78.0
+        ],
+        [
+          0.4,
+          81.0
+        ],
+        [
+          0.6,
+          81.0
+        ],
+        [
+          1.0,
+          79.0
+        ]
+      ]
+    }
+  }
+}
