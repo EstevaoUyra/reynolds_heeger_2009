@@ -1,14 +1,18 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
 > ⚠️ **NOT a faithful reproduction (corrected 2026-06-03).** This model previously
-> shipped as "FAITHFUL across all 7 figures." A panel restructure (pinning each panel's
-> axes to the paper's) plus careful side-by-side inspection found that verdict was
-> **wrong**: the schematic (Fig 1) is faithful, but **Figures 2–7 carry real divergences
-> in the model's curve shapes and attention-gain magnitudes** — the kind of quantitative
-> error that matters precisely because this is a *normalization model* (the gain/
-> modulation magnitude *is* the scientific claim). Only Fig 4E's divergence is currently
-> a deterministic failing test; the others were caught by eye and become deterministic
-> once per-panel **curve digitization** lands (the next process stage). This entry is a
+> shipped as "FAITHFUL across all 7 figures." That verdict was **wrong**: the schematic
+> (Fig 1) is faithful, but **Figures 2–7 carry real divergences** in the model's curve
+> shapes and attention-gain magnitudes — the quantitative error that matters precisely
+> because this is a *normalization model* (the gain/modulation magnitude *is* the
+> scientific claim). The divergences are now **measured against the paper**, not caught
+> by eye: each curve is **digitized from the paper panel** (~a dozen points), a Phase-A
+> view renders that digitized reference and the implementation through identical pinned
+> axes, and three tiers of tests compare them. **Four figures gate red** — 4E (% modulation
+> ~390% vs the paper's 0–100 axis), 5 (spatial gain too strong), 6 (feature sharpening
+> absent), 7 (combined gain ~3.3× vs ~1.4×). **Figures 2 and 3** pass the gating tests but
+> their curve-shape divergence is surfaced by the **soft dozen-point shape check**
+> (reported, not blocking — a human promotes it to a hard gate per panel). This entry is a
 > documented case of the auditor being too lenient — see "How it was verified."
 
 ## Model
@@ -31,53 +35,183 @@ S(x,θ) = s(x,θ) ∗ [ A(x,θ)·E(x,θ) ],     ∫ s(x,θ) dx dθ = 1   (Eq. 2)
 
 `A`, `E`, and the suppressive/stimulation fields all have Gaussian profiles in space and in feature. The attention field is `A = 1 + (γ−1)·G`, a Gaussian bump `G` of peak gain `γ`. Because the same product `A·E` appears in both the numerator and (after pooling) the denominator, growing the attention field relative to the stimulus continuously moves the modulation from a **contrast-gain** signature (a leftward shift of the contrast-response function) to a **response-gain** signature (a multiplicative scaling sustained at high contrast). **The equations themselves map operator-for-operator to the paper and are faithful** — the divergences below are in the model's *quantitative output* (the realized gains and curve shapes), not the transcription of Eqs. 5/6/2.
 
-**Figures use the paper's panel layout.** Each figure is reassembled as the paper's panel grid: reproduced model panels are drawn with axes pinned to the paper's, and omitted panels (empirical data, schematic configs, legends) appear as explicit **"not reproduced"** placeholders. This makes the side-by-side comparison line up and the omissions honest.
+## How to read the figures below
 
-## Reproduced figures — per-figure verdict
+Each figure is shown **three ways, side by side**:
+
+1. **Paper** — the original panel image (`article_aware/figures/figure_<N>.jpg`).
+2. **Reproduced from digitization** — the ~dozen points digitized off the paper panel,
+   rendered through the Phase-A-owned view (`figures_reproduced/figure_<N>_reference.png`).
+   This is the *reference the tests compare against*; it passed a VLM self-check vs the
+   paper panel, so it stands in for the paper's curves quantitatively.
+3. **Reproduced from implementation** — the live model output through the *same* view
+   (`figures_reproduced/figure_<N>.png`). Phase B cannot change the axes or style; only the
+   data differ.
+
+Then a **checks** table: **qualitative** + **hard** tiers *gate* the build (a fail is a real
+fail); **soft** tiers are *measured and reported but never block* (a human promotes a soft
+check to hard per panel once the digitization is trusted). Omitted panels (empirical data,
+schematic configs, legends) appear as explicit **"not reproduced"** placeholders.
+
+## Reproduced figures — paper · digitization · implementation
 
 ### Figure 1 — Pipeline schematic  ✅ faithful (schematic)
 <table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="430"></td><td><img src="figures_reproduced/figure_1.png" width="430"></td></tr></table>
 
-The `E × A ÷ S → R` pipeline — stimulus drive, a localized attention field over the attended stimulus, the pooled suppressive drive, and an output that enhances the attended stimulus. The iconography and topology match the paper's architectural figure. (Schematic: no data curve to digitize.)
+The `E × A ÷ S → R` pipeline — stimulus drive, a localized attention field over the attended stimulus, the pooled suppressive drive, and an output that enhances the attended stimulus. The iconography and topology match the paper's architectural figure. (Schematic: no data curve to digitize, so no digitized reference.)
 
-### Figure 2 — Contrast gain vs. response gain  ❌ DIVERGENT (curve shape)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_2.jpg" width="430"></td><td><img src="figures_reproduced/figure_2.png" width="430"></td></tr></table>
+### Figure 2 — Contrast gain vs. response gain  ❌ DIVERGENT — curve shape (soft-reported)
 
-The two regimes are present qualitatively, but the **CRF shapes are wrong**: in the contrast-gain panel (2A) the attended and unattended curves should **converge to a common asymptote** at high contrast (a pure leftward shift) and they do not, and the percent-modulation curve shape does not match the paper's. *(Inspection-identified; deterministic once digitized.)*
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="figures_reproduced/figure_2_reference.png" width="300"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
+</table>
 
-### Figure 3 — Baseline shift across contrast  ❌ DIVERGENT (shape + % modulation)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_3.jpg" width="430"></td><td><img src="figures_reproduced/figure_3.png" width="430"></td></tr></table>
+Digitized reference (middle) reproduces the paper: 2A converges at high contrast with %-modulation falling (contrast gain); 2B stays separated with %-modulation sustained (response gain). The implementation (right) does **not** fully converge in 2A and its %-modulation bottoms ~30% (not ~0) — the shape divergence the soft dozen-point check quantifies.
 
-Both the main-curve shapes **and** the percent-attentional-modulation curves diverge from the paper, and the figure's actual subject — an **additive baseline shift** — is not faithfully shown (the reproduction reads as scaled sigmoids, not a baseline offset). Empirical panels (B/E) are correctly "not reproduced." *(Inspection-identified.)*
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 2A attended at or above unattended | ✅ pass |
+| qualitative | 2A curves converge at high contrast | ✅ pass |
+| qualitative | 2A modulation falls toward high contrast | ✅ pass |
+| qualitative | 2B attended above unattended | ✅ pass |
+| qualitative | 2B curves do not converge at high contrast | ✅ pass |
+| hard | 2A high contrast separation vs digitized | ✅ pass |
+| hard | 2B high contrast separation vs digitized | ✅ pass |
+| soft | 2A attended value at mid contrast | ✅ pass |
+| soft | 2A modulation at low contrast | ⚠️ soft-fail (reported) |
+| soft | 2A shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.22 (curves), 22 (%-mod) |
+| soft | 2B shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.11 (curves), 17 (%-mod) |
+| soft | 2B unattended peak vs digitized | ✅ pass |
 
-### Figure 4 — Two-stimulus contrast-response modulation  ❌ DIVERGENT (4E — FAILING TEST)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_4.jpg" width="430"></td><td><img src="figures_reproduced/figure_4.png" width="430"></td></tr></table>
+### Figure 3 — Baseline shift across contrast  ❌ DIVERGENT — shape + % modulation (soft-reported)
 
-Panel **4E's percent-attentional-modulation reaches 310–390%**, far above the paper's right axis of **0–100%**. With the axis now pinned to the paper's (no auto-scaling), `test_figure_4E_modulation_within_paper_axis` is **RED** — the divergence the original view *hid by auto-scaling its axis to ~400*. 4C is closer but unverified at the curve level. *(4E: deterministic failing test.)*
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="figures_reproduced/figure_3_reference.png" width="300"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
+</table>
 
-### Figure 5 — Spatial attention as multiplicative scaling  ❌ DIVERGENT (gain too strong)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_5.jpg" width="430"></td><td><img src="figures_reproduced/figure_5.png" width="430"></td></tr></table>
+Digitized reference matches the paper's converging CRFs with an interior %-modulation bump. The implementation diverges in curve shape across the low/mid range and in the %-modulation curve (3F %-mod off by ~57). Empirical panels (B/E) are correctly "not reproduced."
 
-The scaling is multiplicative and same-width (the right *kind* of effect), but the attended and unattended curves are **too far apart** — the gain exceeds the paper's modest enhancement. *(Inspection-identified.)*
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 3C attended at or above unattended | ✅ pass |
+| qualitative | 3C curves converge at high contrast | ✅ pass |
+| qualitative | 3F attended above unattended | ✅ pass |
+| qualitative | 3F separation persists at high contrast | ✅ pass |
+| hard | 3C high contrast separation vs digitized | ✅ pass |
+| hard | 3F high contrast separation vs digitized | ✅ pass |
+| soft | 3C modulation has interior bump | ✅ pass |
+| soft | 3C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.28 (curves), 27 (%-mod) |
+| soft | 3F modulation largest at low contrast | ⚠️ soft-fail (reported) |
+| soft | 3F shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.24 (curves), 57 (%-mod) |
 
-### Figure 6 — Feature-based attention sharpening  ❌ DIVERGENT (effect essentially absent)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_6.jpg" width="430"></td><td><img src="figures_reproduced/figure_6.png" width="430"></td></tr></table>
+### Figure 4 — Two-stimulus contrast-response modulation  ❌ DIVERGENT — 4E % modulation gates red
 
-The two tuning curves **overlap** — the feature-based sharpening/difference the paper shows is essentially missing (the opposite failure to Fig 5: too weak rather than too strong). *(Inspection-identified.)*
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="figures_reproduced/figure_4_reference.png" width="300"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
+</table>
 
-### Figure 7 — Two stimuli in the RF: combined attention shifts  ❌ DIVERGENT (gain magnitude)
-<table><tr><th>Paper</th><th>Reproduced</th></tr><tr><td><img src="article_aware/figures/figure_7.jpg" width="430"></td><td><img src="figures_reproduced/figure_7.png" width="430"></td></tr></table>
+4C nearly overlaps (faithful). 4E is the headline divergence: %-attentional-modulation reaches ~390% against the paper's 0–100 axis — a **hard gate failure** (also caught by the pinned-axis test that the old auto-scaled view hid).
 
-The curve ordering (attend-variable > fixation > attend-nonpreferred) is right, but the attend-variable peak is **~3.3× the ignored** vs the paper's **~1.4×** — the attention gain is more than twice too strong. *(Inspection-identified.)*
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 4C curves nearly overlap | ✅ pass |
+| qualitative | 4E attend pref above attend nonpref | ✅ pass |
+| hard | 4C high contrast separation vs digitized | ✅ pass |
+| hard | 4E modulation stays within paper axis | ❌ **FAIL (gates)** |
+| soft | 4C modulation declines to high contrast | ✅ pass |
+| soft | 4C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.16 (curves), 20 (%-mod) |
+| soft | 4E high contrast separation vs digitized | ⚠️ soft-fail (reported) |
+| soft | 4E shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.54 (curves), 342 (%-mod) |
+
+### Figure 5 — Spatial attention as multiplicative scaling  ❌ DIVERGENT — gain too strong (gates red)
+
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_5.jpg" width="300"></td><td><img src="figures_reproduced/figure_5_reference.png" width="300"></td><td><img src="figures_reproduced/figure_5.png" width="300"></td></tr>
+</table>
+
+Multiplicative, same-width scaling (the right *kind* of effect), but the attended/unattended **peak ratio is ~1.59 vs the paper's ~1.22** — gain too strong. Hard ratio test gates red.
+
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 5C attended above unattended over centre | ✅ pass |
+| qualitative | 5C same tuning width no sharpening | ✅ pass |
+| hard | 5C peak ratio vs digitized | ❌ **FAIL (gates)** |
+| soft | 5C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.19 (curves) |
+| soft | 5C unattended peak vs digitized | ⚠️ soft-fail (reported) |
+
+### Figure 6 — Feature-based attention sharpening  ❌ DIVERGENT — sharpening absent (gates red)
+
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="figures_reproduced/figure_6_reference.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
+</table>
+
+The paper sharpens the attended curve (peak ~0.10 above fixation, narrower). The implementation's two curves **overlap** (peak gap ~0.009) — the feature-based effect is essentially absent (the opposite failure to Fig 5: too weak rather than too strong). Qualitative + hard tests gate red.
+
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 6C attended at least as tall at peak | ✅ pass |
+| qualitative | 6C sharpening present at peak | ❌ **FAIL (gates)** |
+| hard | 6C peak ratio vs digitized | ❌ **FAIL (gates)** |
+| soft | 6C flank difference vs digitized | ✅ pass |
+| soft | 6C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.12 (curves) |
+
+### Figure 7 — Two stimuli in RF: combined attention shifts  ❌ DIVERGENT — gain magnitude (gates red)
+
+<table>
+<tr><th>Paper</th><th>Reproduced from digitization</th><th>Reproduced from implementation</th></tr>
+<tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="figures_reproduced/figure_7_reference.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
+</table>
+
+Ordering is right (attend-variable > fixation > attend-nonpreferred) but the attend-variable/fixation **peak ratio is ~3.3 vs the paper's ~1.4** — the attention gain is more than twice too strong. Hard ratio test gates red.
+
+| Tier | Check | Result |
+|------|-------|--------|
+| qualitative | 7C peak ordering | ✅ pass |
+| hard | 7C variable over fixation ratio vs digitized | ❌ **FAIL (gates)** |
+| soft | 7C shape vs digitized | ⚠️ soft-fail (reported) — max Δ 0.41 (curves) |
+| soft | 7C variable over nonpref ratio vs digitized | ⚠️ soft-fail (reported) |
 
 ## How it was verified — and how it slipped through
 
-**The auditors passed this as faithful, and were wrong.** The Faithfulness Auditor compared the rendered figures to the paper images and the Process Auditor checked the reasoning trail; both signed off "faithful," and the deterministic tests (81, all green) passed — because every test asserted only *qualitative shape* claims ("attended above ignored," "same width," "multiplicative scaling"), never the **magnitudes**, and the "absolute magnitude is non-binding" convention explicitly excused exactly the errors above. A normalization model's magnitudes are its result, so that convention was a leniency hole.
+**The auditors passed this as faithful, and were wrong.** The original tests asserted only
+*qualitative shape* claims ("attended above ignored," "same width," "multiplicative scaling")
+and an explicit "absolute magnitude is non-binding" convention excused exactly the magnitude
+errors above. A normalization model's magnitudes are its result, so that convention was a
+leniency hole. What caught the divergences was a **human eye on the side-by-side** plus
+**pinning each panel's axes to the paper's** (which turned Fig 4E's hidden 390% overflow into
+a failing test).
 
-What actually caught the divergences was (1) **a human eye on the side-by-side**, and (2) **pinning each panel's axes to the paper's**, which turned Fig 4E's hidden overflow into a failing test. The systemic fix in progress: **per-panel curve digitization** — digitize the paper's curve and require the model's curve to overlay it within tolerance — which will turn Figs 2/3/5/6/7's inspection-found divergences into deterministic failures too, and (with Phase A owning the view) make presentation deviation impossible rather than merely caught.
+**The systemic fix — now in place.** Each paper curve is **digitized** (~a dozen points off
+the panel image) into `article_aware/figures/figure_<N>/panel_<X>_digitized.json`. A
+**Phase-A-owned view** renders that digitized reference *and* the implementation record
+through identical pinned axes (so Phase B cannot deviate on style/limits), and the digitized
+reference passed a **VLM self-check** against the paper panel. Three test tiers
+(`article_aware/extracted_data/test_tier_*.py`) then compare implementation to reference:
 
-**No constructed stub.** Every figure is a live `protocols.run_figure_*` → `measurements` → `views` computation from the divisive-normalization equations — the divergences are genuine model behavior, not a hand-built answer. Audit records: `logs/faithfulness_audit/` (r0/r1/r2, 2026-06-03); open items: `logs/spec_questions.md`.
+- **qualitative** + **hard** *gate* — a fail is a build fail. These catch the four magnitude
+  divergences (4E, 5, 6, 7) deterministically.
+- **soft** is *measured and reported, never blocks* — for claims the digitization isn't
+  trusted to the last percent. The mechanical **dozen-point shape check**
+  (`test_tier_shape.py`) lives here: it requires the model curve to pass within tolerance of
+  every digitized point across the range, which is what surfaces Figs 2/3's curve-shape
+  divergence (2A max Δ 0.22, 3C max Δ 0.28) that the endpoint-only hard tests missed. A
+  human promotes any soft check to a hard gate with a one-line `tier` flip.
+
+This is the lesson the worked example bought: left to its own judgment the extraction agent
+authored a few *scalar* hard tests the model happened to pass; the divergence was in *shape*.
+The mechanical dozen-point shape check, generated from the digitized points rather than chosen
+by the agent, is the backbone that makes shape (not just endpoints and ratios) measurable.
+
+**No constructed stub.** Every figure is a live `protocols.run_figure_*` → `measurements` →
+`views` computation from the divisive-normalization equations — the divergences are genuine
+model behavior, not a hand-built answer. Audit records: `logs/faithfulness_audit/`; open
+items: `logs/spec_questions.md`.
 
 ## Repository layout
 
-`implementation/src/rh_model/` holds the model (`model.py`), protocols, measurements, and `views.py` (`python -m rh_model.views` writes `implementation/figure_outputs/figure_<N>.png`). `article_aware/spec/` carries the spec, citations, and calibration ledger; `article_aware/figures/` the paper images, per-panel crops/descriptions, and visual checklists; `figures_reproduced/` the committed reproduced PNGs (panel layout); `logs/` the audit and spec-question records.
+`implementation/src/rh_model/` holds the model (`model.py`), protocols, measurements, and `views.py` (`python -m rh_model.views` writes the reproduced + reference PNGs). `article_aware/spec/` carries the spec, citations, and calibration ledger; `article_aware/figures/` the paper images, per-panel crops/descriptions, and the **digitized references** (`figure_<N>/panel_<X>_digitized.json`); `article_aware/extracted_data/` the **three-tier panel tests** (`test_tier_*.py`, `rh_tier_helpers.py`) and `test_panel_axes.py`; `figures_reproduced/` the committed paper-vs-digitization-vs-implementation PNGs; `logs/` the audit and spec-question records.

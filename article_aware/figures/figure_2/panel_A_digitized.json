@@ -1,0 +1,37 @@
+{
+  "panel": "2A",
+  "figure": 2,
+  "description": "Predominantly contrast gain. Two solid CRFs (attended left-shifted of ignored, converging at the high-contrast end) on the left normalized-response axis (0-1); dashed percent-attentional-modulation curve on the right axis (0-100), largest at low contrast and falling monotonically toward 0.",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [0.01, 1.0],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.03], [0.0152, 0.05], [0.0231, 0.09], [0.0351, 0.16],
+        [0.0534, 0.28], [0.0811, 0.45], [0.1233, 0.64], [0.1874, 0.80],
+        [0.2848, 0.90], [0.4329, 0.95], [0.6579, 0.98], [1.0, 1.0]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.02], [0.0152, 0.03], [0.0231, 0.05], [0.0351, 0.08],
+        [0.0534, 0.14], [0.0811, 0.24], [0.1233, 0.40], [0.1874, 0.58],
+        [0.2848, 0.74], [0.4329, 0.86], [0.6579, 0.94], [1.0, 0.99]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [0.0, 100.0],
+      "points": [
+        [0.01, 98.0], [0.0152, 96.0], [0.0231, 92.0], [0.0351, 85.0],
+        [0.0534, 73.0], [0.0811, 56.0], [0.1233, 38.0], [0.1874, 23.0],
+        [0.2848, 13.0], [0.4329, 7.0], [0.6579, 4.0], [1.0, 2.0]
+      ]
+    }
+  }
+}

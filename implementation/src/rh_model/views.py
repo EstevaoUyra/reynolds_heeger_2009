@@ -13,6 +13,7 @@ compatibility shim re-exporting these renderers.)
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -24,6 +25,14 @@ from . import protocols
 
 
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parents[2] / "figure_outputs"
+
+# Phase-A digitized references (WORKFLOW.md §3b). The view is Phase-A-owned and
+# renders EITHER the implementation's measurement record OR the paper-digitized
+# reference through the SAME pinned axes. The digitized JSONs live under
+# article_aware/figures/figure_<N>/panel_<X>_digitized.json.
+ARTICLE_AWARE_FIGURES = (
+    Path(__file__).resolve().parents[3] / "article_aware" / "figures"
+)
 
 COLORS = {
     "attended": "#2f6fbb",
@@ -71,6 +80,37 @@ def paper_panel_limits(panel_id: str) -> dict:
     deterministic axis tests assert against (WORKFLOW.md §3).
     """
     return PAPER_PANEL_LIMITS[panel_id]
+
+
+# ---------------------------------------------------------------------------
+# Digitized-reference loading (WORKFLOW.md §3b). A digitized JSON stores, per
+# curve, ~a dozen [x, y] points read off the paper panel in the panel's pinned
+# frame (left axis normalized 0-1; right axis 0-100). We resample those points
+# onto a dense grid in the panel's pinned x-range so the reference renders as a
+# smooth curve through the SAME view helpers the implementation record uses.
+# ---------------------------------------------------------------------------
+
+def load_digitized(figure: int, panel: str) -> dict:
+    """Load the digitized reference JSON for figure_<N>/panel_<X>."""
+    path = ARTICLE_AWARE_FIGURES / f"figure_{figure}" / f"panel_{panel}_digitized.json"
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _resample_curve(points: list, x_grid: np.ndarray, *, log_x: bool) -> np.ndarray:
+    """Interpolate digitized [x, y] points onto ``x_grid`` (log-x if requested)."""
+    pts = np.asarray(points, dtype=float)
+    xs, ys = pts[:, 0], pts[:, 1]
+    if log_x:
+        return np.interp(np.log(x_grid), np.log(xs), ys)
+    return np.interp(x_grid, xs, ys)
+
+
+def _digitized_x_grid(dig: dict, n: int = 64) -> np.ndarray:
+    lo, hi = dig["x_range"]
+    if dig.get("x_scale") == "log":
+        return np.logspace(np.log10(lo), np.log10(hi), n)
+    return np.linspace(lo, hi, n)
 
 
 def _pyplot():
@@ -746,6 +786,185 @@ def save_figure_7(output_dir: str | Path | None = None) -> Path:
     return render_figure_7(output_dir)["path"]
 
 
+# ---------------------------------------------------------------------------
+# Reference figures rendered FROM THE DIGITIZATION (WORKFLOW.md §3b). These use
+# the SAME _plot_* helpers and the SAME pinned axes as the implementation
+# renders above, so (paper panel) vs (digitized reference) vs (implementation)
+# line up cell-for-cell on identical axes.
+# ---------------------------------------------------------------------------
+
+def _crf_reference_panel(ax, figure: int, panel: str, *, title: str,
+                         attended_key: str, unattended_key: str,
+                         attended_label: str, unattended_label: str) -> dict:
+    """Render one digitized CRF panel (left curves + dashed % modulation)."""
+    dig = load_digitized(figure, panel)
+    x = _digitized_x_grid(dig)
+    att = _resample_curve(dig["curves"][attended_key]["points"], x, log_x=True)
+    una = _resample_curve(dig["curves"][unattended_key]["points"], x, log_x=True)
+    pm = _resample_curve(dig["curves"]["percent_modulation"]["points"], x, log_x=True)
+    return _plot_normalized_crf_with_modulation(
+        ax, f"{figure}{panel}", x, att, una, pm, title=title,
+        attended_label=attended_label, unattended_label=unattended_label,
+    )
+
+
+def render_figure_2_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 2 grid rendered from the digitized paper curves. Citation: C-013"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(10.2, 6.0), constrained_layout=True)
+    grid = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_2_reference.png"
+    panels = {
+        "2A": _crf_reference_panel(
+            fig.add_subplot(grid[0, 0]), 2, "A", title="A — predominantly contrast gain",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attended", unattended_label="ignored / unattended"),
+        "2B": _crf_reference_panel(
+            fig.add_subplot(grid[0, 1]), 2, "B", title="B — predominantly response gain",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attended", unattended_label="ignored / unattended"),
+    }
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    fig.suptitle("Figure 2 (digitized reference): contrast vs response gain", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def render_figure_3_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 3 grid rendered from the digitized paper curves. Citation: C-014"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
+    path = _output_dir(output_dir) / "figure_3_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nReynolds et al. 2000\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "E · empirical\nWilliford & Maunsell 2006\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+    panels = {
+        "3C": _crf_reference_panel(
+            fig.add_subplot(grid[0, 2]), 3, "C", title="C — mixed attention effect",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend in RF", unattended_label="attend contralateral"),
+        "3F": _crf_reference_panel(
+            fig.add_subplot(grid[1, 2]), 3, "F", title="F — mixed attention effect",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend in RF", unattended_label="attend contralateral"),
+    }
+    fig.suptitle("Figure 3 (digitized reference): baseline shift across contrast", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def render_figure_4_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 4 grid rendered from the digitized paper curves. Citation: C-015"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 8.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.0, 0.16])
+    path = _output_dir(output_dir) / "figure_4_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMartinez-Trujillo & Treue 2002\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 0]), "D · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, 1]), "not reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[2, :]), "legend — not reproduced")
+    panels = {
+        "4C": _crf_reference_panel(
+            fig.add_subplot(grid[0, 2]), 4, "C", title="C — attend nonpreferred in RF",
+            attended_key="attended", unattended_key="unattended",
+            attended_label="attend nonpreferred", unattended_label="attend away"),
+        "4E": _crf_reference_panel(
+            fig.add_subplot(grid[1, 2]), 4, "E", title="E — attend preferred scales response",
+            attended_key="attend_pref", unattended_key="attend_nonpref",
+            attended_label="attend preferred", unattended_label="attend nonpreferred"),
+    }
+    fig.suptitle("Figure 4 (digitized reference): two-stimulus competition", fontsize=12)
+    return {"path": _save(fig, path), "panels": panels}
+
+
+def _tuning_reference_panel(ax, figure: int, panel: str, curve_specs: list,
+                            *, title: str, xlabel: str) -> dict:
+    """Render one digitized tuning panel from a list of (json_key, label, color)."""
+    dig = load_digitized(figure, panel)
+    x = _digitized_x_grid(dig)
+    curves = [
+        (label, _resample_curve(dig["curves"][key]["points"], x, log_x=False), color)
+        for key, label, color in curve_specs
+    ]
+    return _plot_tuning(ax, f"{figure}{panel}", x, curves, title=title, xlabel=xlabel)
+
+
+def render_figure_5_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 5 grid rendered from the digitized paper curves. Citation: C-016"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_5_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMcAdams & Maunsell 1999\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 5, "C",
+        [("unattended", "attend contralateral", COLORS["unattended"]),
+         ("attended", "attend in RF", COLORS["attended"])],
+        title="C — spatial attention scales orientation tuning",
+        xlabel="stimulus orientation (deg)")
+    fig.suptitle("Figure 5 (digitized reference): multiplicative scaling", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"5C": panel}}
+
+
+def render_figure_6_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 6 grid rendered from the digitized paper curves. Citation: C-017"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_6_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nMartinez-Trujillo & Treue 2004\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 6, "C",
+        [("attend_fixation", "attend fixation", COLORS["unattended"]),
+         ("attend_contralateral", "attend contralateral", COLORS["attended"])],
+        title="C — feature-based attention scales tuning",
+        xlabel="motion direction (deg)")
+    fig.suptitle("Figure 6 (digitized reference): feature-based attention", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"6C": panel}}
+
+
+def render_figure_7_reference(output_dir: str | Path | None = None) -> dict:
+    """Figure 7 grid rendered from the digitized paper curves. Citation: C-018"""
+    plt = _pyplot()
+    fig = plt.figure(figsize=(12.0, 4.6), constrained_layout=True)
+    grid = fig.add_gridspec(2, 3, height_ratios=[1.0, 0.18])
+    path = _output_dir(output_dir) / "figure_7_reference.png"
+    _draw_not_reproduced(fig.add_subplot(grid[0, 0]), "A · config\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[0, 1]), "B · empirical\nTreue & Martinez-Trujillo 1999\nnot reproduced")
+    _draw_not_reproduced(fig.add_subplot(grid[1, :]), "legend — not reproduced")
+    panel = _tuning_reference_panel(
+        fig.add_subplot(grid[0, 2]), 7, "C",
+        [("fixation", "ignored / fixation", COLORS["unattended"]),
+         ("attend_nonpref", "attend nonpreferred", COLORS["suppressed"]),
+         ("attend_variable", "attend variable", COLORS["attended"])],
+        title="C — two-stimulus direction tuning",
+        xlabel="variable stimulus direction (deg)")
+    fig.suptitle("Figure 7 (digitized reference): two-stimulus direction tuning", fontsize=12)
+    return {"path": _save(fig, path), "panels": {"7C": panel}}
+
+
+_REFERENCE_RENDERERS = {
+    2: render_figure_2_reference,
+    3: render_figure_3_reference,
+    4: render_figure_4_reference,
+    5: render_figure_5_reference,
+    6: render_figure_6_reference,
+    7: render_figure_7_reference,
+}
+
+
+def save_all_references(output_dir: str | Path | None = None) -> list[Path]:
+    """Render every digitized-reference figure (WORKFLOW.md §3b)."""
+    target = _output_dir(output_dir)
+    return [render(target)["path"] for render in _REFERENCE_RENDERERS.values()]
+
+
 def save_all_figures(output_dir: str | Path | None = None) -> list[Path]:
     """Render all available model-output reproductions to PNG files.
 
@@ -766,10 +985,15 @@ def save_all_figures(output_dir: str | Path | None = None) -> list[Path]:
 def main() -> int:
     """Command-line entry point for rendering all figure PNGs.
 
+    Renders BOTH the implementation figures (model record → view) and the
+    digitized-reference figures (paper digitization → same view), so the
+    §3b four-up comparison is available from one command.
+
     Assumption: a simple module entry point is sufficient for local
     reproduction runs.
     """
     paths = save_all_figures()
+    paths += save_all_references()
     for path in paths:
         print(path)
     return 0

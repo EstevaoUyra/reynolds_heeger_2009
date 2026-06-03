@@ -1,0 +1,37 @@
+{
+  "panel": "2B",
+  "figure": 2,
+  "description": "Predominantly response gain. Two solid CRFs: attended scaled UP (peak 1.0) relative to ignored (peak ~0.72), little/no left shift, and the curves DO NOT converge at high contrast (a sustained vertical separation). Dashed percent-modulation curve is comparatively flat/elevated, peaking early near 90 and declining only gently toward high contrast.",
+  "x_variable": "contrast",
+  "x_scale": "log",
+  "x_range": [0.01, 1.0],
+  "curves": {
+    "attended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.04], [0.0152, 0.06], [0.0231, 0.10], [0.0351, 0.16],
+        [0.0534, 0.25], [0.0811, 0.38], [0.1233, 0.53], [0.1874, 0.68],
+        [0.2848, 0.81], [0.4329, 0.91], [0.6579, 0.97], [1.0, 1.0]
+      ]
+    },
+    "unattended": {
+      "axis": "left",
+      "y_range": [0.0, 1.0],
+      "points": [
+        [0.01, 0.02], [0.0152, 0.03], [0.0231, 0.05], [0.0351, 0.09],
+        [0.0534, 0.14], [0.0811, 0.22], [0.1233, 0.32], [0.1874, 0.45],
+        [0.2848, 0.56], [0.4329, 0.64], [0.6579, 0.69], [1.0, 0.72]
+      ]
+    },
+    "percent_modulation": {
+      "axis": "right",
+      "y_range": [0.0, 100.0],
+      "points": [
+        [0.01, 70.0], [0.0152, 80.0], [0.0231, 88.0], [0.0351, 92.0],
+        [0.0534, 93.0], [0.0811, 90.0], [0.1233, 85.0], [0.1874, 78.0],
+        [0.2848, 70.0], [0.4329, 63.0], [0.6579, 58.0], [1.0, 55.0]
+      ]
+    }
+  }
+}
