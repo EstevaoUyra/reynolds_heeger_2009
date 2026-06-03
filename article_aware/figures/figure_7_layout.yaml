@@ -1,0 +1,10 @@
+# Figure 7 panel grid (mirrors paper figure_7.jpg): 1 row x 3 cols + legend row.
+# Row 0: [A config(NR) | B empirical (NR) | C MODEL]
+figure: 7
+rows: 2
+cols: 3
+cells:
+  - {row: 0, col: 0, panel: A, reproduced: false, role: config}
+  - {row: 0, col: 1, panel: B, reproduced: false, role: empirical}
+  - {row: 0, col: 2, panel: C, reproduced: true,  role: model_tuning}
+  - {row: 1, col: 0, col_span: 3, panel: legend, reproduced: false, role: legend}

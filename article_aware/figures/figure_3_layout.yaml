@@ -1,0 +1,14 @@
+# Figure 3 panel grid (mirrors paper figure_3.jpg): 2 rows x 3 cols + legend row.
+# Row 0: [A config(NR) | B empirical R,P&D 2000 (NR) | C MODEL]
+# Row 1: [D config(NR) | E empirical Williford&Maunsell 2006 (NR) | F MODEL]
+figure: 3
+rows: 3
+cols: 3
+cells:
+  - {row: 0, col: 0, panel: A, reproduced: false, role: config}
+  - {row: 0, col: 1, panel: B, reproduced: false, role: empirical}
+  - {row: 0, col: 2, panel: C, reproduced: true,  role: model_crf}
+  - {row: 1, col: 0, panel: D, reproduced: false, role: config}
+  - {row: 1, col: 1, panel: E, reproduced: false, role: empirical}
+  - {row: 1, col: 2, panel: F, reproduced: true,  role: model_crf}
+  - {row: 2, col: 0, col_span: 3, panel: legend, reproduced: false, role: legend}

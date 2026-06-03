@@ -1,0 +1,22 @@
+# Figure 2 panel grid (mirrors the paper figure_2.jpg layout).
+# Top row = two model CRF panels; bottom row = the figure legend (layout only).
+figure: 2
+rows: 2
+cols: 2
+cells:
+  - row: 0
+    col: 0
+    panel: A
+    reproduced: true
+    role: model_crf
+  - row: 0
+    col: 1
+    panel: B
+    reproduced: true
+    role: model_crf
+  - row: 1
+    col: 0
+    col_span: 2
+    panel: legend
+    reproduced: false
+    role: legend

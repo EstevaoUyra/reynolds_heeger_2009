@@ -1,0 +1,15 @@
+# Figure 4 panel grid (mirrors paper figure_4.jpg): 2 rows x 3 cols + legend row.
+# Row 0: [A config(NR) | B empirical Martinez-Trujillo&Treue 2002 (NR) | C MODEL]
+# Row 1: [D config(NR) | (blank/legend slot, NR)                        | E MODEL]
+# The paper leaves the row-1 middle cell empty (legend sits in the bottom band).
+figure: 4
+rows: 3
+cols: 3
+cells:
+  - {row: 0, col: 0, panel: A, reproduced: false, role: config}
+  - {row: 0, col: 1, panel: B, reproduced: false, role: empirical}
+  - {row: 0, col: 2, panel: C, reproduced: true,  role: model_crf}
+  - {row: 1, col: 0, panel: D, reproduced: false, role: config}
+  - {row: 1, col: 1, panel: blank, reproduced: false, role: blank}
+  - {row: 1, col: 2, panel: E, reproduced: true,  role: model_crf}
+  - {row: 2, col: 0, col_span: 3, panel: legend, reproduced: false, role: legend}
