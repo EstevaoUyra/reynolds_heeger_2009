@@ -151,7 +151,7 @@ figure_3C.suppressive_drive_gain:
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 3C suppressive-drive gain; raised 5->8 (2026-06-03 faithfulness fix) so the contrast-gain-mix CRFs reach a genuine high-contrast plateau (~15%). Left-shift (attended half-max below unattended) is preserved and stays weaker than 3F."
+  note: "Figure 3C suppressive-drive gain (kept at 8). With the lowered modulated baseline (0.005, see baseline_modulated_by_attention below) the contrast-gain-mix CRFs reach a genuine high-contrast plateau (final/max log-slope ~0.42). The contrast-gain left-shift (attended half-max below unattended) is preserved and is STRONGER than 3F's (Q-025)."
 figure_3C.suppressive_spatial_sigma_scale:
   value: 0.45
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
@@ -159,24 +159,24 @@ figure_3C.suppressive_spatial_sigma_scale:
   audited: false
   note: "3C contrast-gain regime: effective suppressive width 0.45 lets attended/unattended CRFs converge at high contrast so the absolute difference falls below 75% of peak."
 figure_3C.baseline_modulated_by_attention:
-  value: 0.02
+  value: 0.005
   units: "R&H response units (additive, pre-normalization, attention-modulated)"
   source: SQ-002
   audited: false
-  note: "Figure 3C attention-modulated baseline (added to E)."
+  note: "Figure 3C attention-modulated baseline (added to E); lowered 0.02->0.005 (2026-06-03 faithfulness fix), same A-007-sanctioned tuning as Fig 3F. The modulated baseline is added UNIFORMLY to E (model_spec add_modulated_baseline_to_E) so a large value inflates the constant suppressive-pool floor and prevents the CRF from plateauing; 0.005 lets 3C genuinely saturate (final/max log-slope ~0.42). The contrast-gain signature is preserved: %-modulation peaks low, the absolute attended-unattended difference converges at high contrast, and 3C keeps a STRONGER low-contrast left shift than the response-gain 3F panel (Q-025), driven by 3C's larger attention field / smaller stimulus geometry (Table 1)."
 figure_3C.baseline_unmodulated:
-  value: 0.1
+  value: 0.05
   units: "R&H response units (additive, post-normalization)"
   source: SQ-002
   audited: false
-  note: "Figure 3C unmodulated baseline (added to R)."
+  note: "Figure 3C unmodulated baseline (added to R); set to 0.05 to match Fig 3F so the two Figure-3 panels share a baseline floor and differ only by geometry + the response-gain/contrast-gain suppressive width (A-007-sanctioned)."
 
 figure_3F.suppressive_drive_gain:
   value: 12.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Figure 3F response-gain regime suppressive-drive gain; raised 8->12 with a narrowed suppressive width (see suppressive_spatial_sigma_scale below) so the CRF bends over by c=1 (rise from half-max to c=1 ~21% vs ~26% at gain 8) instead of staying near-linear. Response-gain CRFs still plateau more gently than the contrast-gain panels and the percent-modulation peak stays in the low-contrast half (< n/2), matching the paper's Fig 3F."
+  note: "Figure 3F response-gain regime suppressive-drive gain (kept at 12). With the lowered modulated baseline (0.005, see baseline_modulated_by_attention below) this gain makes the suppressive drive S grow fast enough with contrast that the response-gain CRF bends over within [0.01,1]. The primary saturation lever this round was the modulated-baseline fix, not the gain. Response-gain CRFs still plateau more gently than the contrast-gain panels and the percent-modulation peak stays in the low-contrast half (< n/2), matching the paper's Fig 3F."
 figure_3F.suppressive_spatial_sigma_scale:
   value: 0.7
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
@@ -184,11 +184,11 @@ figure_3F.suppressive_spatial_sigma_scale:
   audited: false
   note: "Figure 3F effective suppressive width narrowed 1.0->0.7 (2026-06-03 faithfulness fix) so S grows fast enough that the response-gain CRF bends over within [0.01,1]; the attended/unattended high-contrast separation and the sustained modulation that distinguish the response-gain regime are preserved."
 figure_3F.baseline_modulated_by_attention:
-  value: 0.05
+  value: 0.005
   units: "R&H response units (additive, pre-normalization, attention-modulated)"
   source: SQ-002
   audited: false
-  note: "Figure 3F attention-modulated baseline."
+  note: "Figure 3F attention-modulated baseline; lowered 0.05->0.005 (2026-06-03 faithfulness fix). Per A-007 this baseline is provisional and tuned per-protocol to match the paper's qualitative 3F shape. The modulated baseline is added UNIFORMLY to E (model_spec step add_modulated_baseline_to_E) so at 0.05 it injected a large CONSTANT floor into the suppressive pool S (S(c=0.01) was inflated from ~0.01 to ~0.6), which made the response-gain CRF rise near-linearly-in-log to c=1 with no high-contrast plateau (audit final/max log-slope ~0.94), contradicting the paper's 'responses saturate at high stimulus contrasts.' At 0.005 the constant-S floor is negligible so S grows with contrast and the CRF genuinely bends over (slope ~0.38, comparable to Fig 2A) while the 3F signatures are preserved: %-modulation still peaks at low contrast, absolute difference still peaks high, and 3F keeps a larger high-contrast attended-unattended separation than 3C."
 figure_3F.baseline_unmodulated:
   value: 0.05
   units: "R&H response units (additive, post-normalization)"
@@ -232,8 +232,22 @@ figure_4E.suppressive_drive_gain:
 # A dependent (e.g. hermann2010) passes only scientific params + a regime
 # name; the per-regime implementation-side calibration below is applied
 # INTERNALLY so the dependent carries zero discretization knobs and zero
-# regime-conditional. These regimes mirror the reproduced R&H Fig 2
-# single-grating CRF panels (contrast_gain = Fig 2A; response_gain = Fig 2B).
+# regime-conditional. These regimes encode the contrast-gain / response-gain
+# 1D suppressive-pool calibration in the SAME family as the R&H Fig-2
+# single-grating panels, but they are a FROZEN cross-model reuse surface
+# and are deliberately NOT slaved to the figure_2A/figure_2B figure knobs.
+#
+# Provenance note (2026-06-03 faithfulness fix): these regime values are the
+# ORIGINAL Fig-2 single-grating calibration (gain 4, contrast-gain width
+# 0.55, response-gain width 1.0). The figure_2A/figure_2B FIGURE protocols
+# were subsequently retuned this round (2A gain 4->12, 2B gain 4->6) purely
+# to make the *rendered* panels bend over more visibly; the regime surface
+# was held at the original calibration ON PURPOSE so the dependent
+# (hermann2010) behavior stays stable and is not silently perturbed by a
+# cosmetic figure retune. They are therefore in the SAME REGIME as Fig 2A/2B
+# but are NOT byte-identical to the current figure knobs — the earlier
+# "= reproduced R&H Fig 2A" wording was stale and is corrected below. Both
+# regimes still produce a saturating CRF (attended final/max log-slope ~0.64).
 # ---------------------------------------------------------------------------
 
 regime.contrast_gain.suppressive_drive_gain:
@@ -241,35 +255,35 @@ regime.contrast_gain.suppressive_drive_gain:
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Contrast-gain regime 1D suppressive-drive gain (= reproduced R&H Fig 2A)."
+  note: "Contrast-gain regime 1D suppressive-drive gain. Original Fig-2A-family single-grating value (gain 4); NOT slaved to the retuned figure_2A.suppressive_drive_gain (now 12). Frozen here so the hermann2010 reuse surface is stable; see the namespace header for why this intentionally diverges from the Fig-2A figure knob."
 regime.contrast_gain.suppressive_spatial_sigma_scale:
   value: 0.55
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
   source: SQ-001
   audited: false
-  note: "Contrast-gain regime 1D effective suppressive-width scale (= reproduced R&H Fig 2A). This is the value the hermann leak carried as a regime-conditional literal; here it is internal to the entry point."
+  note: "Contrast-gain regime 1D effective suppressive-width scale (Fig-2A-family value 0.55; matches the current figure_2A width). This is the value the hermann leak carried as a regime-conditional literal; here it is internal to the entry point."
 regime.contrast_gain.baseline_unmodulated:
   value: 0.01
   units: "R&H response units (additive, post-normalization)"
   source: SQ-002
   audited: false
-  note: "Contrast-gain regime unmodulated baseline (= reproduced R&H Fig 2A)."
+  note: "Contrast-gain regime unmodulated baseline (Fig-2A-family value 0.01; matches the current figure_2A baseline)."
 
 regime.response_gain.suppressive_drive_gain:
   value: 4.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Response-gain regime 1D suppressive-drive gain (= reproduced R&H Fig 2B)."
+  note: "Response-gain regime 1D suppressive-drive gain. Original Fig-2B-family single-grating value (gain 4); NOT slaved to the retuned figure_2B.suppressive_drive_gain (now 6). Frozen here so the hermann2010 reuse surface is stable; see the namespace header."
 regime.response_gain.suppressive_spatial_sigma_scale:
   value: 1.0
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
   source: SQ-001
   audited: false
-  note: "Response-gain regime keeps the unscaled suppressive width (= reproduced R&H Fig 2B). The dependent never sees that this differs from the contrast-gain regime."
+  note: "Response-gain regime keeps the unscaled suppressive width (Fig-2B-family value 1.0; matches the current figure_2B width). The dependent never sees that this differs from the contrast-gain regime."
 regime.response_gain.baseline_unmodulated:
   value: 0.01
   units: "R&H response units (additive, post-normalization)"
   source: SQ-002
   audited: false
-  note: "Response-gain regime unmodulated baseline (= reproduced R&H Fig 2B)."
+  note: "Response-gain regime unmodulated baseline (Fig-2B-family value 0.01; matches the current figure_2B baseline)."
