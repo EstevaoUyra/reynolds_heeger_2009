@@ -28,28 +28,28 @@ model.sigma:
   value: 0.1
   units: "contrast (c in [0,1])"
   source: A-001
-  audited: true
+  audited: false  # downgraded: not a verbatim paper quote (corpus process-audit 2026-06-03)
   note: "Contrast gain constant in the normalization denominator (model_spec parameters.sigma; A-001). Per-protocol sigma OVERRIDES are implementation-side."
 
 model.alpha:
   value: 1.0
   units: "arbitrary"
   source: A-002
-  audited: true
+  audited: false  # downgraded: not a verbatim paper quote (corpus process-audit 2026-06-03)
   note: "Response gain / max attainable rate (model_spec parameters.alpha; A-002)."
 
 model.threshold_T:
   value: 0.0
   units: "arbitrary"
   source: A-003
-  audited: true
+  audited: false  # downgraded: not a verbatim paper quote (corpus process-audit 2026-06-03)
   note: "Rectification threshold for the half-wave operator (model_spec parameters.threshold_T; A-003)."
 
 model.beta:
   value: 1.0
   units: "dimensionless"
   source: A-010
-  audited: true
+  audited: false  # downgraded: not a verbatim paper quote (corpus process-audit 2026-06-03)
   note: "Surround suppression scale; used only by closed-form CRFs, not the full simulation (model_spec parameters.beta; A-010)."
 
 # ---------------------------------------------------------------------------
