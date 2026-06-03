@@ -128,29 +128,6 @@ def _plot_crf(
     ax.legend(frameon=False, fontsize=8)
 
 
-def _plot_percent_modulation(
-    ax,
-    x: np.ndarray,
-    percent_modulation: np.ndarray,
-    *,
-    title: str,
-    xlabel: str = "contrast",
-) -> None:
-    """Plot percent modulation across a contrast sweep.
-
-    Citation: C-019, C-020, C-021
-    """
-    ax.semilogx(
-        x,
-        percent_modulation,
-        color=COLORS["accent"],
-        marker="o",
-        linewidth=1.8,
-    )
-    ax.axhline(0.0, color="#888888", linewidth=0.8)
-    _finish_axes(ax, xlabel=xlabel, ylabel="% modulation", title=title)
-
-
 def _normalized_pair(attended: np.ndarray, unattended: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Normalize paired response curves to the largest plotted response.
 
@@ -171,25 +148,40 @@ def _plot_normalized_crf_with_modulation(
     *,
     title: str,
     xlabel: str = "log contrast",
+    attended_label: str = "attended",
+    unattended_label: str = "ignored / unattended",
 ) -> None:
     """Plot article-style normalized CRFs with dashed modulation on twin axis.
 
-    Citation: C-013, C-014, C-019, C-020
+    The paper's model panels (Figs 2/3/4C/4E) overlay a dashed
+    percent-attentional-modulation curve on a right twin axis labelled
+    "Attentional Modulation (%)" with a positive 0..100 scale; this helper
+    reproduces that twin-axis layout. The percent_modulation argument is the
+    raw (un-normalized) signed modulation curve from the protocol record;
+    following the paper, the dashed curve is drawn as a *magnitude* (absolute
+    percent) so a suppressive panel like Fig 4C (where attending the
+    nonpreferred stimulus lowers the response, giving a negative signed
+    modulation) reads on the same positive axis as the facilitatory panels.
+    The discriminating signature — modulation largest at low contrast and
+    falling toward zero at high contrast — is preserved by the magnitude.
+
+    Citation: C-013, C-014, C-015, C-019, C-020
     """
+    percent_modulation = np.abs(np.asarray(percent_modulation, dtype=float))
     attended_norm, unattended_norm = _normalized_pair(attended, unattended)
     ax.semilogx(
         x,
         unattended_norm,
         color=COLORS["unattended"],
         linewidth=1.9,
-        label="ignored / unattended",
+        label=unattended_label,
     )
     ax.semilogx(
         x,
         attended_norm,
         color=COLORS["attended"],
         linewidth=2.1,
-        label="attended",
+        label=attended_label,
     )
     _finish_axes(ax, xlabel=xlabel, ylabel="normalized model response", title=title)
     ax.set_ylim(-0.02, 1.05)
@@ -204,7 +196,12 @@ def _plot_normalized_crf_with_modulation(
         label="% attentional modulation",
     )
     ax_mod.set_ylabel("attentional modulation (%)")
-    ax_mod.set_ylim(0.0, max(100.0, float(np.max(percent_modulation)) * 1.1))
+    # Paper-style positive axis anchored at 0. Default 0..100 like the paper;
+    # if the model's response-gain modulation magnitude exceeds 100% (e.g. the
+    # strong Fig 4E covarying-contrast effect), the axis grows to keep the
+    # dashed curve fully visible rather than clipping it.
+    pm_max = float(np.max(percent_modulation))
+    ax_mod.set_ylim(0.0, max(100.0, pm_max * 1.1))
     ax_mod.spines["top"].set_visible(False)
     ax_mod.grid(False)
 
@@ -426,36 +423,26 @@ def save_figure_3(output_dir: str | Path | None = None) -> Path:
     Citation: C-014
     """
     plt = _pyplot()
-    fig, axes = plt.subplots(2, 2, figsize=(10.8, 7.4), constrained_layout=True)
+    # Paper Fig 3 model panels (C, F) are single normalized-CRF plots with a
+    # dashed percent-modulation overlay on a twin axis — no separate
+    # "absolute difference" panel. MODEL-PANELS-ONLY: one panel per model row.
+    fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.6), constrained_layout=True)
     path = _output_dir(output_dir) / "figure_3.png"
 
     panels = [
         ("3C: mixed attention effect", protocols.run_figure_3C(n_contrasts=32)),
         ("3F: mixed attention effect", protocols.run_figure_3F(n_contrasts=32)),
     ]
-    for row, (title, out) in enumerate(panels):
+    for col, (title, out) in enumerate(panels):
         _plot_normalized_crf_with_modulation(
-            axes[row, 0],
+            axes[col],
             out["c"],
             out["attended_CRF"],
             out["unattended_CRF"],
             out["percent_modulation"],
             title=title,
         )
-        axes[row, 1].semilogx(
-            out["c"],
-            out["absolute_difference"],
-            color=COLORS["accent"],
-            marker="o",
-            linewidth=1.8,
-        )
-        _finish_axes(
-            axes[row, 1],
-            xlabel="log contrast",
-            ylabel="attended - unattended response",
-            title=f"{title}: absolute difference",
-        )
-    fig.suptitle("Figure 3: baseline shifts percent and absolute modulation", fontsize=12)
+    fig.suptitle("Figure 3: baseline shifts attentional modulation across contrast", fontsize=12)
     return _save(fig, path)
 
 
@@ -465,46 +452,44 @@ def save_figure_4(output_dir: str | Path | None = None) -> Path:
     Citation: C-015
     """
     plt = _pyplot()
-    fig, axes = plt.subplots(2, 2, figsize=(10.5, 7.4), constrained_layout=True)
+    # Paper Fig 4 model panels (C, E) each overlay the dashed percent-
+    # attentional-modulation curve on a right twin axis (see the verbatim
+    # caption "Dashed gray curve, percentage increase in firing rate at each
+    # contrast" and figure_4.md / figure_4_visual_checklist.md, which require
+    # "The dashed curve is percent attentional modulation"). The model record
+    # already carries this curve: percent_modulation for 4C, and the
+    # attend_pref/attend_nonpref ratio for 4E (percent = (ratio - 1) * 100).
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.6), constrained_layout=True)
     path = _output_dir(output_dir) / "figure_4.png"
 
     fig4c = protocols.run_figure_4C(n_contrasts=24)
-    _plot_crf(
-        axes[0, 0],
+    _plot_normalized_crf_with_modulation(
+        axes[0],
         fig4c["c_pref"],
         fig4c["attended_CRF"],
         fig4c["unattended_CRF"],
+        fig4c["percent_modulation"],
         attended_label="attend nonpreferred",
         unattended_label="attend away",
         title="4C: nonpreferred attention suppresses preferred response",
         xlabel="preferred-stimulus contrast",
     )
-    _plot_percent_modulation(
-        axes[1, 0],
-        fig4c["c_pref"],
-        fig4c["percent_modulation"],
-        title="4C: percent modulation",
-        xlabel="preferred-stimulus contrast",
-    )
 
     fig4e = protocols.run_figure_4E(n_contrasts=24)
-    _plot_crf(
-        axes[0, 1],
+    # Percent attentional modulation for 4E follows the same definition as the
+    # crf_pair_record helper, 100*(attended - unattended)/unattended, which for
+    # the attend-pref vs attend-nonpref pair equals (ratio - 1) * 100.
+    fig4e_pct_mod = (np.asarray(fig4e["ratio"], dtype=float) - 1.0) * 100.0
+    _plot_normalized_crf_with_modulation(
+        axes[1],
         fig4e["c"],
         fig4e["attend_pref_CRF"],
         fig4e["attend_nonpref_CRF"],
+        fig4e_pct_mod,
         attended_label="attend preferred",
         unattended_label="attend nonpreferred",
         title="4E: attention to preferred scales response",
     )
-    axes[1, 1].semilogx(
-        fig4e["c"],
-        fig4e["ratio"],
-        color=COLORS["accent"],
-        marker="o",
-        linewidth=1.8,
-    )
-    _finish_axes(axes[1, 1], xlabel="contrast", ylabel="attend pref / nonpref", title="4E: ratio")
     fig.suptitle("Figure 4: attention changes two-stimulus competition", fontsize=12)
     return _save(fig, path)
 
@@ -515,12 +500,14 @@ def save_figure_5(output_dir: str | Path | None = None) -> Path:
     Citation: C-016
     """
     plt = _pyplot()
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.2), constrained_layout=True)
+    # Paper Fig 5C is a single orientation-tuning panel (attended vs
+    # unattended). MODEL-PANELS-ONLY: no separate "ratio" analysis panel.
+    fig, ax = plt.subplots(figsize=(6.7, 4.6), constrained_layout=True)
     path = _output_dir(output_dir) / "figure_5.png"
     out = protocols.run_figure_5C(n_orientations=61)
 
     _plot_tuning(
-        axes[0],
+        ax,
         out["theta_0_grid"],
         [
             ("unattended", out["unattended_tuning"], COLORS["unattended"]),
@@ -529,8 +516,6 @@ def save_figure_5(output_dir: str | Path | None = None) -> Path:
         title="5C: spatial attention scales orientation tuning",
         xlabel="stimulus orientation (deg)",
     )
-    axes[1].plot(out["theta_0_grid"], out["ratio"], color=COLORS["accent"], linewidth=1.8)
-    _finish_axes(axes[1], xlabel="stimulus orientation (deg)", ylabel="attended / unattended", title="5C: ratio")
     fig.suptitle("Figure 5: multiplicative scaling without tuning-width change", fontsize=12)
     return _save(fig, path)
 

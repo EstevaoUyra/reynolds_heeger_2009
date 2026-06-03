@@ -82,9 +82,16 @@ def test_figure_2A_crfs_are_monotonic_and_saturating():
     for curve in (attended, unattended):
         assert np.all(np.diff(curve) >= -1e-10)
         assert curve[-1] > curve[0]
-        assert _final_log_slope(curve, contrast) < 0.95 * _max_log_slope(curve, contrast)
+        # Genuine high-contrast plateau, not just "final slope < max slope":
+        # the final log-contrast segment must be a fraction of the steepest.
+        assert _final_log_slope(curve, contrast) < 0.60 * _max_log_slope(curve, contrast)
         at_half_contrast = value_at(contrast, curve, 0.5)
-        assert (curve[-1] - at_half_contrast) / at_half_contrast < 0.35
+        # With sigma=0.1 the closed form gives r(1) ~ 0.9*alpha, so by c=1 the
+        # response is within ~10-20% of its half-max value. A bound of 0.20
+        # (vs the previous 0.35) makes this a real saturation referent: the
+        # pre-fix gain=4 config (~0.22 rise from half-max to c=1, still
+        # visibly rising) fails it; the saturating config passes with margin.
+        assert (curve[-1] - at_half_contrast) / at_half_contrast < 0.20
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_2A", figure=2, claim_id="Q-006")
@@ -118,7 +125,14 @@ def test_figure_2A_percent_modulation_peaks_then_falls_at_high_contrast():
 
     peak = int(np.argmax(percent_modulation))
     attended_half = half_max_contrast(attended, contrast)
-    assert 0 < peak < len(percent_modulation) - 2
+    # Paper (Fig 2B/3B captions): "Attention caused the largest percentage
+    # increase in firing rates at low contrast." In the genuinely-saturating
+    # contrast-gain regime the percent-modulation curve is monotonically
+    # decreasing in contrast, so its peak sits at the lowest sampled contrast
+    # (index 0) rather than at an interior point — allow peak == 0. What is
+    # binding is that modulation is low-contrast-weighted and falls toward
+    # high contrast (asserted below).
+    assert 0 <= peak < len(percent_modulation) - 2
     assert contrast[peak] <= 1.25 * attended_half
     assert percent_modulation[-1] < 0.40 * percent_modulation[peak]
     assert percent_modulation[-1] < percent_modulation[0]
