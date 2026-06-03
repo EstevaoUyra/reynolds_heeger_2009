@@ -1,37 +1,142 @@
 {
   "panel": "3C",
   "figure": 3,
-  "description": "Mixed attention effect (row 1). Two solid CRFs (attend-in-RF slightly above attend-contralateral) close together, both sigmoidal, converging to ~1.0 at the high-contrast end. Dashed percent-modulation curve has an INTERIOR BUMP at intermediate contrast (peak ~30 on the 0-100 right axis) then declines toward both ends.",
+  "description": "Mixed attention effect (row 1). Two solid CRFs (attended slightly above unattended) close together, both sigmoidal; they overlap at low contrast, separate by ~0.03-0.05 across mid contrast, and re-converge at high contrast to a shared plateau near 0.94 (NOT 1.0). Dashed percent-modulation (right axis) is a BROAD, rounded interior bump peaking ~25% at mid-low contrast (x~0.05-0.06), rising gently from ~8% at the low-contrast foot and declining gently toward ~2% at high contrast.",
   "x_variable": "contrast",
   "x_scale": "log",
-  "x_range": [0.01, 1.0],
+  "x_range": [
+    0.01,
+    1.0
+  ],
   "curves": {
     "attended": {
       "axis": "left",
-      "y_range": [0.0, 1.0],
+      "y_range": [
+        0.0,
+        1.0
+      ],
       "points": [
-        [0.01, 0.02], [0.0152, 0.03], [0.0231, 0.05], [0.0351, 0.09],
-        [0.0534, 0.17], [0.0811, 0.30], [0.1233, 0.48], [0.1874, 0.67],
-        [0.2848, 0.83], [0.4329, 0.93], [0.6579, 0.98], [1.0, 1.0]
+        [0.01, 0.235],
+        [0.0144, 0.25],
+        [0.0177, 0.261],
+        [0.0226, 0.281],
+        [0.0288, 0.312],
+        [0.0366, 0.365],
+        [0.0451, 0.436],
+        [0.0518, 0.49],
+        [0.0575, 0.536],
+        [0.066, 0.592],
+        [0.0732, 0.634],
+        [0.0812, 0.679],
+        [0.0901, 0.723],
+        [0.1, 0.76],
+        [0.1149, 0.804],
+        [0.1366, 0.846],
+        [0.1681, 0.877],
+        [0.2069, 0.902],
+        [0.2547, 0.916],
+        [0.3135, 0.92],
+        [0.3859, 0.933],
+        [0.475, 0.939],
+        [0.6053, 0.941],
+        [1.0, 0.944]
       ]
     },
     "unattended": {
       "axis": "left",
-      "y_range": [0.0, 1.0],
+      "y_range": [
+        0.0,
+        1.0
+      ],
       "points": [
-        [0.01, 0.02], [0.0152, 0.02], [0.0231, 0.04], [0.0351, 0.07],
-        [0.0534, 0.12], [0.0811, 0.22], [0.1233, 0.38], [0.1874, 0.57],
-        [0.2848, 0.76], [0.4329, 0.89], [0.6579, 0.96], [1.0, 0.99]
+        [0.01, 0.235],
+        [0.013, 0.239],
+        [0.0154, 0.247],
+        [0.0203, 0.262],
+        [0.0259, 0.275],
+        [0.0342, 0.295],
+        [0.0451, 0.341],
+        [0.0518, 0.388],
+        [0.0595, 0.436],
+        [0.066, 0.475],
+        [0.0732, 0.525],
+        [0.0812, 0.575],
+        [0.0901, 0.623],
+        [0.1, 0.676],
+        [0.1109, 0.709],
+        [0.1274, 0.751],
+        [0.1515, 0.81],
+        [0.1681, 0.835],
+        [0.1865, 0.852],
+        [0.2069, 0.869],
+        [0.2296, 0.88],
+        [0.2826, 0.899],
+        [0.3478, 0.911],
+        [0.475, 0.922],
+        [1.0, 0.938]
       ]
     },
     "percent_modulation": {
       "axis": "right",
-      "y_range": [0.0, 100.0],
+      "y_range": [
+        0.0,
+        100.0
+      ],
       "points": [
-        [0.01, 8.0], [0.0152, 11.0], [0.0231, 16.0], [0.0351, 23.0],
-        [0.0534, 29.0], [0.0811, 31.0], [0.1233, 28.0], [0.1874, 22.0],
-        [0.2848, 15.0], [0.4329, 9.0], [0.6579, 5.0], [1.0, 3.0]
+        [0.011, 8.0],
+        [0.015, 10.0],
+        [0.020, 13.0],
+        [0.026, 16.0],
+        [0.033, 20.0],
+        [0.042, 23.0],
+        [0.052, 24.8],
+        [0.060, 24.5],
+        [0.070, 22.0],
+        [0.082, 19.0],
+        [0.090, 17.5],
+        [0.105, 14.0],
+        [0.120, 11.5],
+        [0.140, 8.5],
+        [0.165, 6.5],
+        [0.195, 4.7],
+        [0.22, 3.9],
+        [0.26, 3.0],
+        [0.31, 2.2],
+        [0.45, 1.7],
+        [1.0, 1.5]
       ]
     }
+  },
+  "provenance": {
+    "figure_type": "line/curve CRF, log-x, two same-colour solid sigmoids (left axis) plus one dashed bell (% modulation, right axis)",
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band",
+      "resample_pchip",
+      "overlay"
+    ],
+    "tool_rationale": "Mode-1 quantitative plot. detect_plot_box located the axis rectangle as a hint; verified by longest-dark-run column/row profile. trace_darkest_in_band (per-column dark-cluster decomposition) separated the two solids by row band and isolated the dashed bump by its own lower region. resample_pchip for rounded apex / flat plateau. overlay for the single validation pass.",
+    "calibration": {
+      "x": [[56.5, 0.01], [189.5, 1.0]],
+      "y_left": [[201.0, 0.0], [22.0, 1.0]],
+      "y_right": [[201.0, 0.0], [22.0, 100.0]],
+      "x_scale": "log",
+      "axis_lines_measured": "left axis col 56.5 (NOT the label-text edge ~col 41), right axis col 189.5, plot top row 22, bottom row 201 — all read off the longest-consecutive-dark-run profile, not detect_plot_box density."
+    },
+    "per_curve": {
+      "attended": "traced as the UPPER of the two solid dark clusters per column (darkness-weighted cluster centroid). Coincident with unattended at the shared foot (x<0.02, both y~0.235); a genuine ~0.03-0.05 attended-above gap opens through mid-contrast and re-converges near the plateau.",
+      "unattended": "traced as the LOWER solid cluster per column; same shared foot, lags attended through the rise.",
+      "percent_modulation": "dashed bell, traced as the LOWEST dark cluster per column AFTER explicitly separating it from the two solids' shared foot (the solids' foot sits at left-axis y~0.235, i.e. image rows ~155-159, which the prior pass mis-read as the bump's left flank). Per-column 3-cluster decomposition (two rising solids + one bell) gives the true dashed crest: foot ~8% (rows ~186) at x~0.011, rising gently through rows 182/176/169/162 to a BROAD rounded apex ~25% (rows 156-158) centered at x~0.052-0.06, then descending gently (rows 161/165/170/179/185) to ~8% at x~0.14 and tailing to ~2% (near the bottom axis) at x>0.3. Apex deliberately NOT over-sampled (single broad shoulder, two points x=0.052/0.060 at ~24.5-24.8%) so PCHIP renders a rounded broad top with no spike."
+    },
+    "normalization": "paper shared sub-1.0 scale; both solid plateaus ~0.94, NOT pinned to 1.0. Right axis % modulation 0-100 read independently.",
+    "bump_fix_note_2026-06-03": "Reviewer flagged a 'weird bump' (sharp left-shifted spike) on the blue %-modulation curve in overlay_3C. Diagnosis (via crop_region zooms of the bump region on both paper and overlay, upscale 6-8x, plus a per-column 3-cluster darkness decomposition with the tick-anchored col-56.5 calibration): the dashed bump had been digitized with its apex too tall (29.5%) and too far left (x~0.029) and its low-contrast foot too low (7.9%), because the two solids' shared foot (left-axis y~0.235 -> rows ~155-159) was mistaken for the bump's left flank. The true paper bump is a BROAD rounded ~25% apex centered at x~0.052-0.06 with an ~8% foot. Only percent_modulation points + this provenance changed; the two solid CRFs were left untouched (verified identical). Re-rendered overlay_3C.png with the same tick-anchored left calibration (cols 56.5/189.5, rows 201/22) drawing %mod as value/100; adversarial crop_region re-check shows the blue crest now tracks the paper dashed ink to within 0.5% modulation worst-case (apex paper 24.9% vs render 24.7%), no PCHIP overshoot (rendered peak 24.7%).",
+    "calibration_note_vs_prior_audit": "The 2026-06-03 audit's 'rising-flank-too-high / c50-too-low' finding traces to that audit using left axis col 41.5 (the tick-LABEL edge) instead of the true axis line col 56.5. That mislabels each pixel column with an x ~one notch too high, so audit paper-reads at 'x=0.073' were actually image columns near x=0.054. Re-checked with the correct col-56.5 calibration: the solid rising-flank values match the true pixel cluster centroids to within ~0.002 (e.g. x=0.0732 -> y 0.634 measured vs 0.635 prior). The solid CRFs were already faithful; this pass re-verifies them with recorded anchors and fixes only the dashed-bump kink/apex.",
+    "caveats": [
+      "No numeric x ticks on the axis (only Log Contrast tick marks); x_range [0.01,1.0] (2 log decades) taken from the frame, consistent across panels 3A-3F.",
+      "The two solids share an identical foot and are only ~0.03-0.05 apart through the rise; their split is the genuine attended-above gap visible in the mid-contrast pixels, not an invented offset.",
+      "Dashed apex height/position carry ~+/-1.5% and ~+/-0.3 log-step uncertainty: the dash gaps and the rising lower-solid (whose foot rides through the bump's left region) make a few columns ambiguous; apex taken as x~0.052-0.06, ~25% (broad rounded top). The PRIOR pass placed the apex at x~0.03, ~29% by conflating the solids' foot with the bump's left flank — that left-shifted/over-tall apex plus dense apex sampling produced the PCHIP spike the reviewer flagged on overlay_3C; corrected here.",
+      "Right-axis % modulation calibration assumes the right tick frame shares the plot's top/bottom rows (no intermediate numeric ticks legible)."
+    ]
   }
 }
