@@ -327,6 +327,44 @@ pipeline:
     inputs: [R, "<protocol.recorded_neuron_coords>"]
     outputs: ["recorded_response"]
 
+rendering_conventions:
+  # Binding contract for how figure groups are normalized when rendered and when
+  # compared to the digitized references (Finding 1,
+  # logs/faithfulness_audit/improvement-pass-2026-06-03.md).
+
+  - id: crf_shared_response_scale
+    name: "CRF figure-groups render on ONE shared response scale"
+    description: |
+      Each CRF figure-GROUP is drawn on a SINGLE shared response axis across all
+      its panels — NOT per-pair-renormalized to 1.0. The paper places Fig 2's 2A
+      (plateau ~0.615) and 2B (attended plateau ~0.85) on ONE sub-1.0 axis; that
+      ceiling difference (2B above 2A) IS the response-gain claim, and the
+      digitized references encode it directly (panel_*_digitized.json values are
+      on the shared sub-1.0 scale). Per-pair-to-1.0 normalization pins every
+      panel's top curve to 1.0 and erases the cross-panel ceiling difference.
+    groups:
+      figure_2: [figure_2A, figure_2B]
+      figure_3: [figure_3C, figure_3F]
+      figure_4: [figure_4C, figure_4E]
+    rule: |
+      Normalize ALL CRF curves in a figure-group by ONE common scale (e.g. the
+      max model response across every panel in the group, mapped onto the
+      reference group's overall peak), so each panel's plateau renders at its
+      TRUE relative height. Apply the SAME shared-scale rule to the reference
+      render (the digitized curves are already on the shared scale; do not pass
+      them through a per-pair normalizer). Do NOT divide each pair independently
+      by its own max.
+    applies_to:
+      - "implementation views (Phase B): the CRF model panels and the digitized-reference render"
+      - "extracted_data/rh_tier_helpers.norm_pair_shared / group_scale (the tier-test referent)"
+    excludes: |
+      Tuning-curve panels (5C/6C/7C) use shared-peak-WITHIN-panel normalization
+      (norm_curves / _plot_tuning); they are single-panel and unaffected.
+    citation_refs: [C-013, C-019]
+    spec_refs:
+      - "figures.figure_2 (panel_A_digitized.json / panel_B_digitized.json shared sub-1.0 scale)"
+      - "extracted_data/rh_tier_helpers.py (norm_pair_shared, group_scale, CRF_FIGURE_GROUPS)"
+
 simulation_protocols:
 
   - id: figure_1

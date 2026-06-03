@@ -207,14 +207,115 @@ def _plot_crf(
     ax.legend(frameon=False, fontsize=8)
 
 
-def _normalized_pair(attended: np.ndarray, unattended: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Normalize paired response curves to the largest plotted response.
+# ---------------------------------------------------------------------------
+# Shared-scale CRF normalization (model_spec.yaml rendering_conventions.
+# crf_shared_response_scale; Finding 1, phaseA-contract-update-2026-06-03).
+#
+# Each CRF figure-GROUP (2A/2B, 3C/3F, 4C/4E) renders on ONE shared response
+# axis: every panel in the group is divided by a SINGLE common scale so the
+# cross-panel ceiling difference (e.g. 2B's attended plateau above 2A's)
+# survives instead of being pinned to 1.0 per pair. The common scale maps the
+# model group's overall peak onto the reference group's overall peak, so the
+# model curves land on the digitized shared sub-1.0 scale. This mirrors
+# article_aware/extracted_data/rh_tier_helpers.group_scale exactly. The
+# digitized-reference render is ALREADY on the shared scale, so it is plotted
+# unscaled (normalize=False) — it is NOT passed through a per-pair normalizer.
+# Tuning panels (5C/6C/7C) are excluded (they keep _plot_tuning's
+# shared-peak-within-panel normalization).
+# ---------------------------------------------------------------------------
 
-    Assumption: Figures 2 and 3 in the article report normalized model
-    response, so figure reproduction should scale model-output curves to
-    emphasize CRF shape rather than absolute response units.
+# (figure, panel) members of each CRF group; keyed by panel_id "2A","2B",...
+_CRF_GROUPS = {
+    "figure_2": ((2, "A"), (2, "B")),
+    "figure_3": ((3, "C"), (3, "F")),
+    "figure_4": ((4, "C"), (4, "E")),
+}
+# How to run each panel and which record keys are its attended/unattended pair.
+_CRF_GROUP_RUNNERS = {
+    (2, "A"): (lambda: protocols.run_figure_2A(n_contrasts=24),
+               ("attended_CRF", "unattended_CRF")),
+    (2, "B"): (lambda: protocols.run_figure_2B(n_contrasts=24),
+               ("attended_CRF", "unattended_CRF")),
+    (3, "C"): (lambda: protocols.run_figure_3C(n_contrasts=24),
+               ("attended_CRF", "unattended_CRF")),
+    (3, "F"): (lambda: protocols.run_figure_3F(n_contrasts=24),
+               ("attended_CRF", "unattended_CRF")),
+    (4, "C"): (lambda: protocols.run_figure_4C(n_contrasts=24),
+               ("attended_CRF", "unattended_CRF")),
+    (4, "E"): (lambda: protocols.run_figure_4E(n_contrasts=24),
+               ("attend_pref_CRF", "attend_nonpref_CRF")),
+}
+
+
+def _panel_id_to_key(panel_id: str) -> tuple[int, str]:
+    return int(panel_id[:-1]), panel_id[-1]
+
+
+def _crf_group_members(panel_id: str):
+    fig, pan = _panel_id_to_key(panel_id)
+    for members in _CRF_GROUPS.values():
+        if (fig, pan) in members:
+            return members
+    return None
+
+
+def _model_group_peak(members) -> float:
+    """Max raw model response across every panel in a CRF group."""
+    peak = 0.0
+    for key in members:
+        runner, (a_key, b_key) = _CRF_GROUP_RUNNERS[key]
+        r = runner()
+        peak = max(peak, float(np.max(r[a_key])), float(np.max(r[b_key])))
+    return peak if peak > 1e-12 else 1.0
+
+
+def _reference_group_peak(members) -> float:
+    """Max digitized left-axis (response) value across every panel in a group."""
+    peak = 0.0
+    for fig, pan in members:
+        dig = load_digitized(fig, pan)
+        for cdata in dig["curves"].values():
+            if cdata.get("axis") == "right":
+                continue  # right axis is percent, not the response scale
+            ys = np.asarray(cdata["points"], dtype=float)[:, 1]
+            peak = max(peak, float(ys.max()))
+    return peak if peak > 1e-12 else 1.0
+
+
+_GROUP_SCALE_CACHE: dict[tuple, float] = {}
+
+
+def _crf_group_scale(panel_id: str) -> float:
+    """Common divisor placing a model CRF group onto the reference shared scale.
+
+    model_curve / scale lands the model group's overall peak at the reference
+    group's overall peak (== rh_tier_helpers.group_scale), so every panel's
+    plateau renders at its TRUE relative height. Memoized per group.
     """
-    scale = float(max(np.max(attended), np.max(unattended), 1e-12))
+    members = _crf_group_members(panel_id)
+    if members is None:
+        raise KeyError(f"panel {panel_id} is not in a CRF figure-group")
+    if members not in _GROUP_SCALE_CACHE:
+        _GROUP_SCALE_CACHE[members] = (
+            _model_group_peak(members) / _reference_group_peak(members)
+        )
+    return _GROUP_SCALE_CACHE[members]
+
+
+def _normalized_pair(
+    panel_id: str, attended: np.ndarray, unattended: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Place a model CRF pair on its figure-GROUP's shared response scale.
+
+    Divides BOTH curves by the single group-wide ``_crf_group_scale`` so the
+    cross-panel ceiling difference survives (2B above 2A). Replaces the old
+    per-pair-to-1.0 normalization (the Finding-1 defect). Applies only to the
+    model render; the reference render passes already-shared-scale curves
+    through with ``normalize=False``.
+    """
+    attended = np.asarray(attended, dtype=float)
+    unattended = np.asarray(unattended, dtype=float)
+    scale = _crf_group_scale(panel_id)
     return attended / scale, unattended / scale
 
 
@@ -230,6 +331,7 @@ def _plot_normalized_crf_with_modulation(
     xlabel: str = "Log Contrast",
     attended_label: str = "attended",
     unattended_label: str = "ignored / unattended",
+    normalize: bool = True,
 ) -> dict:
     """Plot a paper-style normalized CRF panel with dashed modulation on a twin axis.
 
@@ -238,6 +340,14 @@ def _plot_normalized_crf_with_modulation(
     "Attentional Modulation (%)". This helper reproduces that twin-axis layout
     and PINS every axis limit to the paper panel's declared values
     (``PAPER_PANEL_LIMITS[panel_id]``) — autoscale is OFF on both axes.
+
+    Left-axis normalization (rendering_conventions.crf_shared_response_scale):
+    when ``normalize`` is True (the model render) the attended/unattended pair
+    is placed on its CRF figure-GROUP's SHARED response scale via
+    ``_normalized_pair`` — one common divisor per group (2A/2B, 3C/3F, 4C/4E)
+    so the cross-panel ceiling difference (e.g. 2B above 2A) survives. When
+    ``normalize`` is False (the digitized-reference render) the curves are
+    already on the shared scale and are plotted unscaled.
 
     The percent_modulation argument is the raw (un-normalized) signed
     modulation curve from the record; the dashed curve is drawn as a
@@ -254,7 +364,13 @@ def _plot_normalized_crf_with_modulation(
     """
     limits = paper_panel_limits(panel_id)
     percent_modulation = np.abs(np.asarray(percent_modulation, dtype=float))
-    attended_norm, unattended_norm = _normalized_pair(attended, unattended)
+    if normalize:
+        # Model render: place the pair on its CRF figure-group's shared scale.
+        attended_norm, unattended_norm = _normalized_pair(panel_id, attended, unattended)
+    else:
+        # Reference render: digitized curves are ALREADY on the shared scale.
+        attended_norm = np.asarray(attended, dtype=float)
+        unattended_norm = np.asarray(unattended, dtype=float)
     ax.plot(
         x, unattended_norm, color=COLORS["unattended"], linewidth=1.9,
         label=unattended_label,
@@ -805,6 +921,7 @@ def _crf_reference_panel(ax, figure: int, panel: str, *, title: str,
     return _plot_normalized_crf_with_modulation(
         ax, f"{figure}{panel}", x, att, una, pm, title=title,
         attended_label=attended_label, unattended_label=unattended_label,
+        normalize=False,  # digitized curves are already on the shared scale.
     )
 
 

@@ -59,8 +59,12 @@ Both panels share the same axis structure:
   labels appear on the axis. Tick marks along the bottom of each panel indicate the stimulus
   size(s) used in that panel — small tick marks in A (small stimulus), wider tick marks in
   B (larger stimulus).
-- **Left vertical axis (Normalized Model Response):** output firing rate, normalized to
-  range from 0 to 1.
+- **Left vertical axis (Normalized Model Response):** output firing rate. The axis spans
+  0 to 1, but panels A and B share ONE response scale (the shared-scale convention,
+  `model_spec.yaml rendering_conventions.crf_shared_response_scale`): the curves are NOT
+  per-pair-renormalized to 1.0. On the shared scale 2A's plateau is ~0.615 and 2B's
+  attended plateau is ~0.85 — that ceiling difference (2B above 2A) is the response-gain
+  claim and must render visibly (Finding 1).
 - **Right vertical axis (Attentional Modulation %):** percentage increase in response when
   attending vs ignoring, ranging from 0 to 100%.
 - **Curve encoding (grayscale print):** attended = solid dark/thick curve; ignored

@@ -140,10 +140,26 @@ def test_peak_attend_pref_exceeds_peak_attend_nonpreferred():
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_4E", figure=4, claim_id="Q-053")
-def test_figure_4C_and_4E_attention_effects_have_opposite_signs():
-    """Figure 4C nonpreferred attention suppresses while 4E preferred attention enhances.
+def test_figure_4C_and_4E_attention_effects_are_same_sign_facilitation():
+    """Figure 4C and 4E attention effects share the SAME (facilitatory) sign.
 
-    Citation: C-015, C-021
+    The prior premise ("4C and 4E have opposite signs") was an artifact of the
+    retired C-021 mis-citation, which read 4E's two-stimulus mechanism prose
+    ("attending nonpreferred ... smaller output firing rate") onto the 4C panel
+    and so encoded 4C as SUPPRESSION. Finding 2
+    (figure_4C_investigation-2026-06-03) resolved 4C to facilitation /
+    contrast-gain left-shift: attending the nonpreferred-in-RF stimulus is a
+    SPATIAL cue to the RF that boosts both colocated stimuli, raising the
+    recorded neuron's response (attended CRF ABOVE attend-away, positive
+    percent modulation).
+
+    With 4C corrected, both panels point the SAME way for the recorded neuron:
+    - 4C: attend-nonpreferred-in-RF >= attend-away (positive %-modulation).
+    - 4E: attend-preferred >= attend-nonpreferred (ratio > 1).
+    Both are attentional ENHANCEMENT, not opposite-signed effects. C-021 is no
+    longer cited here (it is the 4E-mechanism prose, not a 4C-vs-4E contrast).
+
+    Citation: C-015, C-019
     """
     out_c = protocols.run_figure_4C()
     expected_c = {"attended_CRF", "unattended_CRF", "percent_modulation", "c_pref"}
@@ -156,9 +172,12 @@ def test_figure_4C_and_4E_attention_effects_have_opposite_signs():
     assert np.all(np.isfinite(attended_c))
     assert np.all(np.isfinite(unattended_c))
     assert np.all(np.isfinite(percent_c))
-    assert np.all(attended_c <= unattended_c + 1e-10)
-    assert np.all(percent_c <= 1e-8)
+    # 4C: facilitation — attended above attend-away, positive %-modulation.
+    assert np.all(attended_c >= unattended_c - 1e-10)
+    assert np.all(percent_c >= -1e-8)
+    assert percent_c.max() > 1.0
 
+    # 4E: attend-preferred above attend-nonpreferred — enhancement, same sign.
     attend_pref, attend_nonpref, ratio, _ = _validated_outputs(protocols.run_figure_4E())
     assert np.all(attend_pref >= attend_nonpref - 1e-10)
     assert np.all(ratio > 1.0)

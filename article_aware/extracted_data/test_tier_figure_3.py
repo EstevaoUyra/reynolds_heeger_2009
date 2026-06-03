@@ -12,16 +12,21 @@ import numpy as np
 
 from rh_model import protocols
 from rh_tier_helpers import (
-    norm_pair, ref_value_at, tier_test, value_at_log,
+    norm_pair_shared, ref_value_at, tier_test, value_at_log,
 )
 
 _C_HI = 1.0
 _C_MID = 0.1233
 
+# Map each 3-group protocol runner to its panel for the shared-scale normalizer.
+_PANEL_OF = {protocols.run_figure_3C: "C", protocols.run_figure_3F: "F"}
+
 
 def _record(fn):
+    # SHARED-SCALE (Finding 1): 3C and 3F are placed on ONE common response scale
+    # (figure_3 group), not per-pair-renormalized to 1.0.
     r = fn(n_contrasts=24)
-    att, una = norm_pair(r["attended_CRF"], r["unattended_CRF"])
+    att, una = norm_pair_shared(r["attended_CRF"], r["unattended_CRF"], 3, _PANEL_OF[fn])
     return r["c"], att, una, np.abs(np.asarray(r["percent_modulation"], dtype=float))
 
 
