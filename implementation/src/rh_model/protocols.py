@@ -286,7 +286,24 @@ def run_figure_5C(n_orientations: int = 19):
 def run_figure_6C(n_directions: int = 25, x_opposite: float = -50.0, x_fixation: float = 50.0):
     """Sweep stimulus motion direction; attend_fixation vs attend_opposite.
 
-    Citation: C-017 / spec.simulation_protocols.figure_6C
+    Citation: C-017, C-021, C-023 / spec.simulation_protocols.figure_6C
+
+    Feature-based attention is spatially GLOBAL (C-023: "the stimulus drive is
+    multiplied by an attention field that is itself selective for motion
+    direction" — the directional gain multiplies the recorded neuron's drive, so
+    it must reach the RF). The attend-opposite-stimulus condition therefore
+    selects the current motion direction (feature_center = θ_stim) but is FLAT in
+    x (spatial_center = None), so the feature gain reaches the recorded neuron at
+    x = 0 and sharpens / elevates its direction tuning (C-021, C-023). Confining
+    the field to a spatial Gaussian at x_opposite = -50 (attention-field size 30)
+    zeroes the feature gain at x = 0 (G_x ≈ 0), so the curves overlap (peak ratio
+    ~1.01, no sharpening) regardless of suppression gain — that is the
+    spatial-confinement bug, not the feature mechanism. Spatial attention being
+    directed AWAY from the RF (to the fixation/opposite location) is captured by
+    the attend-fixation baseline, not by stripping the feature component from the
+    RF. x_opposite is retained only as the location of the second (yoked) stimulus
+    in E. The spatial-globality of feature attention is not yet a named ledger
+    assumption — logged as SQ-006 (underspecification) for Phase A to formalize.
     """
     s = _sci("figure_6C")
     overrides_template = dict(
@@ -310,7 +327,9 @@ def run_figure_6C(n_directions: int = 25, x_opposite: float = -50.0, x_fixation:
         )["response"]
         attend_opposite_stimulus_tuning[idx] = simulate(
             stimuli,
-            {"spatial_center": x_opposite, "feature_center": float(theta_stim)},
+            # Feature-based attention is spatially global (C-023): flat in x so
+            # the θ_stim-selective gain reaches the recorded neuron at x = 0.
+            {"spatial_center": None, "feature_center": float(theta_stim)},
             params,
         )["response"]
     return measurements.tuning_record({

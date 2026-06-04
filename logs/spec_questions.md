@@ -81,3 +81,50 @@ escalation_options_for_phaseA: |
   (c) Revisit the cited σ_space=20 / σ=0.1 / stimulus_size values — with σ_space=20 ≫ stimulus_size,
       no integral-normalized field (1D or 2D) makes S commensurate with A·E at the RF, which is the
       arithmetic core of the deficit.
+
+## SQ-006 — feature-based attention is spatially GLOBAL (Fig 6C / 7C attend-opposite); needs a named ledger assumption
+date: 2026-06-03
+spec_ref: simulation_protocols.figure_6C; pseudocode/figure_6_protocol.md (Procedure 6C step 2); pipeline.build_attention_field; constants C-017, C-021, C-023
+status: RESOLVED-IN-BUILD (Phase B), pending Phase-A formalization of the assumption entry.
+question: |
+  The 2026-06-03 CODE_BUG finding (test_figure_6C_code_bug.py, MUST-PASS) showed run_figure_6C
+  built the attend-opposite-stimulus condition as a SPATIAL Gaussian centered at x_opposite=-50
+  TIMES a feature Gaussian. Because A = 1 + (γ-1)·G_x·G_θ and the recorded neuron sits at x=0,
+  far from x=-50 relative to the attention-field size (30), G_x ≈ 0 there, so A ≈ 1 regardless of
+  θ: the feature gain NEVER reaches the recorded neuron. The two curves overlap (peak ratio ~1.01,
+  no sharpening), independent of suppression gain. That contradicts C-023 ("the stimulus drive is
+  multiplied by an attention field that is itself selective for motion direction" — the directional
+  gain must multiply the RECORDED neuron's drive) and C-021/C-017.
+
+  FIX APPLIED (Phase B, this pass): in run_figure_6C the attend-opposite condition is now
+  {spatial_center: None, feature_center: θ_stim} — feature-selective in θ, FLAT (global) in x — so
+  the directional gain reaches the recorded neuron at x=0. Spatial attention being directed AWAY
+  from the RF is represented by the attend-fixation BASELINE, not by stripping the feature component
+  from the RF. Empirically this restores peak elevation 1.01 -> 1.31 (digitized ~1.11) and FWHM
+  sharpening 133°/140° -> ~111° (vs negligible before), passing the two MUST-PASS CODE_BUG tests and
+  flipping the T-6C-Q-sharpen tripwire green as the test author predicted. The faithful magnitude
+  (1.31) OVERSHOOTS the digitized 1.11, so the intended-failure tripwire T-6C-H-peakratio (±0.06
+  around 1.11) correctly REMAINS RED — a genuine magnitude divergence, not tuned.
+
+  UNDERSPECIFICATION TO FORMALIZE: "feature-based attention is spatially global" is currently only
+  IMPLIED by C-023 and the Fig-6 caption ("feature-based attention was matched to the stimulus in the
+  receptive field"); there is no NAMED ledger assumption for it (the pseudocode/figure_6_protocol.md
+  Procedure 6C step 2 still literally prescribes a spatial Gaussian centered at x_opp = -20, which is
+  the confined build that produces the bug). The docstring cites C-017/C-021/C-023 (which resolve),
+  but the spatial-globality convention deserves its own assumption entry.
+chosen_assumption: |
+  Phase B applied the spatially-global feature-attention mapping for Fig 6C (cited to C-017/C-021/
+  C-023; no invented numbers). Did NOT touch 7C: its attend_nonpref already uses spatial_center=0 (AT
+  the RF) so the x-confinement bug does not arise there, and the finding/test author supplied no
+  verified 7C target (the 7C CODE_BUG sub-claim was deliberately NOT encoded — see
+  test_figure_6C_code_bug.py NOTE ON 7C). Left article_aware/spec UNCHANGED (Phase-A-owned).
+escalation_options_for_phaseA: |
+  (a) Add a named assumption A-014 "feature_attention_is_spatially_global" to
+      article_aware/spec/assumptions.yaml (the attend-opposite / feature-based condition is flat in x,
+      feature-selective in θ; spatial attention away from the RF is the baseline), and update
+      pseudocode/figure_6_protocol.md Procedure 6C step 2 to drop the x_opp-centered spatial Gaussian
+      on the attend-opposite field. Then the protocol docstring can cite A-014 directly. OR
+  (b) If a DIFFERENT attention-field factorization is intended (e.g. a separable global-feature ×
+      local-spatial-baseline term), spec it precisely in the pseudocode so Phase B can implement that
+      convention instead. The current pseudocode (spatial Gaussian at x_opp) is the confined build the
+      CODE_BUG names and cannot be implemented faithfully.
