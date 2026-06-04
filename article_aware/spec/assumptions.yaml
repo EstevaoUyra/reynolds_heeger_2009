@@ -108,57 +108,102 @@
     - "[-50, 50] with dx = 0.5 (initial choice; too small for figure 2A geometry)"
     - "[-100, 100] with dx = 1.0 (faster; risk of undersampling small stimuli)"
     - "[-200, 200] (overkill)"
+    - "y axis (A-006 2D plane): use the SAME [-100, 100] / dx = 0.5 grid for y as for x, so the suppressive pool integrates over a symmetric 2D plane. Single-axis protocols place stimuli at y = 0; the pool still spans y."
   affects:
-    - "All spatial convolutions (EQ-2, EQ-6)"
+    - "All spatial convolutions (EQ-2, EQ-6) over the (x, y) plane"
     - "components.stimulation_field, components.suppressive_field"
   spec_refs:
     - "parameters.x_grid"
+    - "parameters.y_grid"
+    - "A-006 (2D-plane suppressive pooling)"
 
 - id: A-006
   name: spatial_dimensionality
   description: |
-    Figure 1 schematic depicts 2D images, but the equations and
-    Figures 2–7 protocols are equally well expressed in 1D. Use 1D
-    space (x ∈ ℝ) for all simulations.
+    RETIRED for the suppression mechanism (phaseA-contract-update-2026-06-03,
+    CONTRACT_BUG root cause). The model's spatial axis x is the RF-CENTER
+    coordinate; the paper's suppressive field pools over this axis with an
+    integral-normalized Gaussian (∫ s(x,θ) dx dθ = 1, EQ-2/EQ-6, σ_space =
+    suppressive_field_size = 20). The earlier 1D reduction did NOT change the
+    AXIS COUNT — it stayed 1D in x — it silently changed the
+    NORMALIZATION GEOMETRY: an integral-normalized Gaussian that pools over a
+    1D line concentrates far less of its mass over the recorded neuron's RF
+    than the paper's field does over the 2D image plane, so the pooled S came
+    out much smaller than A·E and the CRFs never saturated. The contract then
+    patched that deficit with per-panel, figure-fitted suppressive_drive_gain /
+    suppressive_spatial_sigma_scale knobs — the magnitude-divergence root cause.
+
+    NEW BINDING SPEC (the paper's mechanism, no per-panel tuning):
+    The suppressive drive is computed by EQ-6 with the suppressive kernel
+    s(x,θ) integral-normalized over the SAME (x,θ) measure the drives live on,
+    using the SINGLE cited suppressive_field_size (20) and suppressive_tuning_
+    width (180° V4 / doubled MT) for EVERY figure. The normalization geometry
+    that makes S commensurate with A·E is the paper's 2D image plane: the
+    spatial axis is resolved as a genuine 2D plane (x = RF-center along the
+    stimulus-separation axis, y = the orthogonal spatial axis the Gaussian
+    fields also span), and s is normalized over dx dy dθ. Hemifield-separated
+    and single-RF protocols still vary only the x-axis, but the suppressive
+    POOL integrates over the full plane, restoring the paper's S/A·E balance
+    WITHOUT any suppressive gain. See A-013.
   rationale: |
-    1D space suffices to reproduce all numeric and qualitative claims
-    in Figures 2–7: hemifield-separated stimuli or single-RF analyses
-    only require relative position along one axis. Figure 1 is
-    illustrative; we will not reproduce its 2D schematic.
+    The paper specifies ONE model with ONE σ and only the Table-1 sizes (C-010,
+    C-011); it has no per-figure suppression gain. EQ-2's normalization
+    (∫ s dx dθ = 1) is the only suppression-strength specification. The
+    integral-normalization measure (the dimensionality of the pooling plane)
+    is therefore part of the MECHANISM, not a free knob: collapsing it to a 1D
+    line and recovering magnitudes with a tuned per-panel gain is exactly the
+    figure-fitting the CONTRACT_BUG finding forbids. Resolving the pooling on
+    the paper's 2D image plane reproduces the saturating CRFs of Figs 2–7 from
+    the single cited suppressive field, with no per-panel gain.
   alternatives_considered:
-    - "Full 2D space (x, y) — needed only for Figure 1 reproduction"
+    - "Keep 1D-line pooling + promote ONE audited suppression-normalization constant (κ) to article_aware/spec/calibration.yaml, REQUIRED identical across all panels (no per-panel gain, no test relaxation). This is the finding's fallback; it satisfies the one-model invariant but is a 1D stand-in for the paper's 2D pooling, so it is the SECOND choice. If Phase B adopts it, κ is a single audited paper-derived ledger entry, never a per-figure value."
+    - "The RETIRED per-panel suppressive_drive_gain / suppressive_spatial_sigma_scale knobs (4→12 for 2A, 6 for 2B, 8 for 3C/4C/4E, 12 for 3F; sigma-scale 0.45/0.55/0.7/1.0) — figure-fitted, the magnitude-divergence root cause; FORBIDDEN from the sanctioned-calibration surface (A-013)."
   affects:
     - "All simulation protocols (Figures 2C through 7C)"
+    - "pipeline.build_suppressive_kernel, pipeline.compute_suppressive_drive"
+    - "EQ-2, EQ-6, EQ-suppressive_kernel (2D-plane integral normalization)"
+    - "implementation/calibration.yaml: ALL figure_*.suppressive_drive_gain and suppressive_spatial_sigma_scale entries to be DELETED by Phase B"
   spec_refs:
     - "components.stimulation_field"
     - "components.suppressive_field"
     - "components.attention_field"
+    - "A-013 (forbids per-panel suppression knobs / test relaxation)"
+    - "logs/spec_questions.md SQ-001 (remediation_2026-06-03), SQ-002"
 
 - id: A-007
   name: baseline_activity_values_figure_3
   description: |
-    Figures 3C and 3F add 'baseline activity' — one component
-    modulated by attention (added to stimulus drive), one unmodulated
-    (added after normalization). Table 1 marks 'X' but gives no
-    numbers. Provisional values: modulated baseline = 0.05·α,
-    unmodulated baseline = 0.05·α.
+    Figures 3C and 3F add 'baseline activity' — one component modulated by
+    attention (added to stimulus drive), one unmodulated (added after
+    normalization). Table 1 marks 'X' but gives no numbers. Fixed value:
+    modulated baseline = unmodulated baseline = 0.05·α, SHARED by 3C and 3F.
   rationale: |
-    Baselines should be small relative to peak response (α) but visible
-    at zero contrast. 5% of α is a conventional starting point; will be
-    tuned (per-protocol) to match the qualitative shapes the paper
-    describes — for 3C, % modulation peaking at low contrast; for 3F,
-    % modulation peaking at low contrast with greatest absolute
-    increase at high contrast.
+    Baselines should be small relative to peak response (α) but visible at zero
+    contrast; 5% of α is the conventional choice and is what the paper's "X"
+    qualitatively requires (a low-contrast floor). The single 0.05·α value is
+    a spec assumption (not a fit target): it is the SAME for 3C and 3F. The
+    paper's only stated 3C-vs-3F difference is the stimulus/attention-field
+    GEOMETRY and the presence of baseline — NOT a per-panel baseline magnitude
+    (C-014). Per A-013 these baselines must NOT be re-tuned per panel to fit a
+    curve shape, and tests must NOT be relaxed/tightened to admit a tuned value.
+    (Phase-A-contract-update-2026-06-03: removed the prior "will be tuned
+    per-protocol to match the qualitative shapes" license, which the
+    CONTRACT_BUG finding flagged as figure-fitting; the per-panel
+    baseline_modulated/unmodulated overrides in implementation/calibration.yaml,
+    e.g. 3C/3F lowered 0.05→0.005, are to be DELETED by Phase B.)
   alternatives_considered:
     - "10–20% of α (larger baseline; risks dominating modulation pattern)"
     - "Asymmetric values for modulated vs unmodulated"
     - "Zero unmodulated baseline (only attention-modulated baseline)"
+    - "RETIRED: per-panel-tuned baselines (3C/3F 0.005) — figure-fit, forbidden by A-013."
   affects:
     - "simulation_protocols.figure_3C"
     - "simulation_protocols.figure_3F"
+    - "implementation/calibration.yaml: figure_3*.baseline_modulated_by_attention / baseline_unmodulated per-panel overrides to be DELETED by Phase B (use the single 0.05·α)"
   spec_refs:
     - "simulation_protocols.figure_3C.parameter_overrides"
     - "simulation_protocols.figure_3F.parameter_overrides"
+    - "A-013 (forbids per-panel baseline tuning / test relaxation)"
 
 - id: A-008
   name: orientation_discretization
@@ -210,25 +255,27 @@
   name: convolution_boundary_handling
   description: |
     Convolutions in EQ-2 / EQ-6 require a boundary convention. Adopt:
-    periodic (circular) convolution in θ; zero-padded convolution in x.
+    periodic (circular) convolution in θ; zero-padded convolution in BOTH
+    spatial axes x and y (A-006 2D plane).
   rationale: |
     θ is genuinely periodic (orientation: 180°; motion direction: 360°),
     so circular convolution preserves wrap-around contributions to
-    suppression. x is not periodic — hemifield-separated stimuli should
-    not "leak" suppression around the boundary, so zero-padding (or
-    equivalently, large enough x_grid extent that boundaries are
-    unreachable) is correct. Per A-005, x_grid extends well beyond any
-    stimulus's footprint; combined with zero-padding, boundary effects
-    are negligible.
+    suppression. The spatial axes x and y are not periodic — hemifield-
+    separated stimuli should not "leak" suppression around the boundary, so
+    zero-padding (or equivalently, large enough grid extent that boundaries
+    are unreachable) is correct. Per A-005, both spatial grids extend well
+    beyond any stimulus's footprint; combined with zero-padding, boundary
+    effects are negligible.
   alternatives_considered:
-    - "Periodic in both x and θ — would let opposite-hemifield stimuli wrap into the recorded RF"
+    - "Periodic in x or y — would let opposite-hemifield stimuli wrap into the recorded RF"
     - "Zero-padded in θ — would lose suppressive contributions across the 180°/360° wrap"
-    - "Reflect (mirror) boundaries in x"
+    - "Reflect (mirror) boundaries in x/y"
   affects:
-    - "EQ-2, EQ-6 (suppressive drive convolutions)"
+    - "EQ-2, EQ-6 (suppressive drive convolutions over the (x, y, θ) plane)"
     - "Pipeline step 4 (compute_suppressive_drive)"
   spec_refs:
     - "pipeline.compute_suppressive_drive"
+    - "A-006 (2D-plane pooling)"
 
 - id: A-012
   name: figure_4C_spatial_attention_facilitation
@@ -289,3 +336,54 @@
     - "EQ-4, EQ-8 (analytical predictions only)"
   spec_refs:
     - "parameters.beta"
+
+- id: A-013
+  name: single_suppression_normalization_no_per_panel_tuning
+  description: |
+    BINDING CONTRACT RULE (phaseA-contract-update-2026-06-03, CONTRACT_BUG fix).
+    The suppression normalization is ONE mechanism with ONE set of cross-figure
+    constants, exactly as the paper has (C-010 suppressive_field_size = 20;
+    C-011 suppressive_tuning_width = 180° V4 / doubled MT; EQ-2 ∫ s dx dθ = 1).
+    The following are FORBIDDEN from the sanctioned-calibration surface and must
+    not appear in article_aware/spec/calibration.yaml or be read by the model as
+    scientific knobs:
+      (1) per-panel suppressive_drive_gain (the RETIRED 12/6/8/8/12/8);
+      (2) per-panel suppressive_spatial_sigma_scale (the RETIRED
+          0.45/0.55/0.7/1.0);
+      (3) per-panel baseline_modulated_by_attention / baseline_unmodulated
+          values that differ across Fig-3 panels (use the single A-007 0.05·α);
+      (4) per-panel sigma or suppressive_tuning_width overrides (the already-
+          RETIRED SQ-004 figure_4C 75°/sigma override class).
+    Tests MUST NOT be relaxed or tightened to admit a tuned value (the SQ-001
+    record of relaxing the 2A %-mod-peak test to allow peak==0 and re-setting
+    the saturation bounds so gain=4 fails / the tuned gain passes is the exact
+    anti-pattern this rule bans). Saturation, percent-modulation-peak, and
+    shape tests assert the paper's qualitative claim (C-019, C-020) against the
+    SINGLE mechanism; the only sanctioned way to green them is the faithful
+    suppression mechanism (A-006: 2D-plane integral normalization), never a
+    figure-fit.
+    IF Phase B keeps a 1D stand-in (A-006 alternative), the single
+    suppression-normalization constant κ it uses to make S commensurate with
+    A·E is promoted to ONE audited paper-derived entry in
+    article_aware/spec/calibration.yaml (model.suppression_normalization), is
+    identical across every panel, and is REQUIRED to hold unchanged — no
+    per-figure κ.
+  rationale: |
+    The CONTRACT_BUG finding: the per-panel suppression knobs and the
+    test-relaxations are "the common Phase-A/contract origin of every magnitude
+    divergence" (Figs 2–7). They are disclosed as audited:false (honest
+    containment) but are a faithfulness hole for a normalization model whose
+    magnitudes ARE the scientific claim. The fix is to specify the paper's one
+    mechanism and forbid the per-panel knobs — never to tune to fit.
+  alternatives_considered:
+    - "Leave the per-panel knobs in implementation/calibration.yaml as audited:false honest-containment (REJECTED: the finding rules this a faithfulness hole, not acceptable containment, because the magnitudes are the scientific claim)."
+  affects:
+    - "article_aware/spec/calibration.yaml (no per-panel suppression/baseline entries; optionally ONE audited model.suppression_normalization)"
+    - "implementation/calibration.yaml (all per-panel suppressive_drive_gain / suppressive_spatial_sigma_scale / per-panel baseline_* DELETED by Phase B)"
+    - "extracted_data/test_contract_suppression_consistency.py (the single-value MUST-PASS invariant)"
+    - "extracted_data/test_figure_2A.py, test_figure_4E.py and the tier tests (saturation / %-mod-peak bounds restored to the paper's qualitative claim, not the tuned-gain pass-band)"
+  spec_refs:
+    - "A-006 (the faithful 2D-plane suppression mechanism)"
+    - "A-007 (single shared Fig-3 baseline)"
+    - "logs/spec_questions.md SQ-001 (remediation_2026-06-03), SQ-002, SQ-004 (resolution_2026-06-03)"
+    - "rendering_conventions / constants: C-010, C-011, C-019, C-020"

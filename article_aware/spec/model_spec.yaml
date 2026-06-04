@@ -71,7 +71,15 @@ parameters:
 
   - id: x_grid
     name: spatial_grid
-    description: "Sample grid for spatial dimension x. Same grid for stimuli, fields, and outputs."
+    description: "Sample grid for spatial dimension x (RF-center along the stimulus-separation axis). Same grid for stimuli, fields, and outputs."
+    value: null
+    underspecified_by: A-005
+    units: "arbitrary spatial units"
+    citation_refs: []
+
+  - id: y_grid
+    name: spatial_grid_orthogonal
+    description: "Sample grid for the orthogonal spatial dimension y of the 2D image plane (A-006). The suppressive field's integral normalization pools over (x, y); single-axis protocols place all stimuli at y = 0 but the pool still integrates over y."
     value: null
     underspecified_by: A-005
     units: "arbitrary spatial units"
@@ -227,13 +235,22 @@ equations:
   - id: EQ-suppressive_kernel
     name: suppressive_kernel_construction
     expression: |
-      s(x,θ) = N · G_space(x; σ=suppressive_field_size)
-                 · G_feature(θ; σ=suppressive_tuning_width)
-      where N is chosen so that ∫∫ s(x,θ) dx dθ = 1.
+      s(x,y,θ) = N · G_space(x; σ=suppressive_field_size)
+                   · G_space(y; σ=suppressive_field_size)
+                   · G_feature(θ; σ=suppressive_tuning_width)
+      where N is chosen so that ∫∫∫ s(x,y,θ) dx dy dθ = 1 (EQ-2).
     inputs: [suppressive_field_size, suppressive_tuning_width]
     outputs: [s]
     citation_refs: [C-002, C-009, C-011]
-    notes: "s is fixed by parameters; does not depend on stimulus or attention. Normalized integral per EQ-2."
+    notes: |
+      s is fixed by the single cited constants (suppressive_field_size = 20,
+      suppressive_tuning_width); it does NOT depend on stimulus, attention, or
+      figure, and carries NO per-panel gain or width scale (A-013). The integral
+      normalization is over the paper's 2D spatial image plane (x, y) and θ
+      (A-006, retired the 1D-line reduction): this 2D pooling measure is what
+      makes the pooled suppressive drive S commensurate with A·E so the CRFs
+      saturate (C-020) from this single field, with no suppressive_drive_gain.
+      Single-axis protocols vary only x; the kernel still pools over (x, y, θ)."
 
 components:
   - id: stimulation_field
@@ -245,7 +262,7 @@ components:
 
   - id: suppressive_field
     name: Suppressive Field
-    description: "Pooling kernel for normalization; broader than stimulation field; can be feature-nonspecific. Gaussian profile, normalized to integrate to 1."
+    description: "Pooling kernel for normalization; broader than stimulation field; can be feature-nonspecific. Gaussian profile over the 2D spatial image plane (x, y) and feature θ, integral-normalized to 1 over dx dy dθ (EQ-2). ONE kernel for every figure — the single cited size (20) and tuning width; NO per-panel suppressive_drive_gain or suppressive_spatial_sigma_scale (A-006, A-013)."
     parameter_refs: [suppressive_field_size, suppressive_tuning_width]
     equation_refs: [EQ-2, EQ-6]
     citation_refs: [C-002, C-009, C-011]
@@ -272,9 +289,9 @@ pipeline:
 
   - step: 1
     name: build_suppressive_kernel
-    description: "Construct the (constant) suppressive field kernel s(x,θ), normalized to integrate to 1. Computed once per simulation."
+    description: "Construct the (constant) suppressive-field kernel s(x,y,θ), integral-normalized to 1 over the 2D spatial plane (x,y) and θ (EQ-2; A-006). Uses ONLY the single cited suppressive_field_size and suppressive_tuning_width — no per-figure gain/width scale (A-013). Computed once per simulation."
     equation_ref: EQ-suppressive_kernel
-    inputs: [suppressive_field_size, suppressive_tuning_width, x_grid, theta_grid]
+    inputs: [suppressive_field_size, suppressive_tuning_width, x_grid, y_grid, theta_grid]
     outputs: [s]
 
   - step: 2
@@ -301,7 +318,7 @@ pipeline:
 
   - step: 4
     name: compute_suppressive_drive
-    description: "Element-wise multiply A and E, then convolve with the suppressive kernel s in both x (zero-padded) and θ (periodic)."
+    description: "Element-wise multiply A and E, then convolve with the suppressive kernel s over the spatial plane (x, y zero-padded) and θ (periodic). The 2D-plane integral normalization of s (step 1) makes S commensurate with A·E with NO suppressive_drive_gain (A-006/A-013); the result saturates the CRFs (C-020) from the single cited field."
     equation_ref: EQ-6
     inputs: [s, A, E]
     outputs: [S]

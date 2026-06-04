@@ -25,6 +25,18 @@
 # string they are read from. The Table 1 source rows live verbatim in
 # article_aware/spec/citations.yaml (C-010..C-018 `text:`) and in
 # paper/extracted_text.md "Table 1 — Per-Figure Parameters".
+#
+# SUPPRESSION-NORMALIZATION RULE (A-013, CONTRACT_BUG fix 2026-06-03): the
+# suppression normalization is ONE mechanism with the single cross-figure
+# constants below (suppressive_field_size = 20, suppressive_tuning_width = 180,
+# integral-normalized over the 2D (x,y,θ) plane per A-006/EQ-2). NO per-panel
+# suppressive_drive_gain, suppressive_spatial_sigma_scale, per-panel baseline,
+# or per-panel sigma/tuning-width override may be added to THIS file — those
+# are forbidden from the sanctioned-calibration surface (A-013) and are deleted
+# from the implementation side by Phase B. If Phase B keeps a 1D stand-in for
+# the 2D pool, the SINGLE suppression-normalization constant it uses is added
+# here as ONE audited `model.suppression_normalization` entry, identical across
+# every panel — never a per-figure value.
 
 schema_version: 1
 
@@ -87,7 +99,7 @@ model.suppressive_tuning_width:
   source: C-011
   audited: true
   quote: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°."
-  note: "Suppressive field orientation tuning width (broad/nonspecific), 180 deg for V4 oriented gratings (paper Table 1 notes; C-011). Figure 4C's narrower per-protocol override is implementation-side (SQ-004), not here."
+  note: "Suppressive field orientation tuning width (broad/nonspecific), 180 deg for V4 oriented gratings (paper Table 1 notes; C-011); doubled for MT/MST motion (C-011). ONE value for every figure. No per-panel override: the Figure-4C 75-deg override (SQ-004) is RETIRED (A-012) and FORBIDDEN (A-013)."
 
 # ---------------------------------------------------------------------------
 # Per-protocol PAPER-DERIVED scientific parameters
