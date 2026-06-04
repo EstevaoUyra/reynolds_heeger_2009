@@ -57,10 +57,21 @@ from rh_model import calibration
 
 
 # Every per-figure CRF protocol that drives suppression through a per-panel knob.
-# (Fig 1 is the schematic; Figs 5/6/7 are tuning panels — the magnitude finding
-# is the CRF suppression gain that the paper does not vary per figure.)
+# (Fig 1 is the schematic; Figs 5/6/7 are tuning panels.)
 _CRF_PROTOCOLS = ("figure_2A", "figure_2B", "figure_3C", "figure_3F",
                   "figure_4C", "figure_4E")
+
+# The tuning-panel protocols (Figs 5/6/7). The 2026-06-03 re-audit SHARPENED the
+# CONTRACT_BUG: not only do the CRF panels carry per-panel gains, the tuning
+# protocols apply NO suppression gain at all (resolve -> None == effective gain
+# 1), while the CRF panels apply 6-12. The finding states this directly:
+# "the tuning protocols 5/6/7 apply gain=1 while CRF protocols apply 6-12 — that
+# inconsistency is the bug." One model has ONE suppression normalization for
+# EVERY panel, tuning panels included; the same normalization the CRF panels use
+# must also be applied to 5/6/7 (finding's fix: "Apply the same suppression
+# normalization to the tuning protocols (5/6/7), which currently apply none.").
+_TUNING_PROTOCOLS = ("figure_5C", "figure_6C", "figure_7C")
+_ALL_RESPONSE_PROTOCOLS = _CRF_PROTOCOLS + _TUNING_PROTOCOLS
 
 # The suppression-normalization knobs the finding names as figure-fitted. The
 # paper has ONE of each (or none — the paper has no suppression GAIN at all).
@@ -156,4 +167,61 @@ def test_no_crf_panel_overrides_suppression_relative_to_figure_2A(knob):
         f"{knob} must be inherited unchanged from figure_2A ({baseline}) by every "
         f"CRF panel (one model, one suppression normalization); these override it: "
         f"{offenders}. Remove the per-panel override — do not tune to fit."
+    )
+
+
+@deterministic_test(
+    spec_ref="figures.figure_2",  # cross-figure; one suppression normalization
+    figure="cross",
+    claim_id="T-CONTRACT-supp-gain-tuning-equals-crf",
+)
+def test_tuning_protocols_apply_the_same_suppression_gain_as_crf_panels():
+    """MUST-PASS (CONTRACT_BUG, 2026-06-03 sharpened): the tuning protocols
+    (Figs 5/6/7) apply the SAME suppression-drive gain as the CRF panels — ONE
+    model, ONE suppression normalization for EVERY panel.
+
+    The re-audit demonstrated empirically that the CRF protocols apply
+    suppressive_drive_gain 6-12 while the tuning protocols 5/6/7 apply NONE
+    (resolve -> None, i.e. effective gain 1): "the tuning protocols 5/6/7 apply
+    gain=1 while CRF protocols apply 6-12 — that inconsistency is the bug." The
+    finding's fix is explicit: "Apply the same suppression normalization to the
+    tuning protocols (5/6/7), which currently apply none."
+
+    EXPECTED RED today: the CRF panels resolve a positive gain; the tuning panels
+    resolve None. Drive green by UNIFYING the suppression mechanism across ALL
+    panels (the genuine 2D field, or one promoted suppression constant applied
+    everywhere) — never by tuning a figure. This is satisfiable by the correct
+    mechanism alone: a single suppression normalization is, by construction, the
+    same on every panel. Do NOT relax to xfail/soft.
+
+    Evaluated on calibration.resolve_namespace (the model's resolved ledger, the
+    SAME one protocols consume), with the expected invariant (one suppression
+    normalization for all panels) taken from the paper's one-model / Table-1-only
+    suppression specification — not from any digitized curve.
+    """
+    crf_gains = {p: _resolved_knob(p, "suppressive_drive_gain")
+                 for p in _CRF_PROTOCOLS}
+    tuning_gains = {p: _resolved_knob(p, "suppressive_drive_gain")
+                    for p in _TUNING_PROTOCOLS}
+    # The single suppression normalization the CRF panels (should) share; today
+    # they disagree (covered by the tests above), but in EVERY case it is a
+    # positive gain, whereas the tuning panels apply none — the inconsistency the
+    # finding names. Require the resolved gain to be present AND identical across
+    # the whole response-panel set.
+    all_gains = {p: _resolved_knob(p, "suppressive_drive_gain")
+                 for p in _ALL_RESPONSE_PROTOCOLS}
+    missing = sorted(p for p, v in all_gains.items() if v is None)
+    assert not missing, (
+        "the tuning protocols apply NO suppression gain while the CRF panels "
+        f"apply {sorted({float(v) for v in crf_gains.values() if v is not None})} "
+        f"(tuning resolves: {tuning_gains}). The paper has ONE suppression "
+        "normalization for every panel — apply it to 5/6/7 too. These panels "
+        f"apply none: {missing}. Unify the suppression mechanism; do not tune."
+    )
+    distinct = sorted({float(v) for v in all_gains.values() if v is not None})
+    assert len(distinct) == 1, (
+        "one model, one suppression normalization across CRF AND tuning panels; "
+        f"the resolved gains differ across the response set: {all_gains}. Unify "
+        "the suppression mechanism (2D field, or one promoted constant) — do not "
+        "tune per figure."
     )
