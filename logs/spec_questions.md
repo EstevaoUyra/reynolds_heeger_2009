@@ -23,3 +23,61 @@ spec_ref: constants (C-010/C-011 suppressive_tuning_width); simulation_protocols
 question: Figure 4C records the preferred neuron (theta=0) with a fixed nonpreferred stimulus at theta=180, c_nonpref=0.5 (spec-fixed, figure_4.md/C-015), peak_attention_gain_gamma=5 and tuning_width=20 (spec parameter_overrides). With the cited suppressive tuning width = 180 deg (C-010/C-011), the suppressive theta-kernel attenuates a 180 deg offset by only exp(-0.5) ≈ 0.61, so the attention-boosted nonpreferred stimulus injects ≈ gamma·c_nonpref ≈ 2.5 into the suppressive pool at theta=0 while the preferred stimulus contributes only c_pref ≤ 1. The attend-nonpreferred CRF therefore half-saturates at c_pref ≈ 2.5·(k2/k1) ≈ 1.5, beyond the [0.01, 1] sweep, so it never saturates and never recovers toward the opposite-hemifield CRF — directly contradicting the contrast-gain recovery/saturation the figure claims (Q-027, Q-029). A parameter sweep confirms NO sanctioned calibration knob (suppressive_drive_gain, sigma, the A-006 spatial sigma scales, baselines, threshold) moves the attended half-saturation contrast, because the two stimuli are colocated in x and separated only in theta. Only narrowing the suppressive *tuning* width to ≈ 60–90 deg makes 4C satisfy every deterministic claim. Should the Phase A spec carry a narrower (or per-protocol) suppressive tuning width, or a different c_nonpref, for the 1D reduction of Figure 4C? Evidence: implementation/sanity_checks/check_fig4c_saturation.py.
 chosen_assumption: Added an implementation-side per-protocol suppressive_tuning_width override for Figure 4C only (75 deg, mid of the robust 60–90 deg green band), tuned solely against the Figure 4C deterministic qualitative claims; left article_aware/spec and the C-010/C-011 constant unchanged pending human review. Figure 4C deterministic green is therefore PROVISIONAL and soft-blocked on this question (same status class as SQ-001/SQ-002).
 resolution_2026-06-03: RETIRED. The premise was wrong. The whole 4C saturation/recovery struggle (and the 75 deg suppressive-tuning override) existed only because the 4C attention condition was mis-mapped as a NARROW feature-tuned gain on the nonpreferred direction (θ=180) — which drives the recorded θ=0 neuron into SUPPRESSION (the Fig-4E / C-021 mechanism), the OPPOSITE sign from the paper's 4C panel. The figure_4C_investigation-2026-06-03.md resolved 4C to FACILITATION / contrast-gain left-shift via a SPATIAL-LOCATION attention field at the RF (boosting both colocated stimuli; attended above unattended, +~36% modulation). Under the correct spatial mapping the attend-nonpref CRF saturates and recovers normally with the CITED suppressive tuning width (180 deg, C-011) — the "never saturates" pathology does not arise, so NO suppressive-tuning override is needed. New regime recorded as assumption A-012. PHASE-B INSTRUCTION: delete the implementation-side figure_4C.suppressive_tuning_width=75 override (implementation/calibration.yaml) and the figure_4C.sigma override that was added for the same forced-recovery reason; build 4C with the cited 180 deg suppressive tuning and the spatial (feature-flat) attention field per pseudocode/figure_4_protocol.md. Figure 4C is no longer soft-blocked on SQ-004; it is now gated on the facilitation-direction tests.
+
+## SQ-005 — A-013 / A-006 prescribed suppression fix does not produce saturation (CONTRACT-BUG; Phase-B STUCK)
+date: 2026-06-03
+spec_ref: assumptions A-006 (2D-plane suppressive pooling), A-013 (single suppression normalization); article_aware/extracted_data/test_contract_suppression_consistency.py; simulation_protocols.figure_4C (Q-029)
+status: STUCK — escalated to organizer/Phase A; no Phase-B mechanism can green these must-pass tests without violating the implement-SKILL guard (no figure-fitting, no per-panel-knob tuning, no contract edits).
+question: |
+  This pass's contract update (phaseA-contract-update-2026-06-03) added the MUST-PASS
+  test_contract_suppression_consistency.py invariant (ONE suppressive_drive_gain and ONE
+  suppressive_spatial_sigma_scale across every CRF panel) and rewrote A-006 to assert that a
+  GENUINE 2D-plane integral-normalized suppressive field (∫∫∫ s(x,y,θ) dx dy dθ = 1, the single
+  cited σ_space=20) "restores the paper's S/A·E balance WITHOUT any suppressive gain" so the CRFs
+  saturate (C-020). Phase B is asked to drive these green by implementing that 2D mechanism (or, per
+  A-013's fallback, by ONE audited model.suppression_normalization constant in the PAPER-DERIVED
+  ledger). Both prescribed paths fail or are out of Phase B's reach:
+
+    (1) The 2D-plane mechanism is EMPIRICALLY FALSIFIED. A 2D integral-normalized Gaussian has a
+        LOWER peak density than the 1D one (1/(2πσ²) vs 1/(√(2π)σ)), so pooling over the (x,y) plane
+        makes S at the recorded neuron SMALLER, not larger. Measured (σ_s=20, stimulus_size=3, σ=0.1,
+        gain=1): 1D S/AE ≈ 0.243; genuine 2D S/AE ≈ 0.059. The pure-cited 1D CRF already does not
+        saturate (2A unatt final/max log-slope = 1.00, rise half→c=1 = 74%); the genuine 2D version is
+        STRICTLY WORSE (slope 1.00, rise 95%). The A-006 rationale ("1D concentrates LESS mass over the
+        RF than the 2D plane") has the geometry backwards. So the 2D mechanism cannot green either the
+        single-value contract test or the 4C-saturation Q-029 — it deepens the deficit SQ-001 first
+        recorded. (Verified separably: for y=0 protocols the genuine 2D pool = the 1D pool × a scalar
+        y-overlap factor < 1, which only shrinks S.)
+    (2) A-013's fallback (ONE audited κ = model.suppression_normalization) lives in
+        article_aware/spec/calibration.yaml, which Phase A OWNS and the builder must not edit. Phase A
+        added the RULE comment but did NOT add the κ entry, so there is no sanctioned constant for the
+        model to read. A single unified suppressive_drive_gain in the IMPLEMENTATION ledger (which
+        Phase B does own) can make the panels saturate (e.g. one value ≈12–16 with ssc=1.0), but that
+        value has no paper grounding — it is a magnitude tuned to bend the CRFs, exactly the
+        figure-fit the implement-SKILL guard and A-013 itself forbid ("the only sanctioned way to
+        green them is the faithful suppression mechanism … never a figure-fit").
+
+  Net: the must-pass test_contract_suppression_consistency.py invariant and the 4C-saturation Q-029
+  are unsatisfiable by any mechanism available to a paper-blind Phase B under the current contract —
+  the contract prescribes a mechanism (2D) that demonstrably does not produce the required behavior,
+  and forbids the only thing that does (a tuned gain) without supplying the sanctioned alternative
+  (a spec-ledger κ). This is the CONTRACT_BUG the 2026-06-03 independent re-render audit named, now
+  proven to resist its own prescribed fix.
+chosen_assumption: |
+  NONE forced. Per the implement-SKILL ("a must-pass test you cannot satisfy with the cited mechanism
+  is escalated, never forced"; "do not tune an audited:false knob to make a curve bend"): leave the
+  implementation UNCHANGED at the per-panel gains SQ-001 set (the three sanctioned Phase-B build-order
+  changes — 4C spatial field, SQ-004 override deletion, shared-scale views — are already in place and
+  their target tests are green). Leave test_contract_suppression_consistency.py and Q-029 RED, and the
+  ten intended-failure tripwires RED. This is a STUCK outcome routed to Phase A.
+escalation_options_for_phaseA: |
+  (a) Add the audited κ entry model.suppression_normalization to article_aware/spec/calibration.yaml
+      (a SINGLE cross-figure constant ≈ the unifying gain that saturates all panels), making A-013's
+      explicit fallback actionable by Phase B; OR
+  (b) Revise A-006/A-013: the 2D-plane claim is falsified, so either restore a sanctioned single
+      suppression-strength constant or accept the 1D per-panel gains as honest audited:false
+      containment and reclassify test_contract_suppression_consistency.py from MUST-PASS down (it
+      encodes a fix the contract's own mechanism cannot deliver); OR
+  (c) Revisit the cited σ_space=20 / σ=0.1 / stimulus_size values — with σ_space=20 ≫ stimulus_size,
+      no integral-normalized field (1D or 2D) makes S commensurate with A·E at the RF, which is the
+      arithmetic core of the deficit.
