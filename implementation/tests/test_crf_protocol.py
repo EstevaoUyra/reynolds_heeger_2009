@@ -83,14 +83,14 @@ def test_regime_conditional_lives_behind_the_entry_point():
 
 
 def test_run_crf_matches_hand_rolled_calibrated_path():
-    """run_crf reproduces, byte-for-behavior, the hand-rolled calibrated
-    CRF a dependent used to build (so a dependent can switch to it with
-    zero behavior change). contrast_gain ≡ R&H Fig 2A calibration."""
+    """run_crf reproduces, byte-for-behavior, the hand-rolled faithful CRF a
+    dependent would build (so a dependent can switch to it with zero behavior
+    change). Under SQ-005 there are NO discretization knobs: contrast_gain is
+    the Fig-2A GEOMETRY (stimulus σ=3, attention-field σ=30) run through the
+    single faithful suppression mechanism."""
     overrides = dict(
         stimulus_size=3.0, attention_field_size=30.0,
         peak_attention_gain_gamma=2.0, tuning_width=30.0,
-        suppressive_drive_gain=4.0, suppressive_spatial_sigma_scale=0.55,
-        baseline_unmodulated=0.01,
     )
     att = np.empty(CONTRASTS.size)
     ign = np.empty(CONTRASTS.size)

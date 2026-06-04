@@ -28,25 +28,33 @@ DTH = float(TG[1] - TG[0])
 
 
 def test_suppressive_kernel_contract():
-    """produces s_x:(n_x,), s_theta:(n_th,), each integrating to 1."""
-    s_x, s_theta = suppressive_kernel.run(XG, TG, 20.0, 180.0, DEFAULT_THETA_PERIOD)
+    """produces s_x:(n_x,), s_theta:(n_th,): UNIT-VOLUME (normpdf) Gaussians.
+
+    Under SQ-005 the kernels are unit-volume (normpdf) and NOT renormalized to a
+    joint integral of 1: on the unit-spacing grid the spatial kernel sums to ~1
+    and the near-flat θ kernel (σ=360 ≫ θ span) sums to ~0.384.
+    """
+    s_x, s_theta = suppressive_kernel.run(XG, TG, 20.0, 360.0, DEFAULT_THETA_PERIOD)
     assert s_x.shape == XG.shape
     assert s_theta.shape == TG.shape
     assert np.all(np.isfinite(s_x)) and np.all(np.isfinite(s_theta))
-    np.testing.assert_allclose(s_x.sum() * DX, 1.0, rtol=1e-6)
-    np.testing.assert_allclose(s_theta.sum() * DTH, 1.0, rtol=1e-6)
+    # Unit-volume normpdf: peak amplitude = 1/(σ·√(2π)); spatial kernel sums ≈ 1.
+    np.testing.assert_allclose(s_x.max(), 1.0 / (20.0 * np.sqrt(2 * np.pi)), rtol=1e-6)
+    np.testing.assert_allclose(s_x.sum(), 1.0, rtol=1e-3)
+    # The near-flat θ pool sums to < 1 (≈ 0.384 in the authors' code) — intended.
+    assert 0.30 < s_theta.sum() < 0.45
 
 
 def test_stimulus_drive_contract():
     """produces E:(n_th, n_x) ≥ 0, peaked at the stimulus location."""
     stimuli = [{"x": 0.0, "theta": 0.0, "contrast": 0.5}]
-    E = stimulus_drive.run(stimuli, XG, TG, 5.0, 30.0)
+    E = stimulus_drive.run(stimuli, XG, TG, 5.0, 1.0)
     assert E.shape == (TG.size, XG.size)
     assert np.all(E >= 0.0) and np.all(np.isfinite(E))
     peak_x = XG[int(np.argmax(E[int(np.argmin(np.abs(TG)))]))]
     assert abs(peak_x) <= 1.0
     # purity: a second call with the same inputs gives the same array
-    np.testing.assert_array_equal(E, stimulus_drive.run(stimuli, XG, TG, 5.0, 30.0))
+    np.testing.assert_array_equal(E, stimulus_drive.run(stimuli, XG, TG, 5.0, 1.0))
 
 
 def test_attention_field_contract():
@@ -65,10 +73,10 @@ def test_attention_field_contract():
 
 def test_suppression_contract():
     """consumes kernel+A+E; produces S:(n_th,n_x) ≥ 0, same shape."""
-    s_x, s_theta = suppressive_kernel.run(XG, TG, 20.0, 180.0)
-    E = stimulus_drive.run([{"x": 0.0, "theta": 0.0, "contrast": 0.5}], XG, TG, 5.0, 30.0)
+    s_x, s_theta = suppressive_kernel.run(XG, TG, 20.0, 360.0)
+    E = stimulus_drive.run([{"x": 0.0, "theta": 0.0, "contrast": 0.5}], XG, TG, 5.0, 1.0)
     A = np.ones_like(E)
-    S = suppression.run(s_x, s_theta, A, E, DX, DTH)
+    S = suppression.run(s_x, s_theta, A, E)
     assert S.shape == E.shape
     assert np.all(S >= 0.0) and np.all(np.isfinite(S))
 
@@ -113,25 +121,21 @@ def test_named_stage_pipeline_matches_model_simulate():
 
     s_x, s_theta = suppressive_kernel.run(
         params.x_grid, params.theta_grid,
-        params.suppressive_field_size * params.suppressive_spatial_sigma_scale,
+        params.suppressive_field_size,
         params.suppressive_tuning_width, params.theta_period,
     )
     E = stimulus_drive.run(
         stimuli, params.x_grid, params.theta_grid,
-        params.stimulus_size * params.stimulus_spatial_sigma_scale,
-        params.tuning_width or 30.0, params.theta_period,
+        params.stimulus_size,
+        params.stimulus_tuning_width, params.theta_period,
+        params.stimulation_field_size, params.stimulation_tuning_width,
     )
     A = attention_field.run(
         cond, params.x_grid, params.theta_grid,
-        params.attention_field_size * params.attention_spatial_sigma_scale,
+        params.attention_field_size,
         params.peak_attention_gain_gamma, params.tuning_width, params.theta_period,
     )
-    S = suppression.run(
-        s_x, s_theta, A, E,
-        float(params.x_grid[1] - params.x_grid[0]),
-        float(params.theta_grid[1] - params.theta_grid[0]),
-    )
-    S = params.suppressive_drive_gain * S
+    S = suppression.run(s_x, s_theta, A, E)
     R = normalization.run(A, E, S, params.sigma, params.threshold_T)
     resp = readout.run(
         R, params.x_grid, params.theta_grid, params.recorded_x, params.recorded_theta

@@ -75,13 +75,11 @@ def _forward_response(
     expressed through the named stages; behaviourally identical.
     """
     x_grid, theta_grid = params.x_grid, params.theta_grid
-    dx = float(x_grid[1] - x_grid[0])
-    dtheta = float(theta_grid[1] - theta_grid[0])
 
     s_x, s_theta = suppressive_kernel.run(
         x_grid,
         theta_grid,
-        params.suppressive_field_size * params.suppressive_spatial_sigma_scale,
+        params.suppressive_field_size,
         params.suppressive_tuning_width,
         params.theta_period,
     )
@@ -89,9 +87,11 @@ def _forward_response(
         stimuli,
         x_grid,
         theta_grid,
-        params.stimulus_size * params.stimulus_spatial_sigma_scale,
-        params.tuning_width or 30.0,
+        params.stimulus_size,
+        params.stimulus_tuning_width,
         params.theta_period,
+        params.stimulation_field_size,
+        params.stimulation_tuning_width,
     )
     if params.baseline_modulated_by_attention != 0.0:
         E = E + params.baseline_modulated_by_attention
@@ -99,13 +99,12 @@ def _forward_response(
         attention_condition,
         x_grid,
         theta_grid,
-        params.attention_field_size * params.attention_spatial_sigma_scale,
+        params.attention_field_size,
         params.peak_attention_gain_gamma,
         params.tuning_width,
         params.theta_period,
     )
-    S = suppression.run(s_x, s_theta, A, E, dx, dtheta)
-    S = params.suppressive_drive_gain * S
+    S = suppression.run(s_x, s_theta, A, E)
     R = normalization.run(
         A, E, S, params.sigma, params.threshold_T,
         variant=params.normalization_variant,
@@ -128,12 +127,14 @@ def run_crf(
 ) -> dict:
     """Calibrated attended/ignored 1D contrast-response functions.
 
-    The caller supplies ONLY scientific parameters. The per-regime 1D
-    implementation-side calibration (suppressive_drive_gain,
-    suppressive_spatial_sigma_scale, baseline_unmodulated) is resolved
-    INTERNALLY from implementation/calibration.yaml's ``regime.<regime>``
-    namespace — the dependent never sees or carries it, and there is no
-    regime-conditional in the dependent's code.
+    The caller supplies ONLY scientific parameters. The per-regime calibration
+    is the Fig-2A (contrast-gain) vs Fig-2B (response-gain) GEOMETRY (the
+    attention-field σ, Table 1) — resolved INTERNALLY from
+    implementation/calibration.yaml's ``regime.<regime>`` namespace; the
+    dependent never sees or carries it, and there is no regime-conditional in
+    the dependent's code. Under the faithful suppression mechanism (the separable
+    space×feature pool, σ=1e-6, no per-panel gain — SQ-005/A-013) there is no
+    suppression knob to expose: the regimes differ purely by geometry.
 
     The "attended" condition is spatial attention centered on the RF
     stimulus (orientation-unselective); "ignored" is attend-elsewhere,
@@ -147,19 +148,21 @@ def run_crf(
     if regime not in REGIMES:
         raise ValueError(f"regime must be one of {REGIMES}, got {regime!r}")
 
+    # The regime selects the Fig-2A (contrast-gain) vs Fig-2B (response-gain)
+    # GEOMETRY (Table-1 attention-field size — the only lever that distinguishes
+    # the regimes under the faithful no-gain suppression mechanism). It is read
+    # internally; the dependent passes only a regime NAME and carries no R&H
+    # discretization knob. The caller's attention_field_size argument is the
+    # scientific default for the named regime and is overridden by the regime's
+    # canonical Table-1 size so the two regimes differ from identical caller args.
     cal = resolve_namespace(f"regime.{regime}")  # internal; not exposed
     contrasts = np.asarray(contrasts, dtype=float)
 
     overrides = dict(
         stimulus_size=float(stimulus_size),
-        attention_field_size=float(attention_field_size),
+        attention_field_size=float(cal["attention_field_size"]),
         peak_attention_gain_gamma=float(gamma),
         tuning_width=float(tuning_width),
-        suppressive_drive_gain=float(cal["suppressive_drive_gain"]),
-        suppressive_spatial_sigma_scale=float(
-            cal["suppressive_spatial_sigma_scale"]
-        ),
-        baseline_unmodulated=float(cal["baseline_unmodulated"]),
     )
 
     attended = np.empty(contrasts.shape, dtype=float)

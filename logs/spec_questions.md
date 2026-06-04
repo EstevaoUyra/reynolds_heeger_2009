@@ -177,3 +177,102 @@ escalation_options_for_phaseA: |
       local-spatial-baseline term), spec it precisely in the pseudocode so Phase B can implement that
       convention instead. The current pseudocode (spatial Gaussian at x_opp) is the confined build the
       CODE_BUG names and cannot be implemented faithfully.
+
+## SQ-007 — faithful SQ-005 suppression mechanism reproduces Fig 1 but mismatches the CRF contrast axis; 3 must-pass gaps left RED (Phase-B partial-STUCK)
+date: 2026-06-04
+spec_ref: |
+  article_aware/spec/model_spec.yaml (EQ-suppressive_kernel, EQ-stim, pipeline; σ=1e-6 CODE-014);
+  article_aware/extracted_data/test_contract_suppression_consistency.py;
+  article_aware/extracted_data/test_figure_{2A,2B,3C,3F,4C}.py (half-max/left-shift claims);
+  article_aware/extracted_data/test_tier_figure_{4,7}.py; figure_{2,3,4}/panel_*_digitized.json
+status: PARTIAL-STUCK (Phase B). The SQ-005 mechanism was IMPLEMENTED and is correct where the
+  contract is self-consistent (Figure 1 is fully green; CRF saturation + response-gain signatures
+  pass). Three groups of must-pass tests remain RED for reasons OUTSIDE a paper-blind builder's
+  sanctioned levers; escalated to Phase A / organizer. No knob was tuned to force any of them.
+what_was_built: |
+  Implemented the SQ-005 author-code mechanism end to end (implementation/src/rh_model, no
+  article_aware edits):
+    - build_suppressive_kernel: UNIT-VOLUME (normpdf) separable Gaussians, NOT integral-normalized
+      (EQ-suppressive_kernel; the old `/sum/dx` form made S far too small). IxWidth=20, IthetaWidth=360.
+    - compute_suppressive_drive: plain discrete conv2sepYcirc (zero-pad x, circular θ), NO ·dx/·dθ
+      factor and NO per-panel suppressive_drive_gain (A-013).
+    - build_stimulus_drive: Eraw = conv2sepYcirc(stim, ExKernel σ=5, EthetaKernel σ=60); the per-
+      stimulus θ width is the near-impulse stimulus_tuning_width=1 (CODE-019), not the per-figure
+      ATTENTION tuning_width. This stimulation-field convolution is what sets the absolute E (hence S)
+      magnitude — a direct Gaussian (the literal EQ-stim expression) over-scales E and the CRF
+      saturates entirely below the swept window (verified).
+    - grid = code grid spacing 1 (x∈[-200,200], θ∈[-180,180]); REQUIRED because the unit-volume,
+      non-integral-normalized kernels make the absolute pooled-drive scale spacing-dependent.
+    - σ = 1e-6 (CODE-014); Figure-3 baselines from the contract (3C unmod=5.0/3F unmod=0.0, mod=5e-7).
+    - DELETED all implementation-side per-panel suppression knobs (suppressive_drive_gain,
+      suppressive_spatial_sigma_scale, the impl-side figure_*.baseline_*), the Figure-1 *_sigma_scale
+      display fudge, and re-pointed the hermann2010 regime reuse surface to the Table-1 GEOMETRY
+      (attention-field size) since gain is no longer a lever. This cleared the two-ledger collision.
+  RESULT: 99 pass / 19 fail in article_aware (was 127 fail), all 10 Figure-1 must-pass GREEN (+ the
+  R-asymmetry tripwire correctly xfail), implementation/tests fully GREEN. The faithful mechanism is
+  validated by Figure 1 (the authors' own activity-map render) reproducing exactly.
+question: |
+  Three must-pass groups cannot be greened by the cited mechanism; each is a contract-level issue,
+  not a code bug:
+
+  GAP 1 — CRF CONTRAST-AXIS MISMATCH (14 fails: 2A/2B/3C/3F half-max & left-shift, 4C left-shift/
+    saturation/%-mod-peak, the corresponding tier-shape claims). Under the faithful mechanism
+    (σ=1e-6, broad-θ pool) the single-grating CRF half-saturates at c ≈ 0.002–0.005 — its rising
+    flank and the contrast-gain LEFT-SHIFT are REAL but sit BELOW the digitized window [0.012, 1],
+    where the curve is already a flat plateau. The digitized references (audited FAITHFUL) put the
+    rise/half-max at c ≈ 0.05–0.10 (a ~20–30× higher contrast scale). So half_max_contrast() clamps
+    both attended & unattended to the window floor (0.01) and every within-window left-shift /
+    peak-location claim reads "no shift". The SQ-005 human_resolution VERIFIED saturation over
+    c∈[1e-5,1] (rise then plateau by c≈0.1) — i.e. it CONFIRMS the rise is below the figure window;
+    it did not reconcile that with the figures' c≈0.05–0.10 rise. NO paper-blind lever fixes this:
+    σ is code-fixed at 1e-6 (raising it to ≈0.05 would place the half-max in-window but is exactly
+    the A-001 σ=0.1 the SQ-005 pass OVERTURNED); the stimulus form and field sizes are code/Table-1
+    fixed; per-panel gain is forbidden (A-013). The 4C variant fails the MIRROR way — its 2-stimulus
+    pool keeps it on the rising flank to c=1 (never saturates in-window).
+
+  GAP 2 — test_contract_suppression_consistency.py (5 must-pass) encodes the WRONG SHAPE of the fix.
+    It requires a SINGLE NON-None suppressive_drive_gain / suppressive_spatial_sigma_scale resolved
+    on EVERY panel ("promote ONE constant, apply it everywhere"). But the SQ-005 resolution settled
+    from the author code that NO per-panel suppression gain EXISTS AT ALL — the faithful model has no
+    such key, so resolve_namespace(...).get("suppressive_drive_gain") is None on every panel and the
+    test's `len(distinct)==1` (== 0) and "gain must not be None" assertions FAIL. The faithful
+    mechanism satisfies the test's INTENT (one suppression normalization for all panels: the global
+    model.suppressive_field_size=20 / suppressive_tuning_width=360, applied identically everywhere)
+    but not its LETTER. The test was authored against A-013's promote-one-κ fallback before SQ-005
+    resolved the mechanism to remove-gain-entirely.
+
+  GAP 3 — Fig-4E and Fig-7C MAGNITUDE over-modulation (3 fails). The faithful 2-stimulus-in-RF
+    mechanism over-modulates: 4E %-modulation peaks ~386% vs digitized ~54%; 7C attend-variable/
+    fixation peak ratio 2.73 vs digitized 1.33. These are GENUINE magnitude divergences (the 7C test's
+    own paper_issue already says "ratio ~3.3 vs paper ~1.4"), but they are tagged tier="hard"
+    (MUST-PASS) rather than soft/xfail tripwires, so they gate.
+chosen_assumption: |
+  NONE forced (implement-SKILL: "a must-pass test you cannot satisfy with the cited mechanism is
+  escalated, never forced"; "never tune an audited:false knob to bend a curve"). The model is left at
+  the FAITHFUL SQ-005 mechanism with zero per-panel suppression knobs. Figure 1 (the author-code
+  activity-map render) and all saturation/response-gain signature must-pass tests are GREEN; the 19
+  RED tests above are the three contract-level gaps, left RED. This is a Phase-B partial-STUCK
+  routed to Phase A / organizer.
+escalation_options_for_phaseA: |
+  GAP 1 (contrast axis): the divergence is STRUCTURAL, not a simple σ retune. Sweeping σ on the
+    as-built faithful model (stimulus_size=3, attn=30) gives: σ=1e-6 → half-max ≈0.002 (below window,
+    flat in-window, NO shift); σ=0.01 → half-max ≈0.49; σ=0.05/0.1 → half-max ≈0.50 and the left-
+    shift COLLAPSES to ~0.99 (no contrast gain). There is NO σ that simultaneously (i) lands the
+    half-max near the digitized ~0.08 AND (ii) preserves the contrast-gain left-shift — because with
+    the stimulation-field-convolved E the pooled S dominates the denominator at all but the lowest
+    contrasts, so σ only bites at c≲0.003. So Phase A should investigate at the SOURCE: EITHER
+    (a) the Figure*.m CRF scripts plot a contrast axis / use a stimulus-amplitude or σ convention
+    that is NOT the activity-map R1 config (Fig-1's σ=1e-6 need not be the CRF σ; CODE-019 covers
+    only the R1 activity-map call, not the per-figure CRF scripts — the SQ-005 generalization of
+    σ=1e-6 to "every figure" may not hold for the CRF panels); OR (b) re-anchor the CRF digitized
+    x-axis / sweep window to the decade the code rises in; OR (c) accept the contrast-scale
+    divergence and reclassify the within-window half-max/left-shift claims as soft tripwires. The
+    decisive check is the Figure2A.m/Figure2B.m contrast handling, which Phase B cannot read.
+  GAP 2: rewrite test_contract_suppression_consistency.py to assert the ACTUAL faithful invariant —
+    NO per-panel suppression key resolves on any protocol (gain/scale are absent, the single
+    normalization is the global model.suppressive_field_size / suppressive_tuning_width) — i.e. flip
+    the predicate from "one non-None gain everywhere" to "no per-panel gain anywhere; the global
+    suppressive σ/θ are identical across panels". The mechanism already satisfies that.
+  GAP 3: reclassify the Fig-4E %-mod and Fig-7C ratio claims from tier="hard" to soft/xfail
+    tripwires (they ARE genuine magnitude divergences of the faithful 2-stimulus mechanism, as their
+    own paper_issue notes), or supply a verified faithful target the mechanism can hit.

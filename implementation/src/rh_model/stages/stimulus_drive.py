@@ -33,13 +33,16 @@ def run(
     stimulus_size: float,
     tuning_width: float,
     theta_period: float = DEFAULT_THETA_PERIOD,
+    stimulation_field_size: float = 5.0,
+    stimulation_tuning_width: float = 60.0,
 ) -> np.ndarray:
-    """Construct E(x,θ) by summing per-stimulus Gaussian contributions.
+    """Construct Eraw = conv2sepYcirc(stim, ExKernel, EthetaKernel).
 
-    Citation: C-009 ; Assumption: A-009
+    Citation: C-009 ; Code: CODE-012, CODE-013, CODE-019 ; Assumption: A-009
     """
     return build_stimulus_drive(
         stimuli, x_grid, theta_grid, stimulus_size, tuning_width, theta_period,
+        stimulation_field_size, stimulation_tuning_width,
     )
 
 

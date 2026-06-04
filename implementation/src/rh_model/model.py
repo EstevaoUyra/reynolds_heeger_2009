@@ -12,13 +12,24 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.signal import fftconvolve
 
-from .helpers import gaussian_1d, gaussian_periodic_1d
+from .helpers import (
+    gaussian_1d,
+    gaussian_periodic_1d,
+    normpdf_1d,
+    normpdf_periodic_1d,
+)
 
 
-# Per A-005, A-008
-DEFAULT_X_MIN, DEFAULT_X_MAX, DEFAULT_DX = -100.0, 100.0, 0.5
+# Grid convention = the authors' code grid (CODE-019): x ∈ [-200, 200] step 1
+# (401 samples), θ ∈ [-180, 180] step 1 (361 samples). Unit sample spacing is
+# REQUIRED here: the suppressive/stimulation kernels are unit-volume Gaussians
+# (normpdf) and the convolution is NOT integral-normalized (no ·dx/·dθ), so the
+# absolute pooled-drive scale — and therefore where the CRF half-saturates —
+# depends on the grid spacing. The authors' code runs at spacing 1; reproducing
+# its S/(A·E) balance (the SQ-005 saturation mechanism) requires the same grid.
+DEFAULT_X_MIN, DEFAULT_X_MAX, DEFAULT_DX = -200.0, 200.0, 1.0
 DEFAULT_THETA_PERIOD = 360.0  # MT/MST motion direction; V4 protocols use the same grid
-DEFAULT_DTHETA = 5.0
+DEFAULT_DTHETA = 1.0
 
 
 @dataclass
@@ -29,16 +40,23 @@ class ModelParams:
     peak_attention_gain_gamma) must be set by the caller; left as None here.
     """
 
-    # Underspecified globals (spec values per assumptions A-001..A-003, A-010)
-    sigma: float = 0.1                       # A-001
+    # Globals resolved from the authors' code (SQ-005, CODE-014/CODE-013).
+    # sigma ≈ 0: saturation comes from the pooled suppressive drive S, NOT σ.
+    sigma: float = 1.0e-6                     # CODE-014
     alpha: float = 1.0                       # A-002
     threshold_T: float = 0.0                 # A-003
     beta: float = 1.0                        # A-010 (used only by closed-form CRFs)
 
-    # Constants from paper (C-010, C-011)
-    stimulation_field_size: float = 5.0
-    suppressive_field_size: float = 20.0
-    suppressive_tuning_width: float = 180.0
+    # Constants from paper / code (C-010, CODE-010..013).
+    stimulation_field_size: float = 5.0      # ExWidth (CODE-012 / C-010)
+    stimulation_tuning_width: float = 60.0   # EthetaWidth (CODE-013)
+    suppressive_field_size: float = 20.0     # IxWidth (CODE-010 / C-010)
+    suppressive_tuning_width: float = 360.0  # IthetaWidth, near-flat θ pool (CODE-011)
+
+    # σ_θ of each input stimulus patch (a near-impulse grating, makeGaussian
+    # θ-width 1 in the authors' code, CODE-019). The per-figure ``tuning_width``
+    # is the ATTENTION-field feature width (AthetaWidth), a different kernel.
+    stimulus_tuning_width: float = 1.0       # CODE-019
 
     # Grid (A-005, A-008)
     x_grid: np.ndarray = field(default_factory=lambda: np.arange(
@@ -55,17 +73,11 @@ class ModelParams:
     tuning_width: float | None = None
     peak_attention_gain_gamma: float | None = None
 
-    # Optional baselines for figs 3C / 3F (A-007)
+    # Optional baselines for figs 3C / 3F, resolved from the authors' code
+    # (CODE-017): baseline_modulated (added to E, attention-modulated path) and
+    # baseline_unmodulated (added to R after normalization).
     baseline_modulated_by_attention: float = 0.0
     baseline_unmodulated: float = 0.0
-
-    # Per-protocol calibration for 1D discretized suppressive pooling.
-    suppressive_drive_gain: float = 1.0
-
-    # Per-protocol effective-width calibration for 1D figure protocols.
-    stimulus_spatial_sigma_scale: float = 1.0
-    attention_spatial_sigma_scale: float = 1.0
-    suppressive_spatial_sigma_scale: float = 1.0
 
     # Recorded neuron coordinates (default: origin)
     recorded_x: float = 0.0
@@ -115,6 +127,30 @@ def default_params(**overrides) -> ModelParams:
 # --- Pipeline steps ---
 
 
+def _separable_conv(
+    image: np.ndarray,
+    kernel_x: np.ndarray,
+    kernel_theta: np.ndarray,
+) -> np.ndarray:
+    """conv2sepYcirc: separable 2D convolution — zero-pad in x, circular in θ.
+
+    Plain DISCRETE convolution (unit sample spacing): the kernels are unit-volume
+    (normpdf) Gaussians and are NOT integral-normalized, so there is NO ·dx / ·dθ
+    factor. Both the stimulus drive and the suppressive drive use this operator
+    (attentionModel.m:166, :171).
+
+    Code: CODE-001, CODE-002, CODE-003 (conv2sepYcirc; zero-pad x, circular θ)
+    Assumption: A-011 (boundary conditions)
+    """
+    # x axis: linear convolution, zero-padded ('same' returns input width).
+    conv_x = fftconvolve(image, kernel_x[np.newaxis, :], mode="same", axes=1)
+    # θ axis: circular convolution via FFT. Align the kernel peak to index 0.
+    kernel_theta_aligned = np.roll(kernel_theta, -int(np.argmax(kernel_theta)))
+    F_kernel = np.fft.fft(kernel_theta_aligned)[:, np.newaxis]
+    F_image = np.fft.fft(conv_x, axis=0)
+    return np.fft.ifft(F_image * F_kernel, axis=0).real
+
+
 def build_suppressive_kernel(
     x_grid: np.ndarray,
     theta_grid: np.ndarray,
@@ -124,19 +160,20 @@ def build_suppressive_kernel(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build the separable suppressive kernel (s_x, s_theta).
 
-    Each component is a 1D Gaussian normalized to integrate to 1 in its
-    dimension, so that the joint kernel s(x,θ) = s_x(x) · s_θ(θ) integrates
-    to 1 over (x, θ).
+    Each component is a UNIT-VOLUME (normpdf) 1D Gaussian — the authors'
+    ``makeGaussian`` with no height argument (CODE-002). The kernel is NOT
+    renormalized to a joint integral of 1: on the unit-spacing grid the spatial
+    kernel sums to ~1 and the near-flat θ kernel (σ=360 ≫ the θ span) sums to
+    ~0.384. This broad, near-flat θ pool is what makes the pooled suppressive
+    drive S commensurate with A·E so the CRFs saturate (SQ-005). The earlier
+    integral-normalized form made S too small and the CRFs never bent over.
 
     Citation: C-002, C-009, C-011 (EQ-suppressive_kernel)
+    Code: CODE-001, CODE-002, CODE-010, CODE-011
     Assumption: A-004 (sigma convention), A-011 (periodic in θ)
     """
-    s_x = gaussian_1d(x_grid, 0.0, suppressive_field_size)
-    s_theta = gaussian_periodic_1d(theta_grid, 0.0, suppressive_tuning_width, theta_period)
-    dx = float(x_grid[1] - x_grid[0])
-    dtheta = float(theta_grid[1] - theta_grid[0])
-    s_x = s_x / (s_x.sum() * dx)
-    s_theta = s_theta / (s_theta.sum() * dtheta)
+    s_x = normpdf_1d(x_grid, 0.0, suppressive_field_size)
+    s_theta = normpdf_periodic_1d(theta_grid, 0.0, suppressive_tuning_width, theta_period)
     return s_x, s_theta
 
 
@@ -147,20 +184,40 @@ def build_stimulus_drive(
     stimulus_size: float,
     tuning_width: float,
     theta_period: float = DEFAULT_THETA_PERIOD,
+    stimulation_field_size: float = 5.0,
+    stimulation_tuning_width: float = 60.0,
 ) -> np.ndarray:
-    """Sum of per-stimulus Gaussian contributions to the stimulus drive.
+    """Stimulus drive Eraw = conv2sepYcirc(stim, ExKernel, EthetaKernel).
 
-    Each stimulus is a dict with keys 'x', 'theta', 'contrast'.
+    Each stimulus is a dict with keys 'x', 'theta', 'contrast'. The raw stimulus
+    image is a sum of amplitude-(contrast) Gaussians — spatial σ = ``stimulus_size``
+    (stimWidth) and feature σ = ``tuning_width`` (the per-stimulus θ width, a
+    near-impulse σ=1 grating in the authors' code, CODE-019). That image is then
+    convolved with the STIMULATION FIELD — unit-volume kernels of spatial σ =
+    ``stimulation_field_size`` (ExWidth=5) and feature σ = ``stimulation_tuning_width``
+    (EthetaWidth=60) — exactly as the code builds Eraw (attentionModel.m:166).
+
+    This stimulation-field convolution sets the absolute magnitude of E (hence of
+    the pooled S), which is what places the CRF's half-saturation inside the swept
+    contrast window; a direct Gaussian (no convolution) over-scales E and the CRF
+    saturates below the window. The rendered Figure-1 "Stimulus drive" panel is
+    this Eraw (PRE-attention), so E is left/right symmetric (figure_1.md #1).
 
     Citation: C-009 (EQ-stim)
+    Code: CODE-001, CODE-002, CODE-012, CODE-013, CODE-019
     Assumption: A-009 (form of stimulus drive)
     """
-    E = np.zeros((len(theta_grid), len(x_grid)))
+    stim_image = np.zeros((len(theta_grid), len(x_grid)))
     for stim in stimuli:
         gx = gaussian_1d(x_grid, stim["x"], stimulus_size)
         gt = gaussian_periodic_1d(theta_grid, stim["theta"], tuning_width, theta_period)
-        E = E + stim["contrast"] * np.outer(gt, gx)
-    return E
+        stim_image = stim_image + stim["contrast"] * np.outer(gt, gx)
+    ex = normpdf_1d(x_grid, 0.0, stimulation_field_size)
+    etheta = normpdf_periodic_1d(
+        theta_grid, 0.0, stimulation_tuning_width, theta_period
+    )
+    # Clamp FFT round-off negatives (≈ -1e-21): the drive is non-negative.
+    return np.maximum(_separable_conv(stim_image, ex, etheta), 0.0)
 
 
 def build_attention_field(
@@ -208,25 +265,17 @@ def compute_suppressive_drive(
     s_theta: np.ndarray,
     A: np.ndarray,
     E: np.ndarray,
-    dx: float,
-    dtheta: float,
 ) -> np.ndarray:
-    """S(x,θ) = s ∗ (A · E), separable. Zero-padded in x; circular in θ.
+    """S(x,θ) = conv2sepYcirc(A·E, s_x, s_theta): zero-padded in x, circular in θ.
+
+    Plain discrete convolution with the unit-volume suppressive kernels (no
+    integral ·dx / ·dθ factor — SQ-005, CODE-001/CODE-002).
 
     Citation: C-002, C-006 (EQ-6)
+    Code: CODE-001, CODE-002, CODE-003
     Assumption: A-011 (boundary conditions)
     """
-    AE = A * E
-    # x convolution: linear (zero-padded), 'same' returns input shape.
-    conv_x = fftconvolve(AE, s_x[np.newaxis, :], mode="same", axes=1) * dx
-    # θ convolution: circular via FFT. Kernel must be aligned at index 0.
-    n_theta = AE.shape[0]
-    s_theta_aligned = np.fft.ifftshift(s_theta) if (n_theta % 2 == 0) else np.roll(
-        s_theta, -(n_theta // 2)
-    )
-    F_kernel = np.fft.fft(s_theta_aligned)[:, np.newaxis]
-    F_AE = np.fft.fft(conv_x, axis=0)
-    S = np.fft.ifft(F_AE * F_kernel, axis=0).real * dtheta
+    S = _separable_conv(A * E, s_x, s_theta)
     return np.maximum(S, 0.0)
 
 
@@ -239,8 +288,11 @@ def compute_output(
 ) -> np.ndarray:
     """R(x,θ) = ⌊(A·E) / (S + σ)⌋_T.
 
+    σ ≈ 0 (CODE-014): saturation comes from the pooled suppressive drive S, not σ.
+
     Citation: C-005 (EQ-5)
-    Assumption: A-001 (sigma value), A-003 (T = 0)
+    Code: CODE-014 (sigma=1e-6)
+    Assumption: A-003 (T = 0)
     """
     R = (A * E) / (S + sigma)
     return np.maximum(R - threshold_T, 0.0)
@@ -267,7 +319,8 @@ def simulate(
         6. extract recorded neuron response
 
     Citation: C-005, C-006 (EQ-5, EQ-6) end-to-end
-    Assumption: A-006 (optional effective spatial widths for 1D protocols)
+    Code: CODE-001, CODE-002 (separable space×feature suppression; no per-panel gain)
+    Assumption: A-009 (stimulus-drive form), A-011 (boundary conditions)
     """
     if any(
         getattr(params, name) is None
@@ -278,21 +331,26 @@ def simulate(
         )
 
     x_grid, theta_grid = params.x_grid, params.theta_grid
-    dx = float(x_grid[1] - x_grid[0])
-    dtheta = float(theta_grid[1] - theta_grid[0])
 
+    # ONE suppressive field for every panel: the single cited/code spatial σ (20)
+    # and near-flat feature σ (360). No per-panel gain or width scale (A-013).
     s_x, s_theta = build_suppressive_kernel(
         x_grid, theta_grid,
-        params.suppressive_field_size * params.suppressive_spatial_sigma_scale,
+        params.suppressive_field_size,
         params.suppressive_tuning_width,
         params.theta_period,
     )
 
+    # Eraw = conv2sepYcirc(stim, ExKernel, EthetaKernel). The per-stimulus θ width
+    # is the near-impulse stimulus_tuning_width (=1, CODE-019), NOT the per-figure
+    # tuning_width (that is the ATTENTION feature width below).
     E = build_stimulus_drive(
         stimuli, x_grid, theta_grid,
-        params.stimulus_size * params.stimulus_spatial_sigma_scale,
-        params.tuning_width or 30.0,
+        params.stimulus_size,
+        params.stimulus_tuning_width,
         params.theta_period,
+        params.stimulation_field_size,
+        params.stimulation_tuning_width,
     )
 
     if params.baseline_modulated_by_attention != 0.0:
@@ -302,14 +360,13 @@ def simulate(
         attention_condition,
         x_grid,
         theta_grid,
-        params.attention_field_size * params.attention_spatial_sigma_scale,
+        params.attention_field_size,
         params.peak_attention_gain_gamma,
         params.tuning_width,
         params.theta_period,
     )
 
-    S = compute_suppressive_drive(s_x, s_theta, A, E, dx, dtheta)
-    S = params.suppressive_drive_gain * S
+    S = compute_suppressive_drive(s_x, s_theta, A, E)
     # Normalization stage (config-selectable variant). The default
     # "divisive" path is identical to the pre-migration compute_output.
     from .stages import normalization as _normalization

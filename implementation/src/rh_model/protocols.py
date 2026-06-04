@@ -35,31 +35,35 @@ def _contrast_sweep(stimuli_factory, attention_factory, base_overrides, n_contra
 
 
 def _sci(protocol: str) -> dict:
-    """Paper-derived scientific overrides for a protocol (article_aware)."""
-    return resolve_namespace(protocol)
+    """Resolved scientific overrides for a protocol (merged ledger view).
 
-
-def _impl(protocol: str) -> dict:
-    """Implementation-side overrides for a protocol (implementation ledger)."""
+    Under the SQ-005 resolution every CRF/tuning protocol uses the SAME single
+    suppression normalization (the cited/code field constants) — there are no
+    per-panel suppression knobs to resolve here (A-013).
+    """
     return resolve_namespace(protocol)
 
 
 # --- Figure 1 (illustrative population fields) ---
 
 def run_figure_1() -> dict:
-    """Figure 1 — schematic population fields E, A, S, R + spatial layout.
+    """Figure 1 — four rendered population fields E, A, S, R (CODE-019 config).
 
-    Citation: C-012 / spec.simulation_protocols.figure_1
+    Two equal vertical gratings at x = ±100; attention on the RIGHT (Ax = +100,
+    AxWidth = 30, γ = 2). The rendered "Stimulus drive" box is Eraw (PRE-attention),
+    so E is left/right symmetric; the attention asymmetry first appears in S and R
+    (which use E = attnGain·Eraw). All field/σ sizes are the single cited/code
+    constants (ExWidth=5, EthetaWidth=60, IxWidth=20, IthetaWidth=360, σ=1e-6) —
+    no per-panel knob.
+
+    Citation: C-009, C-012 / spec.simulation_protocols.figure_1
+    Code: CODE-019, CODE-011, CODE-014
     """
     overrides = dict(
         stimulus_size=resolve("figure_1.stimulus_size"),
         attention_field_size=resolve("figure_1.attention_field_size"),
         peak_attention_gain_gamma=resolve("figure_1.peak_attention_gain_gamma"),
         tuning_width=resolve("figure_1.tuning_width"),
-        sigma=resolve("figure_1.sigma"),
-        stimulus_spatial_sigma_scale=resolve("figure_1.stimulus_spatial_sigma_scale"),
-        attention_spatial_sigma_scale=resolve("figure_1.attention_spatial_sigma_scale"),
-        suppressive_spatial_sigma_scale=resolve("figure_1.suppressive_spatial_sigma_scale"),
         recorded_x=resolve("figure_1.recorded_x"),
         recorded_theta=0.0,
     )
@@ -102,15 +106,11 @@ def run_figure_1() -> dict:
 
 def _run_figure_2_panel(protocol: str, n_contrasts: int = 8):
     s = _sci(protocol)
-    i = _impl(protocol)
     overrides = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
-        suppressive_drive_gain=i["suppressive_drive_gain"],
-        suppressive_spatial_sigma_scale=i["suppressive_spatial_sigma_scale"],
-        baseline_unmodulated=i["baseline_unmodulated"],
     )
     stim = lambda c: [{"x": 0.0, "theta": 0.0, "contrast": c}]
     attended = lambda c: {"spatial_center": 0.0, "feature_center": None}
@@ -140,16 +140,16 @@ def run_figure_2B(n_contrasts: int = 8):
 
 def _run_figure_3_panel(protocol: str, n_contrasts: int = 8):
     s = _sci(protocol)
-    i = _impl(protocol)
     overrides = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
-        suppressive_drive_gain=i["suppressive_drive_gain"],
-        suppressive_spatial_sigma_scale=i["suppressive_spatial_sigma_scale"],
-        baseline_modulated_by_attention=i["baseline_modulated_by_attention"],
-        baseline_unmodulated=i["baseline_unmodulated"],
+        # Figure-3 baselines from the authors' code (CODE-017): baseline_modulated
+        # added to E (attention-modulated path); baseline_unmodulated added to R
+        # after normalization. 3C: mod=5e-7, unmod=5.0; 3F: mod=5e-7, unmod=0.0.
+        baseline_modulated_by_attention=s["baseline_modulated"],
+        baseline_unmodulated=s["baseline_unmodulated"],
     )
     stim = lambda c: [{"x": 0.0, "theta": 0.0, "contrast": c}]
     attended = lambda c: {"spatial_center": 0.0, "feature_center": None}
@@ -197,7 +197,6 @@ def run_figure_4C(n_contrasts: int = 8, c_nonpref: float | None = None):
     SQ-004 per-protocol overrides are RETIRED.
     """
     s = _sci("figure_4C")
-    i = _impl("figure_4C")
     if c_nonpref is None:
         c_nonpref = resolve("figure_4C.c_nonpref")
     overrides = dict(
@@ -205,7 +204,6 @@ def run_figure_4C(n_contrasts: int = 8, c_nonpref: float | None = None):
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
-        suppressive_drive_gain=i["suppressive_drive_gain"],
     )
     stim = lambda c_pref: [
         {"x": 0.0, "theta": 0.0, "contrast": c_pref},
@@ -224,13 +222,11 @@ def run_figure_4E(n_contrasts: int = 8):
     Citation: C-015 / spec.simulation_protocols.figure_4E
     """
     s = _sci("figure_4E")
-    i = _impl("figure_4E")
     overrides = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
-        suppressive_drive_gain=i["suppressive_drive_gain"],
     )
     stim = lambda c: [
         {"x": 0.0, "theta": 0.0, "contrast": c},
