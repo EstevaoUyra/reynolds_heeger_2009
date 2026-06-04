@@ -1,0 +1,40 @@
+{
+  "figure_number": "1",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_1.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) read paper Fig 1 vs regenerated implementation/figure_outputs/figure_1.png directly. The May-18 'Fig 1 broken / fields compressed near center' adjudications are SUPERSEDED: the current render shows correct hemifield structure, a localized attention-field bump over the attended (right) stimulus, pooled suppressive bands, and the attended band enhanced in the output. FAITHFUL.",
+  "verdict": {
+    "passes": true,
+    "summary": "Schematic faithful. Stimulus drive (two bands) x attention field (localized bump over the attended/right stimulus) divided by pooled suppressive drive yields an output firing rate with the attended (right) band enhanced relative to the left. Topology and iconography match the Fig-1 caption (E x A / S -> R).",
+    "checklist_results": [
+      {
+        "item": "pipeline topology E x A / S -> R",
+        "result": "pass",
+        "note": "stimulus -> stimulus drive x attention field -> pool -> suppressive drive -> divide -> output"
+      },
+      {
+        "item": "attention field localized over attended stimulus",
+        "result": "pass",
+        "note": "bright vertical bump centered over the right stimulus column"
+      },
+      {
+        "item": "attended stimulus enhanced in output",
+        "result": "pass",
+        "note": "right band brighter than left in Output firing rate panel"
+      },
+      {
+        "item": "suppressive drive is pooled (broad) field",
+        "result": "pass",
+        "note": "broad bright bands, pooled over space and orientation"
+      }
+    ],
+    "issues": [
+      "Panel order is left-to-right vs paper's top/middle/bottom/right; layout rearrangement, not a content divergence."
+    ],
+    "recommendation": "pass - faithful schematic; topology and attended-stimulus enhancement match the paper"
+  }
+}

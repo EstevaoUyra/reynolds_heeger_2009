@@ -1,0 +1,46 @@
+{
+  "figure_number": "2",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_2.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Direction faithful, magnitude divergent. 2A: attended above ignored, %-mod falls toward high contrast (contrast-gain signature) but the CRFs plateau ~0.32-0.34 (paper saturates near 1.0) and %-mod floors ~5-6% not 0. 2B: response-gain visible (attended ~0.86 above ignored ~0.60, sustained separation, %-mod sustained) but neither curve reaches the paper's ~1.0 ceiling.",
+    "checklist_results": [
+      {
+        "item": "2A attended at or above ignored",
+        "result": "pass",
+        "note": "blue above gray across contrast"
+      },
+      {
+        "item": "2A %-mod falls toward high contrast",
+        "result": "pass",
+        "note": "dashed declines from ~78% to ~6%"
+      },
+      {
+        "item": "2A curves saturate near ceiling at high contrast",
+        "result": "fail",
+        "note": "plateau ~0.32-0.34 vs paper ~1.0; under-saturation"
+      },
+      {
+        "item": "2B response-gain (separation sustained)",
+        "result": "pass",
+        "note": "attended ~0.86 sustained above ignored ~0.60"
+      },
+      {
+        "item": "2B ceiling matches digitized",
+        "result": "fail",
+        "note": "attended ceiling 0.277 off digitized; deterministic test fails"
+      }
+    ],
+    "issues": [
+      "2A under-saturates (plateau ~0.34 vs paper ~0.62).",
+      "2B attended ceiling diverges from digitized (test_2B_attended_ceiling_matches_digitized RED)."
+    ],
+    "recommendation": "fail - deterministically red (2B ceiling) and visually under-saturated; broken on magnitude"
+  }
+}

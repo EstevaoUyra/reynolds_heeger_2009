@@ -1,0 +1,41 @@
+{
+  "figure_number": "4",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_4.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Direction faithful, magnitude badly divergent. 4C: attend-nonpreferred above attend-away (facilitation direction now correct after the 4C remap) but %-mod sits pinned near the 100% ceiling (~+101% vs paper ~36%) and the CRFs do not converge/narrow at high contrast. 4E: attend-preferred (~0.85) above attend-nonpreferred (crushed near ~0.15); %-mod overflows the paper's 0-100 axis to ~390%.",
+    "checklist_results": [
+      {
+        "item": "4C facilitation direction (attended above)",
+        "result": "pass",
+        "note": "blue above gray; left-shift direction faithful (post-remap)"
+      },
+      {
+        "item": "4C %-mod declines / gap narrows at high contrast",
+        "result": "fail",
+        "note": "%-mod pinned ~100%, gap does not narrow (test_4C... RED)"
+      },
+      {
+        "item": "4E attend-pref above attend-nonpref",
+        "result": "pass",
+        "note": "ordering faithful"
+      },
+      {
+        "item": "4E %-mod within paper 0-100 axis",
+        "result": "fail",
+        "note": "~390% overflow; test_4E + panel-axes RED"
+      }
+    ],
+    "issues": [
+      "4E %-modulation ~390% off the paper's 0-100 axis (hard gate + axis-overflow tests RED).",
+      "4C %-mod ~+101% vs ~36%, no high-contrast convergence (tier + axis tests RED)."
+    ],
+    "recommendation": "fail - multiple deterministic reds; the headline 4E overflow gates"
+  }
+}

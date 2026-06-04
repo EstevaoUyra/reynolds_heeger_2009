@@ -1,0 +1,51 @@
+{
+  "figure_number": "3",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_3.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Direction faithful; residual shape/separation divergence. 3C: attend-in-RF above contralateral, both saturate ~0.9, %-mod has the interior bump. 3F: separation sustained, %-mod largest at low contrast and declining. Empirical panels (B/E) and config panels (A/D) correctly 'not reproduced'. The CRFs read slightly over-separated through the mid range vs the paper, surfaced by the soft dozen-point shape checks (skipped/reported, not gating).",
+    "checklist_results": [
+      {
+        "item": "3C attend-in-RF above contralateral",
+        "result": "pass",
+        "note": "blue above gray"
+      },
+      {
+        "item": "3C curves converge/saturate at high contrast",
+        "result": "pass",
+        "note": "both approach ~0.9"
+      },
+      {
+        "item": "3C %-mod interior bump",
+        "result": "pass",
+        "note": "dashed rises then falls"
+      },
+      {
+        "item": "3F separation persists at high contrast",
+        "result": "pass",
+        "note": "blue ~0.8 above gray ~0.55"
+      },
+      {
+        "item": "3F %-mod largest at low contrast",
+        "result": "pass",
+        "note": "dashed starts ~45 and declines"
+      },
+      {
+        "item": "3C/3F shape matches digitized across range",
+        "result": "unsure",
+        "note": "soft shape checks skipped; mid-range over-separation reported not gated"
+      }
+    ],
+    "issues": [
+      "CRFs over-separated through low/mid contrast vs paper (soft shape check, reported).",
+      "No hard deterministic fail; all fig-3 failing rows are skipped soft checks."
+    ],
+    "recommendation": "needs_review - direction faithful, soft shape divergence; not a clean visual pass"
+  }
+}

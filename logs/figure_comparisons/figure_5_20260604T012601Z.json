@@ -1,0 +1,35 @@
+{
+  "figure_number": "5",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_5.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Right kind of effect, magnitude too strong. Spatial attention scales the orientation-tuning curve multiplicatively with no width change (attend-in-RF and contralateral share the same FWHM), but the attended/unattended peak ratio is ~1.59 (1.0 vs ~0.63) against the paper's ~1.2. Config (A) and empirical (B) panels correctly 'not reproduced'.",
+    "checklist_results": [
+      {
+        "item": "5C attended above unattended over centre",
+        "result": "pass",
+        "note": "blue peak 1.0 above gray ~0.63"
+      },
+      {
+        "item": "5C same tuning width, no sharpening",
+        "result": "pass",
+        "note": "curves share width; multiplicative scaling"
+      },
+      {
+        "item": "5C peak ratio matches digitized (~1.2)",
+        "result": "fail",
+        "note": "ratio ~1.59; test_5C_peak_ratio_matches_digitized RED"
+      }
+    ],
+    "issues": [
+      "Attended/unattended peak ratio ~1.59 vs paper ~1.2 - spatial-attention gain too strong (hard ratio test RED)."
+    ],
+    "recommendation": "fail - deterministically red on peak ratio; multiplicative shape faithful but gain too strong"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "figure_number": "7",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_7.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Ordering faithful, gain magnitude too strong. The three direction-tuning curves order correctly (attend-variable > ignored/fixation > attend-nonpreferred), but attend-variable peaks 1.0 while fixation peaks only ~0.30, giving a variable/fixation ratio ~3.3 vs the paper's ~1.4 - the combined-attention gain is more than twice too strong. Panel C is the sole deliverable (SQ-003, human-resolved); A/B 'not reproduced'.",
+    "checklist_results": [
+      {
+        "item": "7C peak ordering variable>fixation>nonpref",
+        "result": "pass",
+        "note": "blue>gray>red"
+      },
+      {
+        "item": "7C variable/fixation ratio matches digitized (~1.4)",
+        "result": "fail",
+        "note": "ratio ~3.3; test_7C_variable_over_fixation_ratio_matches_digitized RED"
+      },
+      {
+        "item": "Panel A/B/legend structural items",
+        "result": "unsure",
+        "note": "out of scope per SQ-003; Panel C is the sole deliverable"
+      }
+    ],
+    "issues": [
+      "variable/fixation peak ratio ~3.3 vs paper ~1.4 - combined attention gain too strong (hard ratio test RED)."
+    ],
+    "recommendation": "fail - deterministically red on the variable/fixation ratio; ordering faithful but gain too strong"
+  }
+}

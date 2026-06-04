@@ -1,0 +1,36 @@
+{
+  "figure_number": "6",
+  "model_dir": "models/reynolds_heeger_2009",
+  "model_commit_hash": "c8ea5058123a9ec57abaed35072b6e77ad7b33d9",
+  "evaluated_at": "2026-06-04T01:26:01Z",
+  "evaluator": "claude VLM subagent (compare-figure-packet)",
+  "packet_path": "/tmp/rh2009_figure_packets/figure_6.json",
+  "n_subagents": 1,
+  "parent_adjudication": "Parent (this agent) direct image read of paper vs regenerated figure_outputs at HEAD c8ea505; verdict supersedes stale 885f10b/3a008a7 verdicts.",
+  "verdict": {
+    "passes": false,
+    "summary": "Sharpening now PRESENT (CODE_BUG fix landed), magnitude overshoots. After making feature-based attention spatially global, attend-contralateral is both taller at peak (1.0 vs attend-fixation ~0.76) and narrower (FWHM sharpening) - the feature-based effect now reaches the recorded neuron, a real improvement over the prior overlapping-curves state. But the peak elevation ~1.31 overshoots the digitized ~1.11, so the magnitude ratio test stays red. Config (A) and empirical (B) panels correctly 'not reproduced'.",
+    "checklist_results": [
+      {
+        "item": "6C attended at least as tall at peak",
+        "result": "pass",
+        "note": "blue peak 1.0 above gray ~0.76"
+      },
+      {
+        "item": "6C sharpening present at peak",
+        "result": "pass",
+        "note": "attend-contralateral narrower than fixation - direction now faithful (was absent pre-fix)"
+      },
+      {
+        "item": "6C peak ratio matches digitized (~1.11)",
+        "result": "fail",
+        "note": "ratio ~1.31; test_6C_peak_ratio_matches_digitized RED (overshoot, not tuned)"
+      }
+    ],
+    "issues": [
+      "Peak elevation ~1.31 vs digitized ~1.11 - feature-attention gain overshoots (hard ratio test RED).",
+      "Improvement vs prior overlap (~1.01) confirmed: sharpening direction is now faithful."
+    ],
+    "recommendation": "fail - deterministically red on peak ratio; direction fixed, magnitude overshoots"
+  }
+}
