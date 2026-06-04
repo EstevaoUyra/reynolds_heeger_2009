@@ -420,16 +420,41 @@ rendering_conventions:
 simulation_protocols:
 
   - id: figure_1
-    name: "Figure 1 — Schematic / Population Visualization"
+    name: "Figure 1 — Four rendered population fields (E, A, S, R), two gratings, attend right"
     pseudocode_path: pseudocode/figure_1_protocol.md
+    # Config from the authors' code (Test/debug `R1` call, attentionModel.m:225-245) = CODE-019.
+    # The four field heatmaps (Stimulus Drive=Eraw, Attention Field, Suppressive Drive=I,
+    # Population Response=R) are RENDERED MODEL OUTPUTS and ARE a reproduction target.
+    # NOTE: the rendered "Stimulus drive" panel is Eraw (PRE-attention) and is left/right
+    # symmetric; attention asymmetry (right brighter) appears only in S and R (which use
+    # E = attnGain.*Eraw). IthetaWidth=360 (CODE-011) and sigma=1e-6 (CODE-014) are the
+    # paper-grounded suppression-fix values this render checks.
     parameter_overrides:
-      stimulus_size: 3
-      attention_field_size: 30
-      peak_attention_gain_gamma: 2
-    expected_outputs: [x_grid, E_slice, A_slice, S_slice, R_slice, R_at_attended, R_at_unattended, E, A, S, R]
+      x_grid: [-200, 200, 1]            # min, max, step (401 samples) [CODE-019]
+      theta_grid: [-180, 180, 1]        # min, max, step (361 samples) [CODE-019]
+      stimulus_size: 5                  # stimWidth (σ_x) [CODE-019]
+      stimulus_theta_width: 1           # σ_θ of each grating [CODE-019]
+      stim_center_right: 100            # stimCenter1 = attended/RF stimulus [CODE-019]
+      stim_center_left: -100            # stimCenter2 [CODE-019]
+      stim_orientation: 0               # both gratings vertical [CODE-019]
+      attended_side: right              # Ax = stimCenter1 = +100 [CODE-019]
+      attention_field_size: 30          # AxWidth [CODE-019]
+      attention_theta: flat             # Atheta unset -> flat in orientation [CODE-019]
+      attention_shape: oval             # Ashape default [CODE-019]
+      peak_attention_gain_gamma: 2      # Apeak [CODE-015 / C-012]
+      attention_baseline: 1             # Abase [CODE-015]
+      stimulation_field_size: 5         # ExWidth [CODE-012 / C-010]
+      stimulation_theta_width: 60       # EthetaWidth [CODE-013]
+      suppressive_field_size: 20        # IxWidth [CODE-010 / C-010]
+      suppressive_theta_width: 360      # IthetaWidth (near-flat theta pool) [CODE-011]
+      sigma: 1.0e-6                     # semi-saturation ~ 0 [CODE-014]
+    # expected_outputs: the four 2D field renders are the primary reproduction target;
+    # slices/peaks are sanity-check scalars.
+    expected_outputs: [E, A, S, R, E_render, A_render, S_render, R_render, E_slice, A_slice, S_slice, R_slice, R_at_attended, R_at_unattended]
     expected_data_paths:
       - extracted_data/test_figure_1.py
-    citation_refs: [C-012]
+    citation_refs: [C-009, C-012]
+    code_refs: [CODE-019, CODE-011, CODE-014, CODE-010, CODE-012, CODE-013, CODE-015]
 
   - id: figure_2A
     name: "Figure 2A — Contrast Gain (small stim, large attn field)"

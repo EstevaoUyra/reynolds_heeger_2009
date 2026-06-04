@@ -1,144 +1,157 @@
 # Figure 1 — Visual Checklist
 
-Each item is a binary pass/fail visual claim. Check the box if the generated figure
-satisfies it; leave unchecked if not. No paper access is required — all context is
-provided within each item. Items tagged `<!-- UNSURE -->` were difficult to read from
-the paper figure and deserve extra attention during review.
+Each item is a binary pass/fail visual claim against the rendered figure. No paper access is
+required — all context is in the item. Items tagged `<!-- UNSURE -->` were difficult to read
+from the paper figure and deserve extra attention. The faith-audit VLM-compares the four
+**rendered field panels** (Stimulus Drive, Attention Field, Suppressive Drive, Population
+Response) to `figure_1.jpg`.
+
+**These four panels are RENDERED MODEL OUTPUTS, not cartoons.** Only the far-left "Stimulus"
+box is a true schematic.
 
 ---
 
-## Coordinate convention
+## Coordinate and colormap convention
 
-All population panels (Stimulus Drive, Attention Field, Suppressive Drive, Population
-Response) share the same 2D layout:
+All four field panels share the same 2D layout (axis labels printed on each box):
 
-- **Horizontal axis (RF center):** left side = left hemifield; right side = right
-  hemifield. The attended stimulus is on the right. Positions are described as "left
-  stimulus location" and "right stimulus location" — no numeric values appear on the
-  paper's axes; these refer to the left and right bright features.
-- **Vertical axis (orientation preference):** spans all orientation preferences. The
-  stimuli are vertical gratings, so maximum drive falls at the center of the vertical
-  axis (vertical orientation preference).
-- **Colormap for Stimulus Drive, Suppressive Drive, Population Response:** black = zero;
-  brighter/whiter = larger value.
-- **Colormap for Attention Field only:** midgray = 1 (baseline, no attentional gain).
-  White = value greater than 1 (attentional enhancement). This panel should contain no
-  pure black — the minimum value is 1 (midgray) everywhere.
+- **Horizontal axis = "Receptive field center":** left side = left hemifield (x ≈ −100),
+  right side = right hemifield (x ≈ +100). The two stimuli sit at x = ±100 on a grid that
+  spans roughly [−200, 200], i.e. each stimulus is at the **half-way point between center and
+  edge** on its side (not flush against the edge). **The attended stimulus is on the RIGHT.**
+- **Vertical axis = "Orientation preference":** vertical orientation (θ = 0) is at the
+  **vertical center** of the panel; the axis spans the full orientation range.
+- **Colormap for Stimulus Drive, Suppressive Drive, Population Response:** black = 0, white =
+  that panel's own maximum (per-panel min–max grayscale).
+- **Colormap for Attention Field only:** 0 = black, **1 = midgray**, **2 = white**. The
+  baseline gain (1) is midgray; the peak (2) is white. This panel contains **no pure black** —
+  its minimum value is 1 (midgray).
 
 ---
 
-## Panel: Stimulus (schematic)
+## Panel: Stimulus (true schematic — context, low-priority)
 
-This schematic encodes the simulation parameters visually: grating orientations reflect
-the stimulus orientation parameter, and grating positions reflect the stimulus position
-parameters. If those parameters changed, the schematic would change accordingly. Checklist
-items here verify that the schematic is consistent with the parameters used in this figure.
+This box encodes parameters visually; it is not a model render. (Low-priority — the audit
+focuses on the four field renders.)
 
-- [ ] Two grating patches are shown, one on the left side and one on the right side of
-      the panel, with a visible gap between them — consistent with two stimuli, one per
-      hemifield.
-- [ ] Both gratings have a vertical orientation (stripes run top to bottom), reflecting
-      the stimulus orientation parameter (vertical gratings).
-- [ ] The two gratings are positioned symmetrically in the left and right hemifields,
-      reflecting the stimulus position parameters (left and right of fixation).
-- [ ] A small black dot (fixation point) is visible at the center of the panel, between
-      the two gratings.
-- [ ] A solid circle is drawn around the right-side grating, marking the receptive field
-      of the model neuron — consistent with attention being directed to the right stimulus.
-- [ ] A dashed circle is drawn around the right-side grating, marking the attention field
-      centered on the attended stimulus.
-- [ ] Both gratings appear equal in contrast (same stripe brightness and spacing on both
-      sides), reflecting the equal-contrast parameter.
+- [ ] Two grating patches are shown, one on the left and one on the right, with a gap between.
+- [ ] Both gratings have a vertical orientation (stripes run top to bottom).
+- [ ] A small black dot (fixation) is at the center, between the two gratings.
+- [ ] A solid circle marks the right-side grating (the RF of the model neuron).
+- [ ] A dashed circle marks the right-side grating (the attention field, centered right).
 
 ---
 
-## Panel: Stimulus Drive (E)
+## Panel: Stimulus Drive (E) — rendered `Eraw` (PRE-attention)
 
-- [ ] The panel background is black (or near-black) everywhere except at the two stimulus
-      locations.
-- [ ] Exactly two bright vertical stripes are present — one in the left half and one in
-      the right half of the panel.
-- [ ] Both stripes are narrow in the horizontal direction, occupying a small fraction of
-      the total panel width.
-- [ ] Both stripes occupy approximately 50% of the vertical extent of the panel — they
-      are tall but do not fill the full height. The regions above and below each stripe
-      return to black (baseline), reflecting the Gaussian falloff in orientation preference.
-- [ ] The two stripes are equal in peak brightness — neither is visibly brighter than
-      the other.
-- [ ] A clear dark gap (black or near-black) separates the two stripes; they do not
-      touch or merge.
+This panel renders the stimulus drive **before** the attention field is applied, so it is
+**left/right symmetric** — the attention asymmetry has NOT entered yet.
 
----
-
-## Panel: Attention Field (A)
-
-- [ ] The panel contains no pure black region — the minimum brightness throughout is
-      midgray, not black. (Midgray encodes a gain value of 1; black would incorrectly
-      imply gain < 1.)
-- [ ] The right half of the panel is visibly brighter than the left half.
-- [ ] The left half of the panel appears as midgray (not white, not black), reflecting
-      the baseline attention gain of 1.
-- [ ] The brightness transition from left (midgray) to peak (bright) is gradual and
-      smooth — not a sharp step or a narrow localized peak.
-- [ ] The brightest point of the panel is located in the right half of the x-axis,
-      roughly in the middle of the right half — not flush against the rightmost edge.
-- [ ] The brightness drops back toward midgray before reaching the rightmost edge of
-      the panel — the peak is a Gaussian, not a ramp that continues to the edge.
-- [ ] The panel is uniform along the entire vertical (orientation) axis — every horizontal
-      row is the same shade at any given x position. No vertical banding or gradient is
-      present.
+- [ ] The background is black (or near-black) everywhere except at the two stimulus locations.
+- [ ] Exactly **two** bright vertical stripes are present — one in the left half, one in the
+      right half. <!-- forbids a single merged blob or extra stripes -->
+- [ ] Both stripes are **narrow** in the horizontal (RF-center) direction, occupying a small
+      fraction of the panel width. <!-- width is binding: a stripe as wide as the S band fails -->
+- [ ] Each stripe is a **vertically-centered band** that tapers toward the top and bottom — it
+      does NOT fill the full height of the panel (it occupies roughly the central ~half). <!-- UNSURE: exact vertical extent is hard to read; the band is clearly bounded, not full-height -->
+- [ ] The two stripes are **equal in peak brightness** — neither the left nor the right is
+      brighter. (E is `Eraw`, before attention; a render where the RIGHT E stripe is already
+      brighter has shown the wrong quantity, `attnGain·Eraw` instead of `Eraw`.) <!-- binding: E must be symmetric -->
+- [ ] A clear dark gap separates the two stripes; they do not touch or merge.
 
 ---
 
-## Panel: Suppressive Drive (S)
+## Panel: Attention Field (A) — rendered `attnGain`
 
-- [ ] Two distinct broad bands of elevated brightness are visible, one centered at the
-      left stimulus location and one at the right stimulus location.
-- [ ] Each band is substantially wider in the horizontal direction than the corresponding
-      stripe in the Stimulus Drive panel — the convolution with the large suppressive
-      field has spatially smeared the drive.
-- [ ] A dark region is clearly visible between the two bands — they are distinguishable
-      as two separate structures and have not merged into a single uniform blob.
-- [ ] The right band is clearly brighter than the left band, reflecting that the attention
-      field amplified the right stimulus drive before pooling.
-- [ ] Both bands extend across the full vertical extent of the panel (full orientation
-      axis), consistent with the broad orientation tuning of the suppressive field.
-- [ ] The background outside the two bands (far left, far right, and between) is dark,
-      though not necessarily pure black — the pooling kernel tails produce a low-level
-      non-zero floor.
+- [ ] The panel contains **no pure black** region — the minimum brightness is midgray, not
+      black. (Midgray = gain 1; black would imply gain 0.)
+- [ ] The **right** half of the panel is visibly brighter (toward white) than the left half.
+- [ ] The **left** half is uniform **midgray** (baseline gain 1) — not white, not black.
+- [ ] The bright region is a **smooth Gaussian bump**, not a sharp step or a thin localized
+      line. Its brightest point is in the right half, over the right stimulus (x ≈ +100), and
+      brightness drops back toward midgray before the right edge (a Gaussian, not a ramp to the
+      edge).
+- [ ] The panel is **uniform along the entire vertical (orientation) axis** — every horizontal
+      row is the same shade at a given x. No vertical banding or orientation gradient. (The
+      attention field is flat in orientation.) <!-- binding: A must be flat in theta -->
 
 ---
 
-## Panel: Population Response (R)
+## Panel: Suppressive Drive (S) — rendered `I`
 
-- [ ] The panel background is black (or near-black) everywhere except at the two stimulus
-      locations.
-- [ ] Exactly two bright vertical stripes are present — one in the left half and one in
-      the right half, at the same horizontal positions as the stripes in the Stimulus
-      Drive panel.
-- [ ] Both stripes are narrow in the horizontal direction, comparable in width to the
-      Stimulus Drive stripes — they have not been broadened by the normalization.
-- [ ] The right stripe (attended location) is noticeably brighter than the left stripe.
-- [ ] The left stripe (unattended location) is present and visible but much dimmer than
-      the right stripe — it is not suppressed to near-zero, but the brightness difference
-      between left and right is clearly apparent.
+- [ ] **Two** broad bands of elevated brightness are visible, one over the left stimulus and
+      one over the right.
+- [ ] Each band is **substantially wider** in the horizontal direction than the corresponding
+      Stimulus-Drive stripe — the spatial pooling has smeared each drive peak. <!-- binding: S must be visibly broader than E in x -->
+- [ ] A darker region is visible between the two bands — they are distinguishable as two
+      separate structures, not one uniform blob. <!-- UNSURE: bands are broad; gap is present but shallow -->
+- [ ] The **right band is clearly brighter** than the left band. (Attention multiplies the
+      right drive by ~2 before pooling, so the right band is enhanced.) <!-- binding: attention asymmetry must appear in S -->
+- [ ] Each band spans the **full vertical (orientation) extent** of the panel and is nearly
+      uniform top-to-bottom — there is no narrow horizontal banding in θ. (The θ-pool is
+      near-flat, σ_θ = 360°.) <!-- binding signature of the broad-theta suppressive pool -->
+- [ ] The background outside the bands is dark but not necessarily pure black (broad pooling
+      tails leave a low floor).
+
+---
+
+## Panel: Population Response (R) — rendered
+
+- [ ] The background is black (or near-black) everywhere except at the two stimulus locations.
+- [ ] Exactly **two** narrow bright stripes are present — at the same horizontal positions as
+      the Stimulus-Drive stripes (x ≈ ±100).
+- [ ] Both stripes are **narrow** in x — comparable in width to the Stimulus-Drive stripes,
+      **NOT** broadened to the width of the Suppressive-Drive bands. <!-- binding: R width ≈ E width, not S width -->
+- [ ] The **right stripe (attended) is noticeably brighter** than the left stripe. <!-- binding: attention asymmetry must appear in R -->
+- [ ] The **left stripe (unattended) is present and visible**, just dimmer than the right — it
+      is NOT suppressed to near-zero (no winner-take-all). <!-- binding: left stripe must survive -->
 - [ ] A clear dark gap separates the two stripes; they do not merge.
 
 ---
 
-## Cross-panel structural checks
+## Cross-panel structural checks (binding inter-panel claims)
 
-- [ ] The Stimulus Drive stripes and Population Response stripes are approximately the
-      same width in x — normalization does not broaden them.
-- [ ] The Suppressive Drive bands are visibly wider in x than both the Stimulus Drive
-      stripes and the Population Response stripes.
-- [ ] The two Stimulus Drive stripes are equal in brightness; the two Population Response
-      stripes are unequal (right brighter). This asymmetry is introduced by attention and
-      must be present in R but absent in E.
-- [ ] The Attention Field panel has a different minimum brightness (midgray) than the
-      Stimulus Drive, Suppressive Drive, and Population Response panels (black) — this
-      difference in floor value is visible when comparing panels.
-- [ ] The pipeline operators are visible in the figure layout: a multiplication symbol
-      (×) between Stimulus Drive / Attention Field and the next step, a division symbol
-      (÷) before Population Response, and a "pool over space and orientation" label on
-      the path to Suppressive Drive.
+- [ ] **E is symmetric, S and R are right-biased.** The two Stimulus-Drive stripes are equal
+      in brightness; the right band/stripe is brighter than the left in BOTH the Suppressive
+      Drive and the Population Response. (The asymmetry is introduced by attention via
+      `E = attnGain·Eraw`, which feeds S and R but not the rendered E.) <!-- binding: asymmetry in S&R, absent in E -->
+- [ ] **S is wider than E and R in x.** The Suppressive-Drive bands are visibly wider in the
+      RF-center direction than both the Stimulus-Drive stripes and the Population-Response
+      stripes.
+- [ ] **R width ≈ E width.** The Population-Response stripes and the Stimulus-Drive stripes are
+      about the same width in x — normalization did not broaden R to the S band width.
+- [ ] **A has a different floor.** The Attention-Field panel's minimum is midgray, whereas the
+      Stimulus Drive, Suppressive Drive, and Population Response panels have a black (≈0)
+      floor — this floor difference is visible when comparing panels.
+- [ ] **Panel layout: exactly four field renders** (Stimulus Drive, Attention Field,
+      Suppressive Drive, Population Response) plus the left Stimulus schematic, arranged as a
+      flow diagram. The pipeline operators are present: a multiplication symbol (×) joining
+      Stimulus Drive and Attention Field, a "pool over space and orientation" label on the
+      path to the Suppressive Drive, and a division symbol (÷) before the Population Response.
+      No additional field panels are present. <!-- forbids spurious extra panels -->
+
+---
+
+## Sufficiency demonstration (a deliberately-wrong figure must FAIL)
+
+The checklist is constructed so each of the following known-bad renders fails at least one
+binding item — it does not merely pass the correct figure:
+
+1. **E rendered as `attnGain·Eraw` (post-attention) instead of `Eraw`** → its right stripe is
+   brighter than its left → fails "the two Stimulus-Drive stripes are equal in peak
+   brightness" and "E is symmetric."
+2. **Attention asymmetry dropped (γ = 1, or attention not applied)** → S bands equal, R stripes
+   equal → fails "right S band brighter," "right R stripe brighter," and the cross-panel
+   asymmetry item.
+3. **Narrow θ suppressive pool (e.g. σ_θ = 30° instead of 360°)** → S bands show a
+   vertically-bounded band that does NOT fill the full orientation height → fails "each S band
+   spans the full vertical extent and is nearly uniform top-to-bottom."
+4. **R not divided by S (R ∝ E or R ∝ A·E only)** → R stripes as broad as S bands, or no left
+   stripe survives → fails "R stripes narrow, comparable to E (not S width)" and/or "left R
+   stripe present."
+5. **Attention field rendered with a 0-floor / per-max scale so baseline → black** → A panel
+   shows black on the left → fails "A contains no pure black; left half is midgray."
+6. **Attention field given orientation tuning (not flat)** → A shows vertical banding/gradient
+   → fails "A is uniform along the entire orientation axis."
+7. **A spurious extra field panel (e.g. an `E = attnGain·Eraw` panel added)** → fails "exactly
+   four field renders … no additional field panels."

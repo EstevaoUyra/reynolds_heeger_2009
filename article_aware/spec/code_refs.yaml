@@ -200,3 +200,56 @@
     rather than 'oval' outer-product, attentionModel.m:146-157); 7C tuning 45° & γ=5 (C-018).
     Confirms the per-figure attention-tuning values already in calibration.yaml from the
     authors' code. Ashape='cross' for 6C is code-detail supporting the C-017 mechanism.
+
+# ===========================================================================
+# FIGURE 1 example config (the test/debug section of attentionModel.m)
+# ===========================================================================
+
+- id: CODE-019
+  param: figure_1_example_config (two-grating attend-right population-field render)
+  source: "paper/code/attentionModel.m:225-245 (Test/debug section; the R1 call)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Test/debug
+    stimWidth = 5;
+    AxWidth = 30;
+    % Sampling of space and orientation
+    x = [-200:200];
+    theta = [-180:180]';
+    % Make stimuli
+    stimCenter1 = 100;  stimOrientation1 = 0;
+    stimCenter2 = -100; stimOrientation2 = 0;
+    stim1 = makeGaussian(theta,stimOrientation1,1,1) * makeGaussian(x,stimCenter1,stimWidth,1);
+    stim2 = makeGaussian(theta,stimOrientation2,1,1) * makeGaussian(x,stimCenter2,stimWidth,1);
+    stim = stim1 + stim2;
+    % Attending stim 1 (the RIGHT stimulus, x=+100)
+    R1 = attentionModel(x,theta,stim,'Ax',stimCenter1,'AxWidth',AxWidth,...
+      'showActivityMaps',1,'showModelParameters',1);
+  code_alone: true   # exact grid/stimulus/attention config; paper's Fig-1 caption is qualitative only (C-009/C-012)
+  notes: |
+    BINDING Figure-1 configuration. The four field heatmaps in Fig 1 (Stimulus Drive,
+    Attention Field, Suppressive Drive, Population Response) are the RENDERED MODEL OUTPUTS
+    of this exact `R1` call (`showActivityMaps=1`), NOT a cartoon. Config:
+      - Grids: x = -200:200 (401 samples, step 1); theta = -180:180 (361 samples, step 1).
+      - Two stimuli, both vertical (theta=0), EQUAL amplitude (height=1 Gaussians, σ=stimWidth=5):
+        stim1 at x=+100 (RIGHT = stimCenter1 = the attended/RF stimulus),
+        stim2 at x=-100 (LEFT = stimCenter2).
+        Each stimulus = outer product makeGaussian(theta,0,1,1) ⊗ makeGaussian(x,center,5,1):
+        a θ-impulse-like narrow Gaussian (σ_θ=1) × a spatial Gaussian (σ_x=5).
+      - Attention on the RIGHT: Ax=stimCenter1=100, AxWidth=30; Atheta NOT specified => NaN
+        => attnGainTheta=ones => attention field is FLAT in orientation ("without regard to
+        orientation", Fig-1 caption). Ashape='oval' (default), Apeak=2 (=γ), Abase=1.
+      - Engaged code defaults (none overridden by this call): ExWidth=5, EthetaWidth=60,
+        IxWidth=20, IthetaWidth=360 (CODE-011, near-flat θ pool), sigma=1e-6 (CODE-014).
+    WHAT EACH RENDERED PANEL IS (attentionModel.m:192-219, imshow per-panel [0,max] grayscale):
+      - "Stimulus drive"   = Eraw  = conv2sepYcirc(stim, ExKernel, EthetaKernel)  [PRE-attention]
+                             imshow(Eraw,[0,Emax]).
+      - "Attention field"  = attnGain = (Apeak-Abase)*G_x⊗ones_θ + Abase  imshow(attnGain,[0,max]).
+      - "Suppressive drive"= I = conv2sepYcirc(E, IxKernel, IthetaKernel), E = attnGain.*Eraw
+                             imshow(I,[0,Imax]).   <- attention enters S via E, so right band brighter.
+      - "Population response"=R = E ./ (I + sigma)  imshow(R,[0,Rmax]).
+    NOTE the displayed "Stimulus drive" is Eraw (the UN-modulated drive) and is therefore
+    LEFT/RIGHT SYMMETRIC; the attention asymmetry first appears in S and R (which use E=attnGain·Eraw).
+    The caption says "attention directed to the right" — consistent with Ax=+100 here. This is
+    the paper-grounded check on the suppression fix: the rendered S and R fields exercise the
+    CODE-011 (IthetaWidth=360) and CODE-014 (sigma=1e-6) values against the authors' own figure.
