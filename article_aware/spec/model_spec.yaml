@@ -38,12 +38,20 @@ parameters:
   # --- Underspecified globals (resolved via assumptions) ---
 
   - id: sigma
-    name: contrast_gain_constant
-    description: "Constant in normalization denominator; sets contrast at half-maximum response."
-    value: 0.1
-    underspecified_by: A-001
-    units: "contrast (c ∈ [0,1])"
+    name: semi_saturation_constant
+    description: |
+      Additive constant in the normalization denominator R = E/(S+σ).
+      RESOLVED FROM CODE (SQ-005): the authors' code sets σ = 1e-6 ≈ 0 (CODE-014),
+      and no figure script overrides it. Saturation does NOT come from σ — it comes
+      from the pooled suppressive drive S (which scales with contrast, so R ≈ E/S
+      plateaus once S ≫ σ). The prior σ=0.1 semi-saturation assumption (A-001) is
+      SUPERSEDED for the full simulation; σ appears symbolically in the closed-form
+      CRFs (EQ-3/EQ-7) only. CODE-ALONE (the paper gives no number).
+    value: 1.0e-6
+    underspecified_by: null
+    units: "same units as the pooled suppressive drive S"
     citation_refs: [C-001, C-003]
+    code_refs: [CODE-014]
 
   - id: alpha
     name: response_gain
@@ -79,11 +87,18 @@ parameters:
 
   - id: y_grid
     name: spatial_grid_orthogonal
-    description: "Sample grid for the orthogonal spatial dimension y of the 2D image plane (A-006). The suppressive field's integral normalization pools over (x, y); single-axis protocols place all stimuli at y = 0 but the pool still integrates over y."
+    description: |
+      DEPRECATED / NOT USED (SQ-005, resolved from author code). There is NO
+      orthogonal spatial y axis in the authors' model: the suppressive drive is a
+      SEPARABLE 2D convolution over (space x, feature θ), not over a 2D (x,y) image
+      plane (CODE-001/CODE-002; the retired A-006 invented this y axis as a failed
+      saturation fix). Retained as a null stub only so no legacy ref dangles; the
+      implementation MUST NOT add a y dimension.
     value: null
     underspecified_by: A-005
     units: "arbitrary spatial units"
     citation_refs: []
+    code_refs: [CODE-001, CODE-002]
 
   - id: theta_grid
     name: orientation_grid
@@ -105,19 +120,27 @@ parameters:
 
   - id: suppressive_field_size
     name: suppressive_field_size
-    description: "Gaussian σ of the suppressive field; constant across all simulations."
+    description: "Gaussian σ of the suppressive field SPATIAL kernel (IxWidth); constant across all simulations."
     value: 20
     underspecified_by: null
     units: "arbitrary spatial units"
     citation_refs: [C-010]
+    code_refs: [CODE-010]
 
   - id: suppressive_tuning_width
     name: suppressive_field_orientation_tuning_width
-    description: "Suppressive field tuning width (broad/nonspecific). 180° for V4 oriented gratings; doubled for MT/MST motion directions."
-    value: 180
+    description: |
+      Suppressive field FEATURE (orientation/direction) tuning width (IthetaWidth).
+      RESOLVED FROM CODE (SQ-005): the authors' code default is 360° and NO figure
+      script overrides it, so every figure uses 360° (the near-flat, all-orientation
+      pool that makes S commensurate with A·E and produces saturation). The paper
+      text we hold (C-011) quotes 180° for V4; the running value is the doubled
+      MT/MST 360° — CODE-ALONE (CODE-011).
+    value: 360
     underspecified_by: null
     units: "degrees"
     citation_refs: [C-011]
+    code_refs: [CODE-011]
 
   # --- Per-protocol parameters (no global value; set in protocol overrides) ---
 
@@ -235,22 +258,31 @@ equations:
   - id: EQ-suppressive_kernel
     name: suppressive_kernel_construction
     expression: |
-      s(x,y,θ) = N · G_space(x; σ=suppressive_field_size)
-                   · G_space(y; σ=suppressive_field_size)
-                   · G_feature(θ; σ=suppressive_tuning_width)
-      where N is chosen so that ∫∫∫ s(x,y,θ) dx dy dθ = 1 (EQ-2).
+      s(x,θ) = G_space(x; σ=suppressive_field_size) ⊗ G_feature(θ; σ=suppressive_tuning_width)
+      where each 1D factor is a UNIT-VOLUME Gaussian (∫ G_space dx = 1, ∫ G_feature dθ = 1
+      in unit sample spacing) and ⊗ is the separable outer product. The kernel is NOT
+      renormalized to a joint integral of 1. The convolution S = s ∗ [A·E] is applied as
+      two separable 1D convolutions: zero-padded along space x, CIRCULAR along feature θ
+      (CODE-001/CODE-002/CODE-003; attentionModel.m:171 I = conv2sepYcirc(E,IxKernel,IthetaKernel)).
     inputs: [suppressive_field_size, suppressive_tuning_width]
     outputs: [s]
     citation_refs: [C-002, C-009, C-011]
+    code_refs: [CODE-001, CODE-002, CODE-003, CODE-010, CODE-011]
     notes: |
-      s is fixed by the single cited constants (suppressive_field_size = 20,
-      suppressive_tuning_width); it does NOT depend on stimulus, attention, or
-      figure, and carries NO per-panel gain or width scale (A-013). The integral
-      normalization is over the paper's 2D spatial image plane (x, y) and θ
-      (A-006, retired the 1D-line reduction): this 2D pooling measure is what
-      makes the pooled suppressive drive S commensurate with A·E so the CRFs
-      saturate (C-020) from this single field, with no suppressive_drive_gain.
-      Single-axis protocols vary only x; the kernel still pools over (x, y, θ)."
+      RESOLVED FROM ORIGINAL AUTHOR CODE (SQ-005, fix/sq005-from-code-20260604).
+      The prior s(x,y,θ) form — an invented orthogonal spatial axis y with a JOINT
+      integral normalization ∫∫∫ s = 1 over a 2D (x,y) image plane (retired A-006) —
+      was EMPIRICALLY FALSIFIED: it lowered the suppressive density at the recorded
+      neuron and did NOT produce saturation. The authors' code uses a SEPARABLE 2D
+      convolution over (SPACE x, FEATURE θ): two UNIT-VOLUME 1D Gaussians
+      (IxWidth=20 spatial, CODE-010; IthetaWidth=360 feature, CODE-011), applied
+      via conv2sepYcirc (CODE-002). There is no y axis. The mechanism that makes the
+      pooled suppressive drive S commensurate with A·E — so the CRFs saturate
+      (C-020) — is the BROAD (near-flat) θ pool: IthetaWidth=360° ≫ the θ span pools
+      essentially ALL orientations into S. s is fixed by the single cited/code
+      constants for EVERY figure; NO per-panel gain or width scale (A-013).
+      Single-axis (hemifield-separated) protocols vary only x and θ; there is no
+      orthogonal y to integrate.
 
 components:
   - id: stimulation_field
@@ -262,10 +294,11 @@ components:
 
   - id: suppressive_field
     name: Suppressive Field
-    description: "Pooling kernel for normalization; broader than stimulation field; can be feature-nonspecific. Gaussian profile over the 2D spatial image plane (x, y) and feature θ, integral-normalized to 1 over dx dy dθ (EQ-2). ONE kernel for every figure — the single cited size (20) and tuning width; NO per-panel suppressive_drive_gain or suppressive_spatial_sigma_scale (A-006, A-013)."
+    description: "Pooling kernel for normalization; broader than stimulation field; feature-nonspecific. SEPARABLE Gaussian over (space x, feature θ) — two UNIT-VOLUME 1D Gaussians (IxWidth=20 spatial, IthetaWidth=360 feature near-flat), applied as conv2sepYcirc (zero-pad x, circular θ); NOT a 2D (x,y) image-plane kernel and NOT jointly integral-normalized (SQ-005, CODE-001/CODE-002). ONE kernel for every figure — the single cited/code size (20) and feature width (360); NO per-panel suppressive_drive_gain or suppressive_spatial_sigma_scale (A-013)."
     parameter_refs: [suppressive_field_size, suppressive_tuning_width]
     equation_refs: [EQ-2, EQ-6]
     citation_refs: [C-002, C-009, C-011]
+    code_refs: [CODE-001, CODE-002, CODE-010, CODE-011]
 
   - id: attention_field
     name: Attention Field
@@ -289,9 +322,9 @@ pipeline:
 
   - step: 1
     name: build_suppressive_kernel
-    description: "Construct the (constant) suppressive-field kernel s(x,y,θ), integral-normalized to 1 over the 2D spatial plane (x,y) and θ (EQ-2; A-006). Uses ONLY the single cited suppressive_field_size and suppressive_tuning_width — no per-figure gain/width scale (A-013). Computed once per simulation."
+    description: "Construct the (constant) SEPARABLE suppressive-field kernel as two unit-volume 1D Gaussians: spatial (σ=suppressive_field_size=20) and feature (σ=suppressive_tuning_width=360) (EQ-suppressive_kernel; SQ-005, CODE-001/CODE-002). NOT a 2D (x,y) image-plane kernel — there is no y axis. Uses ONLY the single cited/code suppressive_field_size and suppressive_tuning_width — no per-figure gain/width scale (A-013). Computed once per simulation."
     equation_ref: EQ-suppressive_kernel
-    inputs: [suppressive_field_size, suppressive_tuning_width, x_grid, y_grid, theta_grid]
+    inputs: [suppressive_field_size, suppressive_tuning_width, x_grid, theta_grid]
     outputs: [s]
 
   - step: 2
@@ -318,17 +351,19 @@ pipeline:
 
   - step: 4
     name: compute_suppressive_drive
-    description: "Element-wise multiply A and E, then convolve with the suppressive kernel s over the spatial plane (x, y zero-padded) and θ (periodic). The 2D-plane integral normalization of s (step 1) makes S commensurate with A·E with NO suppressive_drive_gain (A-006/A-013); the result saturates the CRFs (C-020) from the single cited field."
+    description: "Element-wise multiply A and E, then SEPARABLY convolve with the suppressive kernel: along x (zero-padded) and along θ (circular) — conv2sepYcirc (SQ-005, CODE-001/CODE-002/CODE-003). NO y axis. The BROAD feature pool (IthetaWidth=360, near-flat over θ) pools essentially all orientations into S, making S commensurate with A·E with NO suppressive_drive_gain (A-013); the result saturates the CRFs (C-020) from the single cited/code field. Saturation is from S, not σ (σ≈0, CODE-014)."
     equation_ref: EQ-6
     inputs: [s, A, E]
     outputs: [S]
+    code_refs: [CODE-001, CODE-002, CODE-003]
 
   - step: 5
     name: compute_output
-    description: "Element-wise compute R = (A·E) / (S + σ), then rectify at threshold T."
+    description: "Element-wise compute R = (A·E) / (S + σ), then rectify at threshold T. σ = 1e-6 ≈ 0 (CODE-014): the denominator is dominated by the pooled suppressive drive S."
     equation_ref: EQ-5
     inputs: [A, E, S, sigma, threshold_T]
     outputs: [R]
+    code_refs: [CODE-014]
 
   - step: 5.5
     name: add_unmodulated_baseline_to_R

@@ -26,17 +26,20 @@
 # article_aware/spec/citations.yaml (C-010..C-018 `text:`) and in
 # paper/extracted_text.md "Table 1 — Per-Figure Parameters".
 #
-# SUPPRESSION-NORMALIZATION RULE (A-013, CONTRACT_BUG fix 2026-06-03): the
-# suppression normalization is ONE mechanism with the single cross-figure
-# constants below (suppressive_field_size = 20, suppressive_tuning_width = 180,
-# integral-normalized over the 2D (x,y,θ) plane per A-006/EQ-2). NO per-panel
-# suppressive_drive_gain, suppressive_spatial_sigma_scale, per-panel baseline,
-# or per-panel sigma/tuning-width override may be added to THIS file — those
-# are forbidden from the sanctioned-calibration surface (A-013) and are deleted
-# from the implementation side by Phase B. If Phase B keeps a 1D stand-in for
-# the 2D pool, the SINGLE suppression-normalization constant it uses is added
-# here as ONE audited `model.suppression_normalization` entry, identical across
-# every panel — never a per-figure value.
+# SUPPRESSION-NORMALIZATION RULE (resolved from ORIGINAL AUTHOR CODE, SQ-005,
+# fix/sq005-from-code-20260604). The suppression normalization is ONE mechanism
+# with single cross-figure constants. The authors' code (attentionModel.m,
+# CODE-001/CODE-002) computes it as a SEPARABLE 2D CONVOLUTION over (space x,
+# feature θ) — NOT over an invented orthogonal (x,y) plane (the retired A-006
+# 2D-(x,y) reduction was empirically falsified; see SQ-005). The two suppressive
+# kernels are UNIT-VOLUME 1D Gaussians (IxWidth=20 spatial, IthetaWidth=360
+# feature), applied as conv2sepYcirc (zero-pad in x, circular in θ); they are NOT
+# renormalized to a joint integral of 1. SATURATION COMES FROM THE POOLED I, NOT
+# FROM σ: the code runs sigma=1e-6 ≈ 0 (CODE-014), so R = E/(I+σ) ≈ E/I plateaus
+# once I ≫ σ (essentially all but the lowest contrasts). NO per-panel
+# suppressive_drive_gain or suppressive_spatial_sigma_scale exists in the code —
+# those are forbidden from this surface; the single mechanism with the cited/code
+# constants produces the saturating CRFs directly.
 
 schema_version: 1
 
@@ -46,11 +49,20 @@ schema_version: 1
 # ---------------------------------------------------------------------------
 
 model.sigma:
-  value: 0.1
-  units: "contrast (c in [0,1])"
-  source: A-001
-  audited: false  # downgraded: not a verbatim paper quote (corpus process-audit 2026-06-03)
-  note: "Contrast gain constant in the normalization denominator (model_spec parameters.sigma; A-001). Per-protocol sigma OVERRIDES are implementation-side."
+  value: 1.0e-6
+  units: "same units as the pooled suppressive drive I (≈ contrast·response)"
+  source: [CODE-014]
+  audited: true
+  quote: "attentionModel.m:116-118  if notDefined('sigma')  sigma = 1e-6;  end"
+  note: |
+    RESOLVED FROM CODE (SQ-005). σ = 1e-6 ≈ 0 in the authors' code (CODE-014); no
+    Figure*.m overrides it. The spec's prior σ=0.1 semi-saturation assumption (A-001)
+    is OVERTURNED: saturation does NOT come from σ but from the pooled suppressive
+    drive I (R = E/(I+σ) ≈ E/I once I ≫ σ). CODE-ALONE — the paper text we hold
+    (C-003) presents σ qualitatively as a 'semi-saturation contrast' and gives no
+    number; the code shows it is set ≈0. audited:true on the verbatim code line
+    (CODE-NNN ground truth), not a paper quote. A-001 is superseded for the full
+    simulation; the closed-form CRFs (EQ-3/EQ-7) still carry σ symbolically.
 
 model.alpha:
   value: 1.0
@@ -80,26 +92,51 @@ model.beta:
 model.stimulation_field_size:
   value: 5.0
   units: "arbitrary spatial units (Gaussian sigma, A-004)"
-  source: C-010
+  source: [C-010, CODE-012]
   audited: true
-  quote: "Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Stimulation field size, constant across all simulations (paper Table 1 constants line; C-010)."
+  quote: "Constants for all simulations: stimulation field size = 5, suppressive field size = 20. [code: attentionModel.m:83-85 ExWidth = 5]"
+  note: "Stimulation field SPATIAL σ = 5, constant across all simulations (paper Table 1, C-010; confirmed in authors' code ExWidth default, CODE-012). Distinct from the per-figure STIMULUS Gaussian σ (stimWidth in Figure*.m), which is the figure_*.stimulus_size entries below."
+
+model.stimulation_tuning_width:
+  value: 60.0
+  units: "degrees"
+  source: [CODE-013]
+  audited: true
+  quote: "attentionModel.m:86-88  if notDefined('EthetaWidth')  EthetaWidth = 60;  end"
+  note: |
+    RESOLVED FROM CODE (SQ-005 pass). Stimulation field FEATURE σ default = 60° (CODE-013,
+    the doubled MT/MST value); no Figure*.m overrides EthetaWidth. CODE-ALONE: the paper
+    text we hold (C-011) quotes 30° for V4 oriented gratings. NOTE: the per-figure
+    figure_*.tuning_width entries below are the ATTENTION-field feature tuning widths
+    (AthetaWidth in Figure*.m, = Table 1) — a different kernel from this stimulation-field
+    feature width, which the code holds fixed at 60° throughout.
 
 model.suppressive_field_size:
   value: 20.0
   units: "arbitrary spatial units (Gaussian sigma, A-004)"
-  source: C-010
+  source: [C-010, CODE-010]
   audited: true
-  quote: "Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Suppressive field spatial size, constant across all simulations (paper Table 1 constants line; C-010)."
+  quote: "Constants for all simulations: stimulation field size = 5, suppressive field size = 20. [code: attentionModel.m:89-91 IxWidth = 20]"
+  note: "Suppressive field SPATIAL σ = 20, constant across all simulations (paper Table 1, C-010; confirmed in authors' code IxWidth default, CODE-010). This is the IxWidth (spatial) suppressive kernel σ — the FEATURE suppression width is separate (see model.suppressive_tuning_width)."
 
 model.suppressive_tuning_width:
-  value: 180.0
+  value: 360.0
   units: "degrees"
-  source: C-011
+  source: [CODE-011]
   audited: true
-  quote: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°."
-  note: "Suppressive field orientation tuning width (broad/nonspecific), 180 deg for V4 oriented gratings (paper Table 1 notes; C-011); doubled for MT/MST motion (C-011). ONE value for every figure. No per-panel override: the Figure-4C 75-deg override (SQ-004) is RETIRED (A-012) and FORBIDDEN (A-013)."
+  quote: "attentionModel.m:92-94  if notDefined('IthetaWidth')  IthetaWidth = 360;  end"
+  note: |
+    RESOLVED FROM CODE (SQ-005). The authors' code default for the suppressive FEATURE
+    (orientation/direction) tuning width is IthetaWidth = 360° (CODE-011) — the doubled
+    MT/MST value — and NO Figure*.m script overrides it, so EVERY figure uses 360°. The
+    paper text we hold (C-011) quotes 180° for V4 oriented gratings (doubled for MT/MST);
+    the code runs the 360° doubled value across the board. CODE-ALONE for the running
+    value. This near-flat θ pool (σ=360° ≫ the 361-sample θ span) is the mechanism that
+    pools essentially ALL orientations into the suppressive drive I, making S commensurate
+    with A·E so the CRFs saturate (the SQ-005 fix). ONE value for every figure; no per-panel
+    override (the Figure-4C 75° override, SQ-004, stays RETIRED). NOTE the kernels are
+    unit-volume Gaussians, NOT jointly integral-normalized (CODE-002): on the code grid the
+    IthetaKernel sums to ~0.384, the IxKernel to 1.0.
 
 # ---------------------------------------------------------------------------
 # Per-protocol PAPER-DERIVED scientific parameters
@@ -253,6 +290,42 @@ figure_3F.tuning_width:
   quote: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°."
   note: "Figure 3F feature tuning width."
 
+# Figure-3 baselines — RESOLVED FROM CODE (SQ-005). Table 1 marks only 'X'; the
+# authors' Figure3C.m / Figure3F.m give the numbers. These OVERTURN the spec's
+# A-007 single-shared 0.05·α assumption: the code uses a tiny modulated baseline
+# (5e-7, SHARED by 3C and 3F) and a LARGE unmodulated post-normalization baseline
+# that DIFFERS (5 for 3C, 0 for 3F). baselineMod is added to the stimulus drive E
+# (attention-modulated path); baselineUnmod is added after normalization
+# (R = E/(I+σ) + baselineUnmod). CODE-ALONE.
+figure_3C.baseline_modulated:
+  value: 5.0e-7
+  units: "stimulus-drive units (added to E)"
+  source: [CODE-017]
+  audited: true
+  quote: "Figure3C.m:5  baselineMod = 5e-7;"
+  note: "Figure 3C attention-modulated baseline, added to the stimulus drive E before normalization (CODE-017). Code-alone (Table 1 marks 'X' only). Shared with 3F."
+figure_3C.baseline_unmodulated:
+  value: 5.0
+  units: "response units (added to R after normalization)"
+  source: [CODE-017]
+  audited: true
+  quote: "Figure3C.m:6  baselineUnmod = 5;"
+  note: "Figure 3C unmodulated baseline, added after normalization R = E/(I+σ) + baselineUnmod (CODE-017). Code-alone; on the R-scale that tops out ~20 this is a large floor (the Reynolds-2000 baseline-shift pattern). DIFFERS from 3F (0)."
+figure_3F.baseline_modulated:
+  value: 5.0e-7
+  units: "stimulus-drive units (added to E)"
+  source: [CODE-017]
+  audited: true
+  quote: "Figure3F.m:5  baselineMod = 5e-7;"
+  note: "Figure 3F attention-modulated baseline (CODE-017). Same as 3C."
+figure_3F.baseline_unmodulated:
+  value: 0.0
+  units: "response units (added to R after normalization)"
+  source: [CODE-017]
+  audited: true
+  quote: "Figure3F.m:6  baselineUnmod = 0;"
+  note: "Figure 3F unmodulated baseline = 0 (CODE-017). Code-alone. The per-panel 3C-vs-3F difference is in THIS term (5 vs 0), not the modulated baseline — overturning A-007's single-shared symmetric 0.05·α."
+
 figure_4C.stimulus_size:
   value: 5.0
   units: "arbitrary spatial units (Gaussian sigma)"
@@ -270,17 +343,17 @@ figure_4C.attention_field_size:
 figure_4C.peak_attention_gain_gamma:
   value: 5.0
   units: "dimensionless"
-  source: C-015
+  source: [C-015, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 4C | 5 | 5 | 20 | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 4C peak attention gain gamma (Table 1: Peak Mod = 5)."
+  quote: "Table 1 (Per-Figure Parameters), row | 4C | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4C.m:6 Apeak = 5]"
+  note: "Figure 4C peak attention gain gamma (Table 1: Peak Mod = 5; confirmed Figure4C.m Apeak=5, CODE-018)."
 figure_4C.tuning_width:
   value: 20.0
   units: "degrees"
-  source: C-015
+  source: [C-015, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 4C | 5 | 5 | 20 | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 4C feature tuning width (model_spec figure_4C parameter_overrides)."
+  quote: "Table 1 (Per-Figure Parameters), row | 4C | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4C.m:5 AthetaWidth = 20]"
+  note: "Figure 4C ATTENTION-field feature tuning width (model_spec figure_4C; confirmed Figure4C.m AthetaWidth=20, CODE-018)."
 figure_4C.c_nonpref:
   value: 0.5
   units: "contrast (c in [0,1])"
@@ -305,17 +378,17 @@ figure_4E.attention_field_size:
 figure_4E.peak_attention_gain_gamma:
   value: 5.0
   units: "dimensionless"
-  source: C-015
+  source: [C-015, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 4E | 5 | 5 | 20 | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 4E peak attention gain gamma (Table 1: Peak Mod = 5)."
+  quote: "Table 1 (Per-Figure Parameters), row | 4E | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4E.m:6 Apeak = 5]"
+  note: "Figure 4E peak attention gain gamma (Table 1: Peak Mod = 5; confirmed Figure4E.m Apeak=5, CODE-018)."
 figure_4E.tuning_width:
   value: 20.0
   units: "degrees"
-  source: C-015
+  source: [C-015, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 4E | 5 | 5 | 20 | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 4E feature tuning width (model_spec figure_4E parameter_overrides)."
+  quote: "Table 1 (Per-Figure Parameters), row | 4E | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4E.m:5 AthetaWidth = 20]"
+  note: "Figure 4E ATTENTION-field feature tuning width (model_spec figure_4E; confirmed Figure4E.m AthetaWidth=20, CODE-018)."
 
 figure_5C.stimulus_size:
   value: 10.0
@@ -376,10 +449,10 @@ figure_6C.peak_attention_gain_gamma:
 figure_6C.tuning_width:
   value: 60.0
   units: "degrees"
-  source: C-017
+  source: [C-017, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 6C | 10 | 30 | 60* | 2 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 6C feature tuning width (model_spec figure_6C parameter_overrides)."
+  quote: "Table 1 (Per-Figure Parameters), row | 6C | 10 | 30 | 60* | 2 | – |; constants line: ... [code: Figure6C.m:5 AthetaWidth = 60]"
+  note: "Figure 6C ATTENTION-field feature tuning width (model_spec figure_6C; confirmed Figure6C.m AthetaWidth=60, CODE-018). Figure6C.m also sets Ashape='cross' (separable spatial×feature gain), the C-017 mechanism (CODE-018)."
 figure_6C.contrast:
   value: 0.5
   units: "contrast (c in [0,1])"
@@ -404,17 +477,17 @@ figure_7C.attention_field_size:
 figure_7C.peak_attention_gain_gamma:
   value: 5.0
   units: "dimensionless"
-  source: C-018
+  source: [C-018, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 7C | 5 | 5 | 45* | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 7C peak attention gain gamma (Table 1: Peak Mod = 5)."
+  quote: "Table 1 (Per-Figure Parameters), row | 7C | 5 | 5 | 45* | 5 | – |; constants line: ... [code: Figure7C.m:6 Apeak = 5]"
+  note: "Figure 7C peak attention gain gamma (Table 1: Peak Mod = 5; confirmed Figure7C.m Apeak=5, CODE-018)."
 figure_7C.tuning_width:
   value: 45.0
   units: "degrees"
-  source: C-018
+  source: [C-018, CODE-018]
   audited: true
-  quote: "Table 1 (Per-Figure Parameters), row | 7C | 5 | 5 | 45* | 5 | – |; constants line: Constants for all simulations: stimulation field size = 5, suppressive field size = 20."
-  note: "Figure 7C feature tuning width (model_spec figure_7C parameter_overrides)."
+  quote: "Table 1 (Per-Figure Parameters), row | 7C | 5 | 5 | 45* | 5 | – |; constants line: ... [code: Figure7C.m:5 AthetaWidth = 45]"
+  note: "Figure 7C ATTENTION-field feature tuning width (model_spec figure_7C; confirmed Figure7C.m AthetaWidth=45, CODE-018)."
 figure_7C.contrast:
   value: 0.5
   units: "contrast (c in [0,1])"

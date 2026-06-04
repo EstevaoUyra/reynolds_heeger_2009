@@ -1,0 +1,202 @@
+# Original-author code provenance for Reynolds & Heeger 2009.
+# Code lives at paper/code/attentionModel/ (Phase-A spec source; Phase-B FORBIDDEN).
+# Acquired 2026-06-04 from https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip
+#
+# A value/behavior taken from the code is tagged `source: CODE-NNN` in calibration.yaml
+# and `Code: CODE-NNN` in the implementing function's docstring. A value that is CODE-NNN
+# with NO supporting C-NNN is "code-alone" — the paper did not specify it.
+#
+# Entries below are authored by the Phase-A SQ-005 resolution pass (fix/sq005-from-code-20260604).
+# version field = archive URL + 2009 (the code is contemporaneous with the paper):
+#   https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)
+
+# ===========================================================================
+# MECHANISM: suppression-normalization (the SQ-005 root-cause entry)
+# ===========================================================================
+
+- id: CODE-001
+  param: suppression_normalization_mechanism
+  source: "paper/code/attentionModel.m:170-175 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Suppressive drive
+    I = conv2sepYcirc(E,IxKernel,IthetaKernel);
+    ...
+    % Normalization
+    R = E ./ (I + sigma) + baselineUnmod;
+  code_alone: false   # paper states EQ-2/EQ-5/EQ-6 qualitatively (C-002/C-005/C-006)
+  notes: |
+    The suppressive drive I is a SEPARABLE 2D convolution of the attention-modulated
+    stimulus drive E over BOTH the spatial axis (IxKernel, σ=IxWidth=20) AND the
+    feature/orientation axis (IthetaKernel, σ=IthetaWidth=360). Normalization is
+    R = E/(I+sigma). The paper's EQ-5/EQ-6 (C-005/C-006) describe exactly this:
+    S = s ∗ [A·E], R = ⌊A·E/(S+σ)⌋_T, with s Gaussian in space AND feature (C-009).
+    The paper is silent on the precise pooling MEASURE (it writes ∫s dx dθ = 1); the
+    code shows the actual operator is two separable 1D unit-volume-Gaussian
+    convolutions over (x, θ) — NOT a joint integral over an invented (x,y) plane.
+    This is the operator the spec's prior 2D-(x,y)-plane reduction (retired A-006)
+    got wrong, and the 1D-only reduction also got wrong (it dropped the broad θ pool).
+
+- id: CODE-002
+  param: suppressive_kernels_are_unit_volume_separable_gaussians
+  source: "paper/code/attentionModel.m:133-136 (fn attentionModel); conv2sepYcirc.m:18-19; makeGaussian.m:15-19"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    IxKernel = makeGaussian(x,0,IxWidth);        % no height arg => normpdf (unit area)
+    IthetaKernel = makeGaussian(theta,0,IthetaWidth);
+    % conv2sepYcirc: tmp=upConv(im,rowfilt,'zero'); result=upConv(tmp,colfilt,'circular')
+    % makeGaussian: gaussian = normpdf(space,center,width);  % unit volume unless height given
+  code_alone: true
+  notes: |
+    Each suppressive kernel is a UNIT-VOLUME 1D Gaussian (makeGaussian with no `height`
+    arg returns normpdf, area=1 in unit sample spacing). The 2D suppressive kernel is the
+    SEPARABLE OUTER PRODUCT IxKernel ⊗ IthetaKernel applied as two 1D convolutions
+    (conv2sepYcirc: rows convolved with zero-padding, columns with CIRCULAR wrap). It is
+    NOT renormalized to ∫∫ = 1 jointly. On the code grids (x∈[-200,200], θ∈[-180,180],
+    spacing 1): IxKernel sums to 1.000, IthetaKernel sums to 0.384 (σ=360 is broader than
+    the 361-sample θ span, so the θ-kernel is ~flat at ~0.0011/sample). The paper text we
+    hold (C-002) writes "∫ s dx dθ = 1" but does not give the operator; the unit-volume
+    separable form (and the resulting sub-unit θ-kernel sum) is code-alone.
+
+- id: CODE-003
+  param: boundary_handling
+  source: "paper/code/conv2sepYcirc.m:18-19 (fn conv2sepYcirc)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    tmp = upConv(im,rowfilt,'zero',[1,1]);       % spatial axis: zero-padded
+    result = upConv(tmp,colfilt,'circular',[1,1]); % feature axis: circular
+  code_alone: true
+  notes: |
+    Confirms A-011: zero-padding in space (x), CIRCULAR convolution in feature/orientation
+    (θ). The same conv2sepYcirc is used for the stimulus drive E (attentionModel.m:166),
+    the suppressive drive I (:171), and the attention field (:161). Paper is silent on
+    boundary convention — code-alone (consistent with the A-011 assumption).
+
+# ===========================================================================
+# PARAMETERS pulled from the code defaults (attentionModel.m:82-130)
+# ===========================================================================
+
+- id: CODE-010
+  param: IxWidth (suppressive spatial field size)
+  source: "paper/code/attentionModel.m:89-91 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: "if notDefined('IxWidth')\n  IxWidth = 20;\nend"
+  code_alone: false   # = paper Table 1 suppressive_field_size (C-010)
+  notes: "Suppressive field SPATIAL σ = 20, matching C-010 (paper Table 1 'suppressive field size = 20'). Confirms the cited value from the authors' own code."
+
+- id: CODE-011
+  param: IthetaWidth (suppressive feature/orientation tuning width)
+  source: "paper/code/attentionModel.m:92-94 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: "if notDefined('IthetaWidth')\n  IthetaWidth = 360;\nend"
+  code_alone: true
+  notes: |
+    Suppressive field feature/orientation σ = 360°. THIS IS THE KEY SQ-005 VALUE AND IT IS
+    CODE-ALONE. The paper text we hold (C-011, Table 1) states suppressive tuning width =
+    180° for V4 oriented gratings (doubled for MT/MST motion). The CODE's default is 360°
+    — i.e. the MT/MST doubled value is the hard default and the θ-suppression is effectively
+    FLAT over the entire orientation range (σ=360° ≫ the 361-sample θ span). NONE of the
+    per-figure scripts (Figure2A..7C) override IthetaWidth, so EVERY figure uses 360°. The
+    broad/near-flat θ pool is what makes the pooled I pool ALL orientations into the
+    suppressive drive, restoring S/A·E balance so the CRFs saturate. The spec's prior use
+    of 180° (C-011) is the value the paper quotes for V4; the code runs 360° everywhere.
+
+- id: CODE-012
+  param: ExWidth (stimulation spatial field size)
+  source: "paper/code/attentionModel.m:83-85 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: "if notDefined('ExWidth')\n  ExWidth = 5;\nend"
+  code_alone: false   # = paper Table 1 stimulation_field_size (C-010)
+  notes: "Stimulation field SPATIAL σ = 5, matching C-010. (Note: the Figure*.m scripts set stimWidth — the STIMULUS Gaussian σ — separately; ExWidth is the stimulation FIELD σ, always default 5.)"
+
+- id: CODE-013
+  param: EthetaWidth (stimulation feature tuning width)
+  source: "paper/code/attentionModel.m:86-88 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: "if notDefined('EthetaWidth')\n  EthetaWidth = 60;\nend"
+  code_alone: true
+  notes: |
+    Stimulation field feature σ = 60° default (code-alone: paper Table 1 quotes 30° for V4
+    oriented gratings, C-011). As with IthetaWidth, the code default is the doubled MT/MST
+    value. None of the Figure*.m scripts override EthetaWidth, so the stimulation feature
+    tuning is 60° in every figure run by this code. (Tuning_width per-figure values in
+    calibration.yaml derive from Table 1; this entry documents the code's stimulation-field
+    default and that the figure scripts do not change it.)
+
+- id: CODE-014
+  param: sigma (semi-saturation constant)
+  source: "paper/code/attentionModel.m:116-118 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: "if notDefined('sigma')\n  sigma = 1e-6;\nend"
+  code_alone: true
+  notes: |
+    sigma = 1e-6 ≈ 0. THE SECOND KEY SQ-005 VALUE, CODE-ALONE. The paper presents σ as the
+    "semi-saturation contrast" (C-003 r(c)=αc/(c+σ)), implying an O(0.1) contrast scale; the
+    spec assumed σ=0.1 (A-001). The CODE sets σ≈0. SATURATION THEREFORE DOES NOT COME FROM σ
+    — it comes from the pooled suppressive drive I (which scales with c, so R=E/(I+σ)≈E/I
+    plateaus once I≫σ, i.e. for all but the lowest contrasts). No Figure*.m script overrides
+    sigma. This overturns the spec's σ=0.1 semi-saturation assumption: in the authors' code
+    the normalization denominator is dominated by I, not σ.
+
+- id: CODE-015
+  param: Apeak / Abase (attention-field peak and baseline gain)
+  source: "paper/code/attentionModel.m:107-112,162 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    if notDefined('Apeak')\n  Apeak =  2;\nend
+    if notDefined('Abase')\n  Abase = 1;\nend
+    attnGain = (Apeak-Abase)*attnGain + Abase;   % :162
+  code_alone: false   # γ peak = paper Table 1 'peak attention gain' (C-012..C-018)
+  notes: |
+    Attention field A = (Apeak-Abase)*G + Abase, baseline Abase=1, default peak Apeak=2
+    (=γ). Figure4C/4E/7C override Apeak=5 (matching Table 1 'Peak Mod = 5', C-015/C-018).
+    Confirms EQ-attention A = 1 + (γ-1)·G with γ=Apeak (A-004/EQ-attention) directly from
+    the code. Abase=1 is code-alone but trivially = the paper's "baseline 1" architecture.
+
+- id: CODE-016
+  param: AxWidth / AthetaWidth defaults (attention field widths default to E widths)
+  source: "paper/code/attentionModel.m:101-106 (fn attentionModel)"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    if notDefined('AxWidth')\n  AxWidth = ExWidth;\nend
+    if notDefined('AthetaWidth')\n  AthetaWidth = EthetaWidth;\nend
+  code_alone: true
+  notes: "When unspecified, the attention-field spatial/feature widths fall back to the stimulation-field widths (ExWidth=5, EthetaWidth=60). Per-figure AxWidth/AthetaWidth are set explicitly in every Figure*.m (= Table 1 attention field size / tuning width). Documents the fallback only; the figure values come from Table 1 (C-012..C-018)."
+
+- id: CODE-017
+  param: baselineMod / baselineUnmod (Figure 3C / 3F baselines)
+  source: "paper/code/Figure3C.m:5-6; Figure3F.m:5-6"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Figure3C.m
+    baselineMod = 5e-7;
+    baselineUnmod = 5;
+    % Figure3F.m
+    baselineMod = 5e-7;
+    baselineUnmod = 0;
+  code_alone: true
+  notes: |
+    Figure 3 baselines, CODE-ALONE (paper Table 1 marks only 'X', no numbers — A-007).
+    baselineMod (added to stimulus drive E, attention-modulated path) = 5e-7 in BOTH 3C and
+    3F. baselineUnmod (added after normalization, R = E/(I+σ) + baselineUnmod) = 5 in 3C and
+    0 in 3F. So the per-panel difference is NOT symmetric: 3C and 3F share the (tiny) modulated
+    baseline 5e-7 but differ in the unmodulated post-normalization baseline (5 vs 0). This
+    CONTRADICTS the spec's A-007 single-shared 0.05·α value: the code uses a near-zero modulated
+    baseline and a LARGE unmodulated 3C baseline (5, on an R-scale that tops out ~20) with ZERO
+    for 3F. These are author values, code-alone.
+
+- id: CODE-018
+  param: per-figure Apeak / AthetaWidth / Ashape overrides
+  source: "paper/code/Figure4C.m:5-6; Figure4E.m:5-6; Figure6C.m:5-6; Figure7C.m:5-6"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Figure4C.m / Figure4E.m: AthetaWidth=20; Apeak=5;
+    % Figure6C.m: AthetaWidth=60; Ashape='cross';
+    % Figure7C.m: AthetaWidth=45; Apeak=5;
+  code_alone: false   # = paper Table 1 tuning width / Peak Mod columns (C-015/C-017/C-018)
+  notes: |
+    Per-figure attention-field tuning widths and peaks match Table 1: 4C/4E tuning 20° & γ=5
+    (C-015); 6C tuning 60° & Ashape='cross' (C-017 — 'cross' = separable spatial×feature gain
+    rather than 'oval' outer-product, attentionModel.m:146-157); 7C tuning 45° & γ=5 (C-018).
+    Confirms the per-figure attention-tuning values already in calibration.yaml from the
+    authors' code. Ashape='cross' for 6C is code-detail supporting the C-017 mechanism.

@@ -21,8 +21,12 @@ For each (c, attention_condition):
 1. Construct E(x, θ) for the stimulus at contrast c per EQ-stim.
 2. Construct A(x, θ): Gaussian centered at x = 0, peak γ for attended;
    constant 1 (no modulation) for unattended.
-3. Compute S(x, θ) per EQ-6.
-4. Compute R(x, θ) per EQ-5.
+3. Compute S(x, θ) per EQ-6 — the SEPARABLE 2D suppressive convolution over
+   (space x, feature θ): suppressive spatial σ = 20, suppressive feature σ = 360
+   (near-flat over θ), zero-pad in x, circular in θ (SQ-005, CODE-001/CODE-002).
+   This broad-θ pool is what makes S commensurate with A·E so the CRF saturates.
+4. Compute R(x, θ) = (A·E)/(S + σ) per EQ-5, with σ = 1e-6 ≈ 0 (CODE-014):
+   saturation comes from the pooled S, NOT from σ.
 5. Record R(x = 0, θ = 0).
 
 ## Outputs
@@ -34,5 +38,12 @@ For each (c, attention_condition):
   axis vs unattended; percent modulation peaks at intermediate contrasts.
 - C-019 / 2B: response gain — attended curve upward-shifted; percent
   modulation roughly flat or largest at high contrast.
-- C-020: Both — output saturates as c → 1.
+- C-020: Both — output saturates (plateaus) by high contrast. MUST-PASS
+  SATURATION TARGET (SQ-005, from the author code's behavior): each CRF must
+  BEND TO A PLATEAU by c = 1 — i.e. the normalized log-contrast slope over the
+  top decade (c ∈ [0.1, 1]) is near zero (≈0.01–0.02 in the verified code run)
+  while the rising flank slope is ≈0.5. The curve rises steeply then flattens;
+  it does NOT remain linear-in-log-c to c = 1 (the old 1D-reduction / σ=0.1
+  failure mode). This holds for BOTH attended and unattended curves and for both
+  panels (2A contrast-gain and 2B response-gain).
 - C-021: attended ≥ unattended at every contrast.

@@ -27,7 +27,7 @@ resolution_2026-06-03: RETIRED. The premise was wrong. The whole 4C saturation/r
 ## SQ-005 — A-013 / A-006 prescribed suppression fix does not produce saturation (CONTRACT-BUG; Phase-B STUCK)
 date: 2026-06-03
 spec_ref: assumptions A-006 (2D-plane suppressive pooling), A-013 (single suppression normalization); article_aware/extracted_data/test_contract_suppression_consistency.py; simulation_protocols.figure_4C (Q-029)
-status: STUCK — escalated to organizer/Phase A; no Phase-B mechanism can green these must-pass tests without violating the implement-SKILL guard (no figure-fitting, no per-panel-knob tuning, no contract edits).
+status: RESOLVED (2026-06-04) via original author code — see human_resolution below. The 1D-reduction was the implementation bug; the code does a SEPARABLE 2D suppressive convolution over (space x, feature θ) with a near-flat θ pool (IthetaWidth=360) and σ≈0 (sigma=1e-6), which saturates the CRFs from the single cited/code constants with no per-panel gain. (Was: STUCK — escalated to organizer/Phase A.)
 question: |
   This pass's contract update (phaseA-contract-update-2026-06-03) added the MUST-PASS
   test_contract_suppression_consistency.py invariant (ONE suppressive_drive_gain and ONE
@@ -81,6 +81,55 @@ escalation_options_for_phaseA: |
   (c) Revisit the cited σ_space=20 / σ=0.1 / stimulus_size values — with σ_space=20 ≫ stimulus_size,
       no integral-normalized field (1D or 2D) makes S commensurate with A·E at the RF, which is the
       arithmetic core of the deficit.
+human_resolution: |
+  2026-06-04 — RESOLVED VIA ORIGINAL AUTHOR CODE (Phase-A pass fix/sq005-from-code-20260604).
+  The MATLAB code (paper/code/attentionModel/attentionModel.m) was acquired into the repo and is now
+  a legitimate Phase-A spec source. It settles SQ-005 definitively and shows BOTH prior reconstructions
+  of the suppression mechanism were wrong:
+
+    THE 1D-REDUCTION WAS THE IMPLEMENTATION BUG. The original repro collapsed the suppressive drive to
+    a (near-)1D form that dropped the broad orientation pool, making S far too small to saturate. The
+    contract's "fix" (an invented orthogonal spatial y axis, ∫∫∫ s = 1 over a 2D (x,y) image plane,
+    A-006 wrong-form-2) was ALSO wrong and empirically deepened the deficit (S/AE 0.243 → 0.059).
+
+    THE CODE'S ACTUAL MECHANISM: a SEPARABLE 2D suppressive convolution over (SPACE x, FEATURE θ) —
+    I = conv2sepYcirc(A·E, IxKernel, IthetaKernel) — with two UNIT-VOLUME 1D Gaussians: spatial
+    σ = IxWidth = 20 (CODE-010, zero-padded in x) and feature σ = IthetaWidth = 360 (CODE-011, circular
+    in θ). There is NO y axis and NO joint integral normalization. Two code-alone values do the work:
+      • IthetaWidth = 360° (CODE-011): the suppressive θ-pool is near-FLAT over the whole orientation
+        range, so I pools essentially ALL orientations. This is what makes S commensurate with A·E.
+      • sigma = 1e-6 ≈ 0 (CODE-014): SATURATION COMES FROM THE POOLED I, NOT FROM σ. R = E/(I+σ) ≈ E/I
+        plateaus once I ≫ σ (all but the lowest contrasts). The spec's σ=0.1 semi-saturation
+        assumption (A-001) is overturned.
+    No figure script overrides IthetaWidth or sigma, so these hold for EVERY figure. No per-panel
+    suppressive gain exists anywhere in the code — the per-panel knobs SQ-001/SQ-002 added are RETIRED.
+
+  VERIFIED (numpy reproduction of the exact code arithmetic, Fig 2A): att-away CRF over c∈[1e-5,1]
+  rises steeply then plateaus by c≈0.1; top-decade (c∈[0.1,1]) normalized log-slope ≈ 0.02 vs rising-
+  flank slope ≈ 0.5. Fig 2B shows the response-gain signature (att-RF/att-away ≈ 1.42 at c=1, sustained
+  at high contrast). The CRFs DO saturate under the code's mechanism — the contract bug is resolved.
+
+  CONTRACT CHANGES MADE THIS PASS (article_aware only; implementation/src untouched, fixed by a
+  separate pass): code_refs.yaml CODE-001..018 authored; calibration.yaml model.sigma → 1e-6 (CODE-014),
+  model.suppressive_tuning_width → 360 (CODE-011), figure_3C/3F baselines added from code (CODE-017),
+  per-figure attention tuning/peak entries co-sourced to CODE-018; model_spec EQ-suppressive_kernel,
+  suppressive_field component, build/compute_suppressive_drive pipeline steps, sigma & y_grid params
+  corrected to the separable (x,θ) mechanism; assumptions A-001/A-006/A-007/A-011/A-013 superseded/
+  confirmed against the code; pseudocode/figure_2_protocol.md saturation expectation grounded in the
+  code behavior.
+
+  MUST-PASS SATURATION TARGET LEFT FOR THE FIX PASS (binding; the downstream test-writer must encode):
+    For the CRF panels (2A, 2B, 3C, 3F, 4E and any contrast sweep), EACH contrast-response function —
+    attended AND unattended — MUST BEND TO A PLATEAU by c = 1: the normalized (R/R_max) log-contrast
+    slope over the TOP DECADE c ∈ [0.1, 1] must be NEAR ZERO (verified ≈ 0.01–0.02 in the code run),
+    while the rising-flank slope (c ∈ [1e-3, 1e-2]) is ≈ 0.5. Operationally: the curve must NOT remain
+    linear-in-log-c to c = 1 (the old failure mode). This MUST be achieved by the faithful single
+    mechanism (separable space×feature suppression: IxWidth=20, IthetaWidth=360, σ=1e-6) with NO
+    per-panel suppressive gain and NO test relaxation (A-013). The response-gain panels (2B, 3F) must
+    additionally PRESERVE sustained high-contrast attentional modulation (att-RF/att-away ratio > 1 at
+    c = 1, ≈ 1.42 for 2B in the code) — the saturation must not erode the response-gain signature.
+    test_contract_suppression_consistency.py (one mechanism, no per-panel knob) remains MUST-PASS and
+    is now SATISFIABLE by the code's mechanism.
 
 ## SQ-006 — feature-based attention is spatially GLOBAL (Fig 6C / 7C attend-opposite); needs a named ledger assumption
 date: 2026-06-03
