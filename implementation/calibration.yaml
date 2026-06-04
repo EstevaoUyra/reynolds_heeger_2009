@@ -244,11 +244,11 @@ figure_4E.suppressive_drive_gain:
 # ---------------------------------------------------------------------------
 
 regime.contrast_gain.suppressive_drive_gain:
-  value: 4.0
+  value: 16.0
   units: "dimensionless (1D suppressive-drive scale)"
   source: SQ-001
   audited: false
-  note: "Contrast-gain regime 1D suppressive-drive gain. Original Fig-2A-family single-grating value (gain 4); NOT slaved to the retuned figure_2A.suppressive_drive_gain (now 12). Frozen here so the hermann2010 reuse surface is stable; see the namespace header for why this intentionally diverges from the Fig-2A figure knob."
+  note: "Contrast-gain regime 1D suppressive-drive gain. Re-slaved 4->16 (2026-06-03 hermann2010 F1 / Q-104 fix). RATIONALE: this is the cross-model reuse surface hermann2010 consumes via run_crf; at the pre-faithfulness gain (4) the *unattended* 1D CRF was still rising toward c=1 and never plateaued, leaving a ~14% residual vertical gap at c=1 (hermann Fig-1b ign/att=0.857). hermann's Fig-1b is a PURE leftward shift onto a COMMON high-contrast plateau (digitized ign/att=0.9915), so the non-converging curve was unfaithful. The faithfulness fix that raised figure_2A.suppressive_drive_gain 4->12 was made for the SAME saturation reason but on the FIGURE surface only; 12 brings hermann to ign/att=0.940, still short of genuine convergence. Re-slaving here to 16 makes the unattended CRF genuinely saturate onto the common plateau (ign/att=0.954, att/ign=1.049) — clearing both the F1 convergence test (>=0.95) and the Q-104 tight-gap test (att/ign<=1.10) — while PRESERVING the contrast-gain signature (attended 3x rise + saturation retained, c50 leftward log-shift 0.196 still strong; gain>=~50 would erode both, so 16 is in the convergence-AND-signature window, NOT cranked to the 0.9915 digitized value which the 1D mechanism cannot reach without destroying the shift). Same Fig-2A regime family; deliberately ABOVE the figure_2A knob because hermann's tighter, paper-grounded convergence claim demands genuine saturation, not the figure panel's looser cosmetic plateau."
 regime.contrast_gain.suppressive_spatial_sigma_scale:
   value: 0.55
   units: "dimensionless (effective-width scale on suppressive spatial Gaussian)"
