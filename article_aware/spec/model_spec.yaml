@@ -509,17 +509,29 @@ simulation_protocols:
     citation_refs: [C-014]
 
   - id: figure_4C
-    name: "Figure 4C — Two stimuli (pref + nonpref); pref contrast varied; attend nonpref vs opposite"
+    name: "Figure 4C — Authors' Figure4C.m: 4 separated stimuli; recorded preferred neuron, attend the NULL stimulus in-RF vs contralateral (SUPPRESSION)"
     pseudocode_path: pseudocode/figure_4_protocol.md
+    # Authors' Figure4C.m (CODE-018, A-012). FOUR separated stimuli; recorded
+    # preferred (θ=0) neuron at RF centre x=100. Both conditions attend the NULL
+    # (θ=180) stimulus via an oval field; attend-null-in-RF SUPPRESSES the
+    # recorded neuron (attended_CRF below unattended_CRF; C-021). percent_modulation
+    # = 100·(unattended-attended)/unattended (suppression sign), peaks ~38% and
+    # declines (matches the digitized panel_C ~36%). cRange [1e-4, 0.1]; null
+    # contrast fixed 0.01. PAPER/CODE sign discrepancy: DR-4C-sign / A-012.
     parameter_overrides:
       stimulus_size: 5
       attention_field_size: 5
-      tuning_width: 20
+      tuning_width: 20            # AthetaWidth (attention feature width)
       peak_attention_gain_gamma: 5
+      # geometry / contrasts resolved from calibration.yaml figure_4C.* (CODE-018):
+      #   rf_center=100, stim_pref_rf_x=90, stim_null_rf_x=110,
+      #   stim_pref_contra_x=-90, stim_null_contra_x=-110, theta_nonpref=180,
+      #   c_nonpref=0.01, sweep cRange=[1e-4, 0.1]
     expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, c_pref]
     expected_data_paths:
       - extracted_data/test_figure_4C.py
-    citation_refs: [C-015]
+    citation_refs: [C-015, C-021]
+    code_refs: [CODE-018]
 
   - id: figure_4E
     name: "Figure 4E — Two stimuli (pref + nonpref); contrasts covary; attend pref vs nonpref"

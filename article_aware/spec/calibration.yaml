@@ -355,11 +355,62 @@ figure_4C.tuning_width:
   quote: "Table 1 (Per-Figure Parameters), row | 4C | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4C.m:5 AthetaWidth = 20]"
   note: "Figure 4C ATTENTION-field feature tuning width (model_spec figure_4C; confirmed Figure4C.m AthetaWidth=20, CODE-018)."
 figure_4C.c_nonpref:
-  value: 0.5
+  value: 0.01
   units: "contrast (c in [0,1])"
-  source: C-015
-  audited: false  # downgraded 2026-06-03: fixed sweep contrast (0.5) is an assumption, not a verbatim paper value
-  note: "Fixed nonpreferred-stimulus contrast for Figure 4C (figure_4.md / C-015)."
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:24  fixed_contrast = .01;  % The contrast of the null stimulus (fixed in contrast)."
+  note: >-
+    Fixed null/nonpreferred-stimulus contrast for Figure 4C. Set to the authors'
+    Figure4C.m value 0.01 (CODE-018), correcting the prior 0.5 assumption. The
+    swept preferred contrast runs over Figure4C.m cRange [1e-4, 0.1], not the
+    paper-wide [0.01, 1].
+# --- Figure 4C four-stimulus geometry (authors' Figure4C.m, CODE-018) -------
+# The recorded neuron PREFERS theta=0 and its RF is centred at x = round(mean
+# (stimCenter1, stimCenter2)) = 100. Four separated stimuli: preferred (theta=0)
+# and null (theta=180) in the RF (x=90/110) and contralateral (x=-90/-110).
+figure_4C.rf_center:
+  value: 100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:28  RF_center = round(mean([stimCenter1, stimCenter2]));  % stimCenter1=90, stimCenter2=110"
+  note: "Recorded-neuron RF centre = midpoint of the two RF stimuli (90,110) = 100."
+figure_4C.stim_pref_rf_x:
+  value: 90.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:14  stimCenter1 = 90;  (stimOrientation1 = 0, preferred, in RF)"
+  note: "Preferred (theta=0) stimulus in the RF."
+figure_4C.stim_null_rf_x:
+  value: 110.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:16  stimCenter2 = 110;  (stimOrientation2 = 180, null, in RF)"
+  note: "Null/nonpreferred (theta=180) stimulus in the RF; also the attend-RF spatial centre (Ax=stimCenter2)."
+figure_4C.stim_pref_contra_x:
+  value: -90.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:18  stimCenter3 = -90;  (stimOrientation3 = 0, preferred, contralateral)"
+  note: "Preferred stimulus in the opposite hemifield."
+figure_4C.stim_null_contra_x:
+  value: -110.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:20  stimCenter4 = -110;  (stimOrientation4 = 180, null, contralateral)"
+  note: "Null stimulus in the opposite hemifield; the attend-away spatial centre (Ax=stimCenter4)."
+figure_4C.theta_nonpref:
+  value: 180.0
+  units: "degrees (motion direction)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4C.m:17/21  stimOrientation2 = 180; stimOrientation4 = 180;  (also Atheta=stimOrientation2)"
+  note: "Null-stimulus motion direction and the attention field's feature centre (Atheta=180)."
 
 figure_4E.stimulus_size:
   value: 5.0

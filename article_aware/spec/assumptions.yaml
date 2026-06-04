@@ -297,43 +297,77 @@
     - "A-006 (2D-plane pooling)"
 
 - id: A-012
-  name: figure_4C_spatial_attention_facilitation
+  name: figure_4C_author_code_protocol_and_paper_panel_sign_defect
   description: |
-    Figure 4C's "attend nonpreferred-in-RF" condition is a SPATIAL (location)
-    attention cue to the receptive-field location (the Martinez-Trujillo &
-    Treue 2002 task: attend that RF patch to detect a target). The attention
-    field A(x,θ) is therefore a spatial Gaussian centered at x = 0 that is FLAT
-    (uniform) over θ — it boosts the drives of BOTH colocated stimuli (the swept
-    preferred at θ = 0 and the fixed nonpreferred at θ = 180°). This is the
-    correct 4C mechanism; the result is contrast-gain FACILITATION (attended CRF
-    above attend-away, leftward shift, positive % modulation peaking ~+36% at low
-    contrast). The cited suppressive tuning width (180°, C-011) is used as-is;
-    no per-protocol suppressive-tuning override is needed.
+    Figure 4C is implemented EXACTLY as the authors' released Figure4C.m
+    (CODE-018), resolving the prior contract mis-mapping. The protocol is FOUR
+    separated stimuli with a recorded neuron PREFERRING θ = 0 and RF centred at
+    x = 100 (= round(mean(90,110))):
+      - x=90,  θ=0   preferred in RF (contrast swept over Figure4C.m cRange [1e-4,0.1])
+      - x=110, θ=180 null/nonpreferred in RF (contrast fixed 0.01)
+      - x=-90, θ=0   preferred contralateral (swept)
+      - x=-110,θ=180 null contralateral (fixed 0.01)
+    Both conditions attend the NULL stimulus via an OVAL attention field (spatial
+    Gaussian × a θ=180° feature Gaussian, AthetaWidth=20°): attended = attend the
+    null IN the RF (Ax=110); unattended = attend the null CONTRALATERAL (Ax=-110).
+    Attending the null boosts the θ=180° population, which feeds ONLY the recorded
+    θ=0 neuron's SUPPRESSIVE pool, so attend-null-in-RF LOWERS its response
+    (attended_CRF BELOW unattended_CRF). The authors' reported modulation is the
+    SUPPRESSION 100·(unattended-attended)/unattended — positive, peaking ~38% at
+    low contrast and declining (record percent_modulation, with_suppression_sign).
+    Verified end-to-end through rh_model.simulate: reproduces Figure4C.m's CRFs and
+    a %-mod peak ~38%, matching the digitized panel_C %-modulation (~36%).
   rationale: |
-    The paper resolves 4C internally to facilitation: the Fig-4 caption calls it
-    a "contrast gain" change with a "percentage increase" in firing rate, C-019
-    states the contrast-gain regime predicts a LEFTWARD shift, and the panel
-    (panel_C.jpg / panel_C_digitized.json) shows the attended curve ABOVE
-    attend-away with positive declining modulation. The two-stimulus-attention
-    lineage (Martinez-Trujillo & Treue 2002; pestilli_ling_carrasco_2009;
-    ghose_maunsell_2008; ni_maunsell_2017) is unanimous: spatial attention to the
-    in-RF (nonpreferred) stimulus RAISES the recorded neuron's response. C-021
-    ("yielding a smaller output firing rate") is the Fig-4E mechanism (attend
-    preferred vs nonpreferred, contrasts covarying), NOT the 4C panel; applying
-    it to 4C is the mis-mapping that produced the wrong (suppression) sign.
-    See logs/faithfulness_audit/figure_4C_investigation-2026-06-03.md.
+    Resolver ladder rung (1): the authors' own code (Figure4C.m, CODE-018) is the
+    authoritative source for the panel's experimental condition and resolves the
+    CONTRACT_BUG unambiguously — separated stimuli, fixed null at 0.01, attend the
+    null, recorded preferred neuron, cRange [1e-4,0.1]. C-021 ("attending the
+    nonpreferred … increasing its suppressive effect and yielding a smaller output
+    firing rate") is the matching paper prose and SIDES WITH THE CODE: this is a
+    suppression panel.
+
+    The PRIOR build (RETIRED) modelled the wrong condition — two COLOCATED stimuli
+    at x=0 with a spatial-only, θ-flat attention field — and reported facilitation
+    (+47% / peak ~101%). That configuration is neither the code's nor the paper's
+    experiment, and its claimed ~101% peak was an artifact of the wrong geometry.
+    The "figure_4C_investigation-2026-06-03 / Finding 2" that rationalised the
+    facilitation reading is OVERTURNED by the author code (a re-trace of an
+    ancestor would not override the authors' own released simulation script).
+  paper_issue:
+    decision_request: DR-4C-sign
+    owner: human (faithfulness lead)
+    expiry: 2026-07-15
+    summary: |
+      PAPER/CODE INCONSISTENCY on the 4C curve order & modulation sign. The
+      authors' released Figure4C.m draws "Att RF" (attend-null-in-RF) as the
+      LOWER curve and reports 100·(unatt-att)/unatt (suppression), consistent
+      with C-021. But the PUBLISHED Figure 4 panel C + caption B/C (C-015) DRAW
+      the attend-nonpref-in-RF (red) curve ABOVE attend-away and label the dashed
+      curve a "percentage INCREASE in firing rate" (facilitation / contrast gain),
+      and the digitized panel_C_digitized.json traced the UPPER solid as
+      "attended". The two authoritative authors' artifacts (code vs published
+      panel) therefore disagree on which condition is drawn on top and on the
+      modulation SIGN; only the %-modulation MAGNITUDE curve (~36% peak,
+      declining) is common to both and is reproduced by the model.
+      RESOLUTION TAKEN: follow the released CODE + C-021 (suppression: attended
+      below unattended; percent_modulation = 100·(unatt-att)/unatt, positive).
+      This is dispositioned as a documented PAPER defect, not a model fault. The
+      digitized JSON's solid-curve labels (attended=upper) are SWAPPED relative
+      to the code convention; downstream tier comparisons must account for that.
+      Human to confirm the intended convention (code/C-021 suppression vs
+      published-panel facilitation drawing).
   alternatives_considered:
-    - "Narrow feature-tuned attention field isolated on θ=180° (the RETIRED prior build): lands the gain on the nonpreferred population, feeds only the θ=0 neuron's suppressive pool → suppression / right-shift, the OPPOSITE of the paper's 4C panel. This is the 4E mechanism mis-applied to 4C."
-    - "Per-protocol suppressive_tuning_width = 75° override (RETIRED SQ-004): a symptom of the wrong (suppression) regime; forced a fake 'recovery'. Removed — the spatial-attention regime saturates/recovers correctly with the cited 180°."
+    - "Follow the PUBLISHED panel drawing (attend-nonpref-in-RF above, facilitation, percentage-increase): contradicts the authors' released Figure4C.m and C-021; would require relabeling the curves opposite to the code. Recorded as the open DR-4C-sign question, not silently adopted."
+    - "Prior RETIRED build: two colocated stimuli at x=0 + spatial θ-flat attention → facilitation peak ~101%. Wrong geometry (neither code nor paper); produced a 3x-too-strong magnitude artifact. Removed."
   affects:
-    - "simulation_protocols.figure_4C (attention condition construction)"
-    - "pipeline.build_attention_field (4C: spatial, feature-flat)"
-    - "implementation/calibration.yaml: figure_4C.suppressive_tuning_width and figure_4C.sigma overrides to be DELETED by Phase B"
-    - "extracted_data/test_figure_4C.py (Q-026/Q-027 facilitation direction); test_tier_figure_4.py (4C tier)"
+    - "simulation_protocols.figure_4C (four-stimulus geometry, attend-null oval field, cRange [1e-4,0.1])"
+    - "pipeline.build_attention_field (4C: spatial Ax × feature θ=180° oval)"
+    - "measurements.crf_pair_record (with_suppression_sign: percent_modulation = 100·(unatt-att)/unatt)"
+    - "extracted_data/test_figure_4C.py (suppression direction); test_tier_figure_4.py (4C tier, label-swap vs digitized)"
   spec_refs:
     - "simulation_protocols.figure_4C"
     - "pseudocode/figure_4_protocol.md (Procedure 4C)"
-    - "logs/spec_questions.md SQ-004 (resolution_2026-06-03)"
+    - "spec/calibration.yaml figure_4C.{rf_center,stim_*_x,theta_nonpref,c_nonpref}"
 
 - id: A-010
   name: surround_suppression_scale_beta

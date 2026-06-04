@@ -6,56 +6,59 @@ response-gain-like attentional modulation depending on which stimulus is
 attended and how stimulus contrasts are configured.
 
 ## Inputs
-- Two stimuli, both inside the receptive field of the recorded MT neuron
-  (x = 0, θ_pref = 0):
-  - "Preferred" stimulus: motion direction θ = 0 (matches recorded neuron).
-  - "Nonpreferred" stimulus: motion direction θ = 180° (opposite).
-- Stimuli colocated at x = 0 (within RF, not separated).
+- **FOUR separated stimuli** (authors' Figure4C.m, CODE-018). The recorded MT
+  neuron prefers θ = 0 and its RF is centred at **x = 100** (= round(mean of the
+  two RF-stimulus positions, 90 and 110)):
+  - x = 90,  θ = 0   — "Preferred" stimulus in the RF (contrast c_pref, swept).
+  - x = 110, θ = 180 — "Nonpreferred/null" stimulus in the RF (contrast fixed 0.01).
+  - x = -90, θ = 0   — preferred stimulus in the opposite hemifield (swept).
+  - x = -110,θ = 180 — null stimulus in the opposite hemifield (fixed 0.01).
 - Per protocol:
-  - 4C: contrast of preferred stimulus c_pref varied; contrast of
-    nonpreferred stimulus c_nonpref fixed. Two attention conditions:
-    attend nonpreferred-in-RF vs attend opposite hemifield.
-  - 4E: contrasts of preferred and nonpreferred stimuli covary
-    (c_pref = c_nonpref = c). Two attention conditions: attend preferred
-    vs attend nonpreferred.
-- Parameters: stimulus_size = 5, attention_field_size = 5, tuning_width = 20°,
-  γ = 5.
+  - 4C: contrast of the preferred stimulus c_pref varied; the null contrast
+    fixed at 0.01. Two attention conditions, BOTH attending the NULL stimulus:
+    attend null-in-RF vs attend null contralateral (opposite hemifield).
+  - 4E: two stimuli colocated in RF, contrasts covary (c_pref = c_nonpref = c).
+    Two attention conditions: attend preferred vs attend nonpreferred.
+- Parameters: stimulus_size = 5, attention_field_size = 5, tuning_width
+  (AthetaWidth) = 20°, γ (Apeak) = 5.
 
 ## Sweep
-- 4C: c_pref logarithmically across [0.01, 1] with 8 points; c_nonpref = 0.5
-  (a fixed mid-range contrast).
+- 4C: c_pref logarithmically across **[1e-4, 0.1]** with 8 points (Figure4C.m
+  cRange); null contrast fixed = 0.01.
 - 4E: c logarithmically across [0.01, 1] with 8 points (covaried).
 
 ## Procedure (4C)
 
-> **PHASE-B BUILD NOTE (Finding 2, figure_4C_investigation-2026-06-03).** The 4C
-> "attend nonpreferred-in-RF" condition is a **SPATIAL (location) attention cue
-> to the receptive-field location** — the Martinez-Trujillo & Treue (2002) task:
-> attend that RF patch to detect a target. A spatial cue at x = 0 boosts the
-> drives of **BOTH** colocated stimuli (the swept preferred at θ = 0 AND the
-> fixed nonpreferred at θ = 180°), so the gain reaches the recorded θ = 0
-> neuron's numerator → **contrast-gain facilitation** (attended CRF ABOVE
-> attend-away, leftward shift, positive %-modulation).
+> **AUTHORS' Figure4C.m (CODE-018) — the authoritative 4C contract.** This is the
+> Martinez-Trujillo & Treue (2002) "attend the NULL stimulus" task as the authors
+> actually simulated it. The recorded neuron PREFERS θ = 0. Both conditions attend
+> the **nonpreferred (θ = 180°) stimulus** via an **OVAL** attention field — a
+> spatial Gaussian centred on the null stimulus (Ax = 110 for "in RF", Ax = -110
+> for "contralateral") **times a θ = 180° feature Gaussian** (Atheta = 180,
+> AthetaWidth = 20°). Attending the null boosts the θ = 180° population, which
+> feeds ONLY the recorded θ = 0 neuron's **suppressive** pool, so attend-null-in-RF
+> **LOWERS** its response → the attended (in-RF) CRF sits **BELOW** the attend-away
+> CRF, a **suppression** (C-021). The authors report the modulation as the
+> **suppression magnitude** `100·(unattended-attended)/unattended` — positive,
+> peaking ~36% at low contrast and declining toward saturation.
 >
-> The attention field must therefore be **flat over θ** (`feature_center = None`,
-> uniform in feature, so the spatial Gaussian alone sets the gain over the RF).
-> A *narrow feature-tuned* field isolated on θ = 180° (the prior build) lands the
-> gain almost entirely on the nonpreferred population, which feeds ONLY the
-> suppressive pool of the θ = 0 neuron and produces the wrong (suppression) sign —
-> that is the **Fig-4E** mechanism (C-021), not 4C. Do NOT feature-tune the 4C
-> attention field on θ = 180°.
+> **PAPER/CODE SIGN INCONSISTENCY (DR-4C-sign, A-012).** The *published* Figure 4
+> panel C draws the attend-nonpref-in-RF curve ABOVE attend-away and labels the
+> dashed curve a "percentage INCREASE" (caption B/C). We follow the released
+> CODE + C-021 (suppression). This is a documented paper defect, not a model
+> fault; the human decision-request DR-4C-sign owns the convention call. The
+> digitized panel_C JSON labels the UPPER solid "attended" (the published-panel
+> convention), which is SWAPPED relative to this code convention.
 
 For each (c_pref, attention_condition):
-1. Construct E(x, θ) = sum over the two stimuli (preferred at θ = 0,
-   contrast c_pref; nonpreferred at θ = 180°, contrast c_nonpref = 0.5).
-2. Construct A(x, θ): for "attend nonpref-in-RF", a **spatial** attention field —
-   Gaussian centered at x = 0 (σ_x = attention_field_size), **flat (uniform)
-   over θ** — so the gain γ reaches both colocated stimuli, including the
-   recorded neuron's preferred θ = 0 drive. For "attend opposite hemifield",
-   the spatial Gaussian is centered far from the RF, so A ≈ 1 over the recorded
-   neuron's RF (constant 1).
+1. Construct E(x, θ) from the four stimuli above (preferred θ = 0 at contrast
+   c_pref in both hemifields; null θ = 180° at contrast 0.01 in both hemifields).
+2. Construct A(x, θ): an OVAL field — spatial Gaussian (σ_x = attention_field_size)
+   centred on the null stimulus, times a θ = 180° feature Gaussian
+   (σ_θ = tuning_width = 20°). "Attend null-in-RF": spatial centre x = 110.
+   "Attend null contralateral": spatial centre x = -110.
 3. Compute S, R per EQ-6, EQ-5.
-4. Record R(x = 0, θ = 0).
+4. Record R(x = 100, θ = 0) — the recorded preferred neuron at the RF centre.
 
 ## Procedure (4E)
 For each (c, attention_condition):
@@ -66,20 +69,25 @@ For each (c, attention_condition):
 3. Compute S, R as above; record R(x = 0, θ = 0).
 
 ## Outputs
-- 4C: attended_CRF[c_pref], unattended_CRF[c_pref], percent_modulation[c_pref].
+- 4C: attended_CRF[c_pref] (= attend null-in-RF), unattended_CRF[c_pref]
+  (= attend null contralateral), percent_modulation[c_pref]
+  (= 100·(unattended-attended)/unattended, the suppression sign).
 - 4E: attend_pref_CRF[c], attend_nonpref_CRF[c], ratio[c] =
   attend_pref / attend_nonpref.
 
 ## Expected behavior (citations)
-- C-015, C-019 / 4C: attending the nonpreferred-in-RF stimulus (a SPATIAL cue to
-  the RF that boosts both colocated stimuli) **facilitates** the recorded
-  neuron, producing a **contrast-gain change**. The attended curve is
-  **leftward-shifted relative to unattended (the attended curve is the HIGHER
-  one)**, and percent modulation is **positive**, largest (~+36%) at low /
-  intermediate c_pref and declining toward high contrast (C-019: "contrast gain
-  regime predicts a leftward shift … largest percentage modulation at
-  intermediate contrasts"). Referent: Fig-4 caption + panel_C_digitized.json.
-  (C-021 is the 4E mechanism prose and is NOT cited for 4C — see Finding 2.)
+- C-015, C-021, CODE-018 / 4C: attending the **nonpreferred (null) stimulus in
+  the RF SUPPRESSES** the recorded preferred neuron — the attended (in-RF) CRF
+  sits **BELOW** the attend-away CRF (C-021: attending the nonpreferred
+  "increasing its suppressive effect and yielding a smaller output firing rate").
+  The suppression **percent modulation** `100·(unatt-att)/unatt` is **positive**,
+  largest (~36%) at low contrast and **declining** toward high contrast.
+  Verified: the author Figure4C.m configuration through rh_model.simulate gives a
+  %-mod peak ~38%, matching the digitized panel_C %-modulation (~36%).
+  **PAPER/CODE inconsistency (DR-4C-sign):** the published panel draws this the
+  opposite way (attended above, "percentage increase"); we follow the released
+  code + C-021. The digitized JSON's solid-curve labels (attended = upper) are
+  swapped relative to this convention.
 - C-015, C-021 / 4E: attending preferred yields larger response than
   attending nonpreferred across the full contrast range; the difference is
   approximately a multiplicative scaling (response gain).

@@ -70,7 +70,10 @@ PAPER_PANEL_LIMITS: dict[str, dict] = {
     "3F": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
     # Figure 4 — model CRF panels. 4E's right axis is the paper's (0, 100); the
     # model's modulation curve overflows it (intended failure).
-    "4C": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # 4C x-range is the authors' Figure4C.m cRange [1e-4, 0.1] (CODE-018, A-012),
+    # the contrast actually swept (the published panel has no numeric x ticks);
+    # the suppression %-modulation peaks ~38% and stays within (0, 100).
+    "4C": {"xlim": (1.0e-4, 0.1), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
     "4E": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
     # Figure 5/6/7 — model tuning panels (Normalized Response, no twin axis).
     "5C": {"xlim": (-90.0, 90.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},

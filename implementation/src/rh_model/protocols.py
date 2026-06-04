@@ -23,9 +23,17 @@ from .calibration import resolve, resolve_namespace
 from .model import default_params, simulate
 
 
-def _contrast_sweep(stimuli_factory, attention_factory, base_overrides, n_contrasts=8):
-    """Sweep contrast on a log scale, returning (contrasts, responses)."""
-    contrasts = np.logspace(np.log10(0.01), np.log10(1.0), n_contrasts)
+def _contrast_sweep(
+    stimuli_factory, attention_factory, base_overrides, n_contrasts=8,
+    c_range=(0.01, 1.0),
+):
+    """Sweep contrast on a log scale, returning (contrasts, responses).
+
+    ``c_range`` is the (low, high) swept-contrast endpoints; defaults to the
+    paper's [0.01, 1.0]. Figure 4C overrides it to the authors' Figure4C.m
+    range [1e-4, 0.1] (CODE-018).
+    """
+    contrasts = np.logspace(np.log10(c_range[0]), np.log10(c_range[1]), n_contrasts)
     responses = np.zeros(n_contrasts)
     for i, c in enumerate(contrasts):
         params = default_params(**base_overrides)
@@ -180,40 +188,87 @@ def run_figure_3F(n_contrasts: int = 8):
 # --- Figure 4 (two stimuli in RF) ---
 
 def run_figure_4C(n_contrasts: int = 8, c_nonpref: float | None = None):
-    """Two stimuli colocated in RF. c_pref varied; c_nonpref fixed.
+    """Figure 4C — exact authors' ``Figure4C.m`` protocol (CODE-018).
 
-    Citation: C-015, C-019 / spec.simulation_protocols.figure_4C
+    Martinez-Trujillo & Treue (2002), as the authors actually simulated it:
+    FOUR separated stimuli, the recorded neuron PREFERRING θ = 0 with its RF
+    centred at x = 100 (the midpoint of the two RF stimuli):
 
-    Assumption: A-012 — the "attend nonpreferred-in-RF" condition is a SPATIAL
-    (location) attention cue to the RF (Martinez-Trujillo & Treue 2002): a
-    spatial Gaussian centered at x = 0, FLAT over θ (``feature_center=None``),
-    so the gain γ boosts the drives of BOTH colocated stimuli — including the
-    recorded θ = 0 neuron's preferred drive. This yields contrast-gain
-    facilitation (attended CRF above attend-away, leftward shift, positive
-    declining %-modulation). A narrow feature-tuned field on θ = 180° (the
-    prior build) lands the gain on the suppressive pool only and produces the
-    wrong (suppression) sign — that is the Fig-4E mechanism, not 4C. The cited
-    180° suppressive tuning width (C-011) and the global σ are used as-is; the
-    SQ-004 per-protocol overrides are RETIRED.
+      - x = 90,  θ = 0   — PREFERRED stimulus in RF, contrast c_pref (swept)
+      - x = 110, θ = 180 — NULL/nonpreferred stimulus in RF, contrast 0.01 (fixed)
+      - x = -90, θ = 0   — preferred stimulus in the opposite hemifield (swept)
+      - x = -110,θ = 180 — null stimulus in the opposite hemifield (fixed 0.01)
+
+    Two conditions, BOTH attending the NULL stimulus (an *oval* attention field,
+    spatial Gaussian × a θ = 180° feature Gaussian of width 20° — the Fig-4C
+    ``AthetaWidth`` — not flat in θ):
+
+      - ``attended_CRF``   = attend the null stimulus IN the RF   (Ax = 110)
+      - ``unattended_CRF`` = attend the null stimulus CONTRALATERAL (Ax = -110)
+
+    Mechanism (C-021): attending the null boosts the θ = 180° population, which
+    feeds ONLY the recorded θ = 0 neuron's SUPPRESSIVE pool, so attend-null-in-RF
+    *lowers* its response → ``attended_CRF`` sits BELOW ``unattended_CRF``. The
+    authors' reported attentional modulation is the SUPPRESSION
+    ``%-mod = 100·(unattended-attended)/unattended`` (positive, peaking ~36% at
+    low contrast and declining), which the record's ``percent_modulation`` field
+    carries with that sign convention (``with_suppression_sign=True``). Verified:
+    this exact configuration through ``rh_model.simulate`` reproduces the authors'
+    Figure4C.m CRFs and a %-mod peak ~38% — matching the digitized panel_C
+    %-modulation (~36%); see logs/.../verify_model_4c.
+
+    cRange = [1e-4, 0.1] and c_nonpref = 0.01 are the authors' Figure4C.m values.
+
+    PAPER/CODE INCONSISTENCY (tripwire DR-4C-sign): the *published* Figure 4C
+    panel DRAWS the attend-nonpref-in-RF curve ABOVE attend-away and labels the
+    dashed curve a "percentage increase" (caption B/C, C-015) — i.e. facilitation
+    — which is the OPPOSITE curve order to the authors' released Figure4C.m (where
+    attend-RF is the LOWER curve) and to C-021's suppression prose. We follow the
+    released CODE (ladder rung 1) + C-021; the figure-panel sign/order discrepancy
+    is dispositioned as a documented paper defect (see assumptions A-012 /
+    decision-request DR-4C-sign).
+
+    Citation: C-015, C-021 ; Code: CODE-018 (Figure4C.m) ; Assumption: A-012
     """
     s = _sci("figure_4C")
     if c_nonpref is None:
         c_nonpref = resolve("figure_4C.c_nonpref")
+    rf_center = resolve("figure_4C.rf_center")
+    stim_pref_rf = resolve("figure_4C.stim_pref_rf_x")
+    stim_null_rf = resolve("figure_4C.stim_null_rf_x")
+    stim_pref_contra = resolve("figure_4C.stim_pref_contra_x")
+    stim_null_contra = resolve("figure_4C.stim_null_contra_x")
+    theta_null = resolve("figure_4C.theta_nonpref")
     overrides = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
+        recorded_x=rf_center,
+        recorded_theta=0.0,
     )
     stim = lambda c_pref: [
-        {"x": 0.0, "theta": 0.0, "contrast": c_pref},
-        {"x": 0.0, "theta": 180.0, "contrast": c_nonpref},
+        {"x": stim_pref_rf, "theta": 0.0, "contrast": c_pref},
+        {"x": stim_null_rf, "theta": theta_null, "contrast": c_nonpref},
+        {"x": stim_pref_contra, "theta": 0.0, "contrast": c_pref},
+        {"x": stim_null_contra, "theta": theta_null, "contrast": c_nonpref},
     ]
-    attended = lambda c_pref: {"spatial_center": 0.0, "feature_center": None}
-    unattended = lambda c_pref: {"spatial_center": None, "feature_center": None}
-    c_pref, att = _contrast_sweep(stim, attended, overrides, n_contrasts)
-    _, unatt = _contrast_sweep(stim, unattended, overrides, n_contrasts)
-    return measurements.crf_pair_record(c_pref, att, unatt, contrast_key="c_pref")
+    # Both conditions attend the NULL (θ=180) stimulus; spatial centre differs.
+    attended = lambda c_pref: {
+        "spatial_center": stim_null_rf, "feature_center": theta_null
+    }
+    unattended = lambda c_pref: {
+        "spatial_center": stim_null_contra, "feature_center": theta_null
+    }
+    c_pref, att = _contrast_sweep(
+        stim, attended, overrides, n_contrasts, c_range=(1e-4, 0.1)
+    )
+    _, unatt = _contrast_sweep(
+        stim, unattended, overrides, n_contrasts, c_range=(1e-4, 0.1)
+    )
+    return measurements.crf_pair_record(
+        c_pref, att, unatt, contrast_key="c_pref", with_suppression_sign=True
+    )
 
 
 def run_figure_4E(n_contrasts: int = 8):

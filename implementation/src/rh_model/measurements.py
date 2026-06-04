@@ -138,6 +138,7 @@ def crf_pair_record(
     *,
     contrast_key: str = "c",
     with_absolute_difference: bool = False,
+    with_suppression_sign: bool = False,
 ) -> dict:
     """Record for an attended/unattended CRF pair (Figs 2, 3, 4C).
 
@@ -145,15 +146,30 @@ def crf_pair_record(
     percent_modulation, [absolute_difference], <contrast_key>) byte-
     identical, and adds half-max contrasts as measured structural facts.
 
-    Citation: C-013, C-014, C-015 ; Assumption: A-006
+    ``percent_modulation`` is by default the FACILITATION convention
+    ``100·(attended-unattended)/unattended`` (Figs 2/3, attention raises the
+    response). Figure 4C is a SUPPRESSION panel (attending the nonpreferred
+    stimulus LOWERS the recorded preferred neuron's response, C-021); pass
+    ``with_suppression_sign=True`` to report the authors' Figure4C.m sign
+    ``100·(unattended-attended)/unattended`` (positive, peaking ~36%), so the
+    record's percent_modulation matches the published declining magnitude
+    instead of being a large negative facilitation value.
+
+    Citation: C-013, C-014, C-015, C-021 ; Code: CODE-018 ; Assumption: A-006
     """
     attended = np.asarray(attended, dtype=float)
     unattended = np.asarray(unattended, dtype=float)
     contrast = np.asarray(contrast, dtype=float)
+    # Both sign conventions divide by the UNATTENDED (attend-away) response.
+    # Facilitation (Figs 2/3): 100·(attended-unattended)/unattended.
+    # Suppression  (Fig 4C):   100·(unattended-attended)/unattended  (== negated).
+    pm = -_safe_pm(attended, unattended) if with_suppression_sign else _safe_pm(
+        attended, unattended
+    )
     rec: dict = {
         "attended_CRF": attended,
         "unattended_CRF": unattended,
-        "percent_modulation": _safe_pm(attended, unattended),
+        "percent_modulation": pm,
         contrast_key: contrast,
     }
     if with_absolute_difference:
