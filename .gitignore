@@ -12,3 +12,9 @@ htmlcov/
 # Generated qualitative sanity-check artifacts
 implementation/sanity_checks/*_outputs/
 implementation/figure_outputs/
+
+# Original author code (acquired into paper/code/) is NOT redistributed through
+# our history — licensing + bulk. Its existence and source stay traceable via
+# the VERSIONED paper/SOURCES.md (URL + manifest) and article_aware/spec/code_refs.yaml
+# (CODE-NNN entries with file:line). Re-fetch from SOURCES.md to reproduce.
+paper/code/
