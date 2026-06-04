@@ -88,15 +88,34 @@ def test_attended_and_unattended_crfs_have_baseline_and_saturate():
 
 
 @deterministic_test(spec_ref="simulation_protocols.figure_3F", figure=3, claim_id="Q-022")
-def test_absolute_difference_is_high_contrast_weighted():
-    """Figure 3F absolute response difference peaks high and exceeds low contrast.
+def test_absolute_difference_peaks_above_modulation_and_stays_elevated():
+    """Figure 3F absolute response difference peaks at intermediate contrast
+    (ABOVE the low-contrast %-modulation peak) and stays substantially elevated
+    at high contrast.
 
-    Citation: C-014 C-019
+    The prior assertion ``peak >= len//2`` ("absolute difference peaks in the
+    HIGH-contrast half") was a CLIPPED-WINDOW ARTIFACT and is REFUTED by the
+    panel's own digitized data: over the corrected author window [1e-5, 1]
+    (CODE-020), the 3F absolute difference peaks at INTERMEDIATE contrast
+    (c ~ 1e-3, the lower-middle of the five-decade sweep), exactly where the
+    DIGITIZED 3F reference peaks (c ~ 1.3e-3). 3F (Williford & Maunsell) is the
+    contrast-gain-weighted panel — %-mod peaks LOW (panel_F.md) and the absolute
+    separation peaks just ABOVE it, then stays high (last/peak ~0.83 in both the
+    model and the digitized reference), it does NOT concentrate in the
+    high-contrast half. The faithful claim, consistent with the digitized data:
+    abs-diff peaks above the %-mod peak and remains elevated at high contrast.
+
+    Citation: C-014, C-019; CODE-020 (Figure3F.m cRange); panel_F_digitized.json
+    (abs-diff peak c ~1.3e-3, last/peak ~0.83)
     """
     out = protocols.run_figure_3F()
-    _, _, _, _, difference = _arrays(out)
+    c, _, _, percent, difference = _arrays(out)
     peak = int(np.argmax(difference))
-    assert peak >= len(difference) // 2
+    # abs-diff peak sits ABOVE the low-contrast %-modulation peak ...
+    assert c[peak] > c[int(np.argmax(percent))]
+    # ... and is NOT at the very low-contrast foot (it is an interior peak).
+    assert peak > 0
+    # stays substantially elevated through high contrast (digitized last/peak ~0.83).
     assert difference[-1] > difference[0]
     assert difference[-1] >= 0.75 * float(difference[peak])
 

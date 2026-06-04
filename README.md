@@ -1,15 +1,34 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-<!-- CURRENT STATE — updated 2026-06-04 after the SQ-005 fix pass (faithful author-code suppression
-     mechanism implemented; per-panel suppression knobs deleted). Per-figure VLM verdicts below
-     PRE-DATE this pass (HEAD c8ea505) and are stale where they describe the old per-panel-gain CRFs;
-     the deterministic test state in "Current exit" is current. -->
+<!-- CURRENT STATE — updated 2026-06-04 after the CONTRAST-WINDOW + RE-DIGITIZATION resolver pass
+     (Phase-A resolver, author-code ladder rung 1). The 2A/2B/3C/3F/4E CRF panels were rendered as
+     flat plateaus because the sweep/view/digitized-x_range pinned contrast to [0.01,1] (2 decades)
+     while the author Figure*.m scripts use cRange=[1e-5 1] (5 decades; 4C/4E [1e-4,0.1]). The model
+     half-saturates at c≈0.002-0.005, so the entire rising limb + contrast-gain left-shift lived
+     below 0.01 and were clipped off-window. Fixed by routing the per-panel author cRange (CODE-020)
+     through the sweep (protocols.py), the view xlim (views.py), and the digitized x_range
+     (re-digitization, a pure x-axis relabel — curve ink unchanged). The model is UNCHANGED. The 4E
+     %-modulation overflow and the 7C ratio are a SEPARATE geometry divergence (co-located vs four
+     separated stimuli), still RED, NOT in this pass's scope. -->
 
 ## Current exit
 
 ```json
-{"overall": "partial", "trajectory": "toward_paper", "flagged_count": 3, "blocked": []}
+{"overall": "partial", "trajectory": "toward_paper", "flagged_count": 2, "blocked": []}
 ```
+
+**Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED this pass.** The single root cause
+of the 2A/2B/3C/3F "under-saturation / no left-shift" CRF reds was the clipped contrast window, not a
+forward-model fault: the author Figure*.m scripts sweep `cRange=[1e-5 1]` (4C/4E `[1e-4 0.1]`), but the
+sweep/view/digitized-x_range had guessed `[0.01,1]`, clipping the rising limb below 0.01. Routing the
+author cRange (CODE-020) through the sweep + view xlim, and re-digitizing the 2A/2B/3C/3F/4C/4E panels
+over the author window (a pure x-axis relabel; the traced curve ink on the paper is unchanged), restores
+the textbook sigmoids: 2A contrast-gain left-shift with shared plateau, 2B response-gain upward-shift
+with sustained ~42% %-mod, 3C/3F mixed effects. The 6 digitized-window PAPER_ISSUE tripwires now pass
+and the contract-suppression test (the SQ-005 no-per-panel-knob invariant) is green. **Deterministic
+state: 125 passed / 5 failed** (was 18 failed). The 5 reds are all the SAME residual finding — the 4E /
+7C **two-stimulus geometry divergence** (co-located stimuli where the author code uses four separated
+ones); the contrast-window fix is orthogonal to it and it is left RED, out of this pass's scope.
 
 **The SQ-005 suppression mechanism is now IMPLEMENTED from the original author code.** The model is
 the authors' separable space×feature normalization — unit-volume (normpdf) suppressive kernels
@@ -25,31 +44,30 @@ paper-blind builder without forbidden tuning — left RED and escalated, not for
 
 ### Queued human decisions (route to Phase A / Faithfulness Auditor — not for a paper-blind builder)
 
-1. **SQ-007 Gap 1 — CRF contrast-axis mismatch (14 reds: 2A/2B/3C/3F/4C half-max & left-shift,
-   tier-shape).** The faithful mechanism's single-grating CRF half-saturates at c ≈ 0.002–0.005 — its
-   contrast-gain left-shift is REAL but sits BELOW the digitized window [0.012, 1], where the curve is
-   already a flat plateau; the digitized references put the rise at c ≈ 0.05–0.10 (~20–30× higher). No
-   σ closes it (σ=1e-6 → half-max below window; σ≈0.1 → half-max ≈0.5 AND the left-shift collapses).
-   Decide: the per-figure `Figure*.m` CRF scripts likely use a contrast/σ convention that is NOT the
-   Fig-1 activity-map R1 config — SQ-005's σ=1e-6 may hold only for the activity maps, not the CRF
-   panels. Phase B cannot read those scripts.
-2. **SQ-007 Gap 2 — `test_contract_suppression_consistency.py` encodes the wrong shape of fix (5 reds).**
-   It requires a single NON-None `suppressive_drive_gain` resolved on every panel ("promote ONE
-   constant"); the SQ-005 resolution settled from code that NO per-panel gain exists at all, so the
-   faithful model resolves None everywhere. The mechanism satisfies the test's INTENT (one global
-   suppression normalization, identical on every panel) but not its LETTER. Rewrite the predicate to
-   "no per-panel gain anywhere; the global suppressive σ/θ are identical across panels."
-3. **SQ-007 Gap 3 — Fig-4E / Fig-7C over-modulation magnitude (3 reds, tier="hard").** The faithful
-   2-stimulus-in-RF mechanism over-modulates (4E %-mod ~386% vs digitized ~54%; 7C ratio 2.73 vs
-   1.33). Genuine divergences (the 7C test's own `paper_issue` says so) but tagged MUST-PASS rather
-   than soft/xfail tripwires; reclassify or supply a verified faithful target.
-4. **SQ-006 — "feature-based attention is spatially global" needs a named ledger assumption.** The
+1. **Fig-4E / Fig-7C two-stimulus GEOMETRY divergence (5 reds, the only remaining family).** The 4E
+   and 7C protocols co-locate two stimuli at x=0, where the author Figure4E.m / Figure7C.m use FOUR
+   SEPARATED stimuli (RF x=90/110, contralateral x=-90/-110). Co-locating crushes the nonpreferred
+   response via feature competition, inflating 4E %-modulation to ~386% (paper 0–100 axis) and the 7C
+   variable/fixation ratio to ~2.73 (digitized ~1.33). Verified (test_audit_2026_06_04 Findings B/D):
+   running the author four-stimulus geometry through the *committed, unchanged* `simulate` lands 4E
+   ~50–54% and 7C ~1.41 — the paper values are reachable by the FAITHFUL mechanism once the geometry
+   is corrected. This is a CODE_BUG in the two protocols, orthogonal to the contrast-window fix of
+   this pass; the MUST-PASS author-geometry tests are RED awaiting the geometry change.
+2. **SQ-006 — "feature-based attention is spatially global" needs a named ledger assumption.** The
    Fig-6C CODE_BUG fix is applied and green-on-its-own-tests, but the convention is only *implied* by
    C-023; Phase A should formalize the assumption and apply the same factorization to 7C.
-5. **Closed:** SQ-001/SQ-002 (per-panel suppression gains/baselines) — **RESOLVED this pass**: deleted,
-   replaced by the single author-code mechanism. SQ-003 (Fig-7 = Panel C), SQ-004 (4C 75° override
-   retired), SQ-005 (suppression mechanism resolved from code) — closed. Listed so a returning reader
-   sees they are done.
+3. **Closed this pass — contrast-window CONTRACT_BUG + digitized re-digitization (was SQ-007 Gap 1).**
+   The 2A/2B/3C/3F/4C/4E CRF reds were a clipped contrast window, NOT a forward-model divergence. The
+   author Figure*.m `cRange` ([1e-5,1] single-grating; [1e-4,0.1] for 4C/4E) is now in the spec ledger
+   (CODE-020) and routed through the sweep + view xlim; the panels were re-digitized over the author
+   window. The earlier "no σ closes it" framing was correct that no σ closes it IN the wrong window —
+   the resolution was the window, not σ (σ=1e-6 is faithful). Model unchanged.
+4. **Closed this pass — `test_contract_suppression_consistency.py` (was SQ-007 Gap 2).** Already
+   rewritten to the faithful shape ("no per-panel suppression knob resolves on any protocol; the
+   global suppressive field-size + tuning-width are identical across panels") and **green** (4/4).
+5. **Closed earlier:** SQ-001/SQ-002 (per-panel suppression gains/baselines) — deleted, replaced by the
+   single author-code mechanism. SQ-003 (Fig-7 = Panel C), SQ-004 (4C 75° override retired), SQ-005
+   (suppression mechanism resolved from code) — closed.
 
 ---
 
@@ -110,87 +128,91 @@ in `logs/figure_comparisons/figure_1_20260604T012601Z.json`).
 |---|---|---|
 | **figure** | n/a (schematic) | ✅ **faithful** — topology + attended-stimulus enhancement match |
 
-### Figure 2 — Contrast gain vs response gain  ❌ BROKEN — 2A under-saturates; 2B ceiling RED
+### Figure 2 — Contrast gain vs response gain  ✅ FAITHFUL (det all-pass · CRFs now full sigmoids)
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="article_aware/figures/figure_2/overlay_2A.png" width="150"><img src="article_aware/figures/figure_2/overlay_2B.png" width="150"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
 </table>
 
-2A is contrast-gain (attended above ignored, %-mod falls toward high contrast) but the CRFs plateau
-~0.34 against the paper's ~0.62 (**under-saturation**, surfaced once the shared-scale normalization
-stopped pinning every panel to 1.0). 2B is response-gain (separation sustained, attended ~0.86 above
-ignored ~0.60) but the attended ceiling diverges from the digitized reference (deterministic RED).
+**Resolved this pass (contrast-window CONTRACT_BUG).** Over the author Figure2A/2B.m window `[1e-5, 1]`
+(CODE-020) the panels are full sigmoids rising from baseline, not flat plateaus: 2A is contrast-gain —
+attended **left-shifted** of ignored, both converging to a shared ~0.72 plateau, %-mod ~98% at low
+contrast falling to ~0; 2B is response-gain — attended scaled UP to ~0.86 above ignored ~0.60 with
+sustained separation (no convergence), %-mod descending to a sustained ~42% plateau. The prior
+"plateau ~0.34 under-saturation / ceiling RED" reds were the clipped `[0.01,1]` window, not a model
+fault. All deterministic 2A/2B tests pass.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 2A | ✅ faithful | ❌ divergent — plateau ~0.34 vs ~0.62 |
-| panel 2B | ✅ faithful | ❌ divergent — attended ceiling off digitized (0.277 bound) |
-| **figure** | ✅ **faithful** | ❌ **divergent** (VLM fail) |
+| panel 2A | ✅ faithful | ✅ faithful — contrast-gain left-shift, shared plateau, %-mod falls |
+| panel 2B | ✅ faithful | ✅ faithful — response-gain upward-shift, sustained ~42% %-mod |
+| **figure** | ✅ **faithful** | ✅ **faithful** (full sigmoids over the author window) |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 2A attended ≥ ignored / converges / %-mod falls | ✅ pass |
 | qualitative | 2B attended above ignored / no convergence | ✅ pass |
 | hard | 2A / 2B high-contrast separation vs digitized | ✅ pass |
-| hard | 2B attended ceiling matches digitized | ❌ **FAIL** — `0.277 < 0.15` false |
-| soft | 2A / 2B shape & low-contrast modulation vs digitized | ⚠️ soft (skipped/reported) |
+| hard | 2A attended left-shifted (half-max) in author window | ✅ pass |
+| shape | 2A/2B half-max & %-mod plateau vs digitized | ✅ pass |
 
-### Figure 3 — Baseline shift across contrast  ❌ BROKEN — residual over-separation (VLM needs_review)
+### Figure 3 — Baseline shift across contrast  ✅ FAITHFUL (det all-pass · CRFs now full sigmoids)
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_3.jpg" width="300"></td><td><img src="article_aware/figures/figure_3/overlay_3C.png" width="150"><img src="article_aware/figures/figure_3/overlay_3F.png" width="150"></td><td><img src="figures_reproduced/figure_3.png" width="300"></td></tr>
 </table>
 
-Direction faithful: 3C attend-in-RF above contralateral with an interior %-mod bump and high-contrast
-convergence; 3F sustained separation, %-mod largest at low contrast. No hard deterministic fail — all
-fig-3 failing rows are **skipped soft shape checks** — but the CRFs read over-separated through the
-low/mid range vs the paper, so the figure is det-green-but-VLM-`needs_review`, not green. Empirical
-(B/E) and config (A/D) panels correctly "not reproduced".
+**Resolved this pass (same contrast-window CONTRACT_BUG).** Over the author Figure3C/3F.m window
+`[1e-5, 1]`: 3C attend-in-RF above contralateral with an interior %-mod bump and high-contrast
+convergence (the unmod=5 baseline lifts the foot to ~0.2, CODE-017); 3F sustained separation
+(attended ~0.74 above ignored ~0.61) with %-mod largest at low contrast declining to a ~20% plateau —
+the contrast-gain-weighted panel. The earlier "over-separated low/mid" read was the clipped window.
+All deterministic 3C/3F tests pass. Empirical (B/E) and config (A/D) panels correctly "not reproduced".
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 3C | ✅ faithful | ⚠️ over-separated low/mid; %-mod bump present |
-| panel 3F | ✅ faithful | ⚠️ separation larger than paper |
-| **figure** | ✅ **faithful** | ❌ **divergent** (VLM needs_review, soft shape) |
+| panel 3C | ✅ faithful | ✅ faithful — interior %-mod bump, converges at high contrast |
+| panel 3F | ✅ faithful | ✅ faithful — sustained separation, %-mod largest at low contrast |
+| **figure** | ✅ **faithful** | ✅ **faithful** (full sigmoids over the author window) |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 3C above/converge · 3F above/persist | ✅ pass |
 | hard | 3C / 3F high-contrast separation vs digitized | ✅ pass |
-| soft | 3C %-mod interior bump | ✅ pass |
-| soft | 3C / 3F shape vs digitized; 3F %-mod-low | ⚠️ soft (skipped/reported) |
+| shape | 3C %-mod interior bump · 3F abs-diff above %-mod peak | ✅ pass |
 
-### Figure 4 — Two-stimulus contrast-response modulation  ❌ BROKEN — 4E 390% overflow + 4C +101% (RED)
+### Figure 4 — Two-stimulus contrast-response modulation  ❌ 4E %-mod overflow (geometry, RED); 4C/window OK
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="article_aware/figures/figure_4/overlay_4C.png" width="150"><img src="article_aware/figures/figure_4/overlay_4E.png" width="150"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
 </table>
 
-4C **direction is now faithful** (facilitation / left-shift, after the spatial-attention remap that
-retired SQ-004) but its %-modulation pins near +101% vs the paper's ~36% and the CRFs do not converge
-at high contrast. 4E is the headline divergence: attend-preferred ~0.85 above attend-nonpreferred
-(crushed ~0.15), %-modulation overflowing the paper's 0–100 axis to **~390%** — a hard gate failure
-the pinned-axis test catches (the old auto-scaled view hid it). 4E is a **GENUINE_DIVERGENCE**: it
-survives even a unified suppression gain (stays ~360–390% at gain 40), emergent from γ=5 two-stimulus
-feature competition driving the nonpreferred response near zero.
+Both panels now render over the author Figure4C/4E.m window `[1e-4, 0.1]` (CODE-018/CODE-020). **4C is
+faithful** — the authors' four-stimulus suppression protocol (attending the null in the RF lowers the
+recorded preferred neuron; %-mod = 100·(unatt−att)/unatt, peaking ~38% at low contrast, matching the
+digitized ~36%; the published-panel sign discrepancy is dispositioned DR-4C-sign). **4E is the residual
+divergence:** attend-preferred scales up well above attend-nonpreferred, %-modulation overflowing the
+paper's 0–100 axis to **~386%** (the pinned-axis test catches it). This is a **two-stimulus GEOMETRY
+CODE_BUG**, NOT a genuine forward-model divergence (the earlier "GENUINE_DIVERGENCE" framing is retired):
+the protocol co-locates two stimuli at x=0, where Figure4E.m uses FOUR SEPARATED stimuli — the author
+geometry through the committed `simulate` yields ~50–54% (verified, test_audit Finding B), matching the
+digitized ~54%. It flips green by correcting the geometry, not by tuning. Left RED (separate finding).
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 4C | ✅ faithful | ❌ +101% mod / no convergence (direction faithful) |
-| panel 4E | ✅ faithful | ❌ %-mod ~390% off-axis |
-| **figure** | ✅ **faithful** | ❌ **divergent** (VLM fail) |
+| panel 4C | ✅ faithful | ✅ faithful — author suppression protocol, %-mod ~38% (window OK) |
+| panel 4E | ✅ faithful | ❌ %-mod ~386% off-axis (two-stimulus GEOMETRY CODE_BUG, not the window) |
+| **figure** | ✅ **faithful** | ❌ **divergent** (4E geometry; 4C + window faithful) |
 
 | Tier | Check | Result |
 |------|-------|--------|
-| qualitative | 4C facilitation direction · 4E attend-pref above nonpref | ✅ pass |
-| hard | 4C CRFs saturate / gap narrows at high contrast | ❌ **FAIL** — gap doesn't narrow |
-| hard | 4C %-mod peak matches digitized | ❌ **FAIL** — `64.8 < 12` false |
-| hard | 4C / 4E data within paper 0–100 axis | ❌ **FAIL** — right-axis overflow |
-| hard | 4E %-mod stays within paper axis | ❌ **FAIL** — `389.9 < 73.8` false |
-| soft | 4C / 4E shape & separation vs digitized | ⚠️ soft (skipped/reported) |
+| qualitative | 4C suppression direction · 4E attend-pref above nonpref | ✅ pass |
+| window | 4C / 4E sweep + xlim = author cRange [1e-4, 0.1] | ✅ pass |
+| hard | 4E %-mod stays within paper 0–100 axis | ❌ **FAIL** — ~386% (co-located geometry) |
+| hard | 4E author-geometry %-mod ~54% | ❌ **FAIL** — needs four-separated-stimulus fix |
 
 ### Figure 5 — Spatial attention as multiplicative scaling  ❌ BROKEN — peak ratio 1.59× vs ~1.2 (RED)
 
@@ -274,54 +296,44 @@ sole deliverable (SQ-003, human-resolved); A/B "not reproduced".
 
 ## Potential sources of the issues
 
-Built from the findings' `source_hint`s. The eight flags collapse to **three mechanism root causes**
-plus two figure-specific issues.
+The forward model (model.py, Eqs. 5–6) is FAITHFUL operator-for-operator to the authors' MATLAB
+(`paper/code/attentionModel/attentionModel.m`). Every divergence is **protocol/figure-scope**, not a
+forward-model fault, and reduces to **two CODE/CONTRACT bugs** — one resolved this pass, one residual.
 
-1. **CONTRACT_BUG — under-normalizing 1D suppression, patched per-panel (the cross-figure root cause of
-   2A, 3C, 3F, 4C, 5C, 7C).** The 1D suppressive pool under-normalizes, so CRFs/tuning curves do not
-   saturate; the implementation compensates with **figure-fitted per-panel knobs**:
-   `figure_*.suppressive_drive_gain` = 2A 12 / 2B 6 / 3C 8 / 3F 12 / 4C 8 / 4E 8 (tuning panels 5C/6C/7C
-   apply *none*), and `suppressive_spatial_sigma_scale` 0.55 / 1.0 / 0.45 / 0.7, plus per-panel Fig-3
-   baselines (0.005). The paper has ONE model, ONE σ, NO per-figure suppression gain. Filed in the
-   contract (A-006/A-013) which forbids these knobs; `test_contract_suppression_consistency.py` encodes
-   it MUST-PASS and is **RED today (4 tests)** — Phase B has *not* implemented the fix
-   (`implementation/calibration.yaml` still carries every per-panel entry; `protocols.py` reads them).
-   The CRF panels read `i['suppressive_drive_gain']`; `run_figure_5C/6C/7C` pass none — that
-   inconsistency *is* the bug. Empirically, unifying the gain to 12 drops 5C's ratio 1.586→1.215 (the
-   paper value).
-   *Fix (A-006 binding spec):* compute S on the paper's 2D image plane (`s` integral-normalized over
-   `dx dy dθ`, single cited `suppressive_field_size=20`, `suppressive_tuning_width=180°`) and DELETE
-   every per-panel gain / sigma-scale / baseline; or, if a 1D stand-in is kept, promote ONE audited
-   `model.suppression_normalization` constant identical across all panels — and apply it to the tuning
-   protocols too. **Caveat (SQ-005):** Phase B falsified the 2D-plane geometry (it makes S *smaller*),
-   so the binding spec itself needs Phase-A disposition before a builder can act.
-   *Source:* `article_aware/spec/assumptions.yaml` A-006/A-013; `test_contract_suppression_consistency.py`;
-   `implementation/calibration.yaml figure_*.suppressive_drive_gain`; `implementation/src/rh_model/protocols.py`.
+1. **CONTRACT_BUG — clipped CRF contrast window (2A/2B/3C/3F/4E). RESOLVED THIS PASS.** The sweep, the
+   view xlim, and the digitized x_range pinned contrast to `[0.01, 1]` (2 decades) while the author
+   scripts use `Figure{2A,2B,3C,3F}.m cRange=[1e-5 1]` (5 decades) and `Figure{4C,4E}.m cRange=[1e-4 0.1]`
+   (CODE-020). The model half-saturates at c≈0.002–0.005, so the entire rising limb and the contrast-gain
+   left-shift lived BELOW 0.01 and were clipped off-window — the panels rendered as flat plateaus and the
+   half-max/left-shift tests pinned to the left edge (spurious). **Fix (no model change):** the per-panel
+   author `cRange` is now in the spec ledger (`figure_*.c_range_lo/hi`, CODE-020) and routed through
+   `protocols._contrast_sweep` + the view `PAPER_PANEL_LIMITS`; the 2A/2B/3C/3F/4C/4E panels were
+   re-digitized over the author window (a pure x-axis frame RELABEL — each traced point keeps its pixel
+   position; the overlay ink is unchanged). The earlier "per-panel suppression gain" and "2D-plane" framings
+   are RETIRED: the suppression mechanism is the single author-code space×feature pool (SQ-005, A-013) with
+   NO per-panel knob, and `test_contract_suppression_consistency.py` (green) guards that invariant.
+   *Source:* `article_aware/spec/code_refs.yaml` CODE-020; `article_aware/spec/calibration.yaml`
+   `figure_*.c_range_*`; `implementation/src/rh_model/protocols.py`; `article_aware/views.py`
+   `PAPER_PANEL_LIMITS`; `article_aware/figures/figure_{2,3,4}/panel_*_digitized.json`.
 
-2. **CODE_BUG — feature attention spatially confined away from the recorded neuron (6C, and 7C
-   attend-nonpref).** `run_figure_6C` built the attend-opposite condition as a spatial Gaussian at
-   x=−50 × a feature Gaussian; since `A = 1+(γ−1)·G_x·G_θ` and the recorded neuron is at x=0, `G_x≈0`
-   there, so `A≈1` regardless of θ — feature attention never reached the neuron and the curves overlapped
-   (ratio ~1.01, no sharpening). The paper's feature attention is spatially **global**. **Fixed this pass**
-   (HEAD c8ea505): the condition is feature-tuned in θ, flat/global in x, restoring peak elevation
-   1.01→1.31 and FWHM sharpening 133°→104°. The same spatial-confinement structure should be applied to
-   7C's attend-nonpref (SQ-006 — still needs a named ledger assumption; `pseudocode/figure_6_protocol.md`
-   still prescribes the confined build).
-   *Source:* `implementation/src/rh_model/protocols.py run_figure_6C/7C`; Fig-6 caption; `article_aware/figures/figure_6/panel_C.jpg`.
+2. **CODE_BUG — Fig-4E / Fig-7C two-stimulus geometry (co-located vs four separated). RESIDUAL.** 4E and
+   7C co-locate two stimuli at x=0; the author Figure4E.m / Figure7C.m use FOUR SEPARATED stimuli
+   (RF x=90/110, contralateral x=-90/-110). Co-location lets feature competition crush the nonpreferred
+   response, inflating 4E %-modulation to ~386% (past the paper's 0–100 axis) and the 7C variable/fixation
+   ratio to ~2.73 (digitized ~1.33). Verified (test_audit_2026_06_04 Findings B/D): the author
+   four-stimulus geometry through the *committed, unchanged* `simulate` lands 4E ~50–54% and 7C ~1.41 —
+   the FAITHFUL mechanism reaches the paper values once the geometry is corrected. This is the only
+   remaining red family; it is orthogonal to the contrast-window fix and left RED (out of this pass's scope).
+   *Source:* `paper/code/attentionModel/Figure4E.m`, `Figure7C.m`; `implementation/src/rh_model/protocols.py`
+   `run_figure_4E` / `run_figure_7C`; `test_audit_2026_06_04.py` Findings B/D.
 
-3. **GENUINE_DIVERGENCE — 4E % modulation overflow (~310–390%).** With γ=5 (Table-1, faithful) and
-   feature-tuned attention, attend-preferred vs attend-nonpreferred yields %-modulation far past the
-   paper's 0–100 axis. Ordering is faithful. **NOT** resolved by the suppression-gain fix (stays
-   ~360–390% even at gain 40) — emergent from γ=5 two-stimulus feature competition driving the
-   attend-nonpref response near zero. Either the paper's readout/normalization differs or the
-   two-stimulus feature mechanism is too strong here.
-   *Source:* Table 1 (4E: γ=5, tuning width 20°); Fig-4E caption (0–100 %-mod axis); lineage
-   Martinez-Trujillo & Treue 2002 / Treue & Martinez-Trujillo 1999; `run_figure_4E` (%-mod max = 390).
-
-4. **2A under-saturation** and **3C/3F shape** are downstream of root cause #1 (the 1D pool not growing
-   enough with contrast); they resolve when the single-suppression-normalization fix lands.
-   **6C/5C/7C magnitude overshoots** are #1 (gain inconsistency) plus, for 6C/7C, the residual feature
-   factorization of #2.
+3. **CODE_BUG — feature attention spatially confined away from the recorded neuron (6C). Fixed earlier.**
+   `run_figure_6C` is now feature-tuned in θ and flat/global in x (feature-based attention is spatially
+   global, C-023), restoring 6C peak elevation and FWHM sharpening. The same factorization is owed to 7C's
+   attend-nonpref (SQ-006 — needs a named ledger assumption). A residual ~1.17-vs-1.11 6C overshoot is a
+   soft RED TRIPWIRE (the author `Ashape='cross'` field is not implemented; the oval approximation mildly
+   overshoots — do NOT tune the oval).
+   *Source:* `implementation/src/rh_model/protocols.py run_figure_6C/7C`; Fig-6 caption.
 
 ---
 
@@ -331,4 +343,5 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-04 | **Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED** (Phase-A resolver, author-code rung 1): 2A/2B/3C/3F sweep+view+digitized x_range → author cRange [1e-5,1], 4E → [1e-4,0.1] (CODE-020 in spec ledger); panels re-digitized as a pure x-axis relabel. CRFs now full sigmoids (Fig 2/3 faithful). 2B/3F window-clipped test thresholds reconciled to the digitized reference. 18→5 deterministic reds (all the residual 4E/7C two-stimulus geometry CODE_BUG). Model unchanged. |
 | 2026-06-03 | Current-state rewrite: 8 magnitude flags traced to CONTRACT_BUG (per-panel suppression) + 6C CODE_BUG (fixed, sharpening restored) + 4E GENUINE_DIVERGENCE; fresh VLM at HEAD c8ea505 (Fig 1 pass, 2/4/5/6/7 fail, 3 needs_review); SQ-005 escalated. |

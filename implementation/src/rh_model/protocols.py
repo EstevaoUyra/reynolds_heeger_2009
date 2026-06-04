@@ -29,9 +29,11 @@ def _contrast_sweep(
 ):
     """Sweep contrast on a log scale, returning (contrasts, responses).
 
-    ``c_range`` is the (low, high) swept-contrast endpoints; defaults to the
-    paper's [0.01, 1.0]. Figure 4C overrides it to the authors' Figure4C.m
-    range [1e-4, 0.1] (CODE-018).
+    ``c_range`` is the (low, high) swept-contrast endpoints. Each CRF panel
+    passes its OWN author-script window (the Figure*.m ``cRange``, CODE-020),
+    resolved from the calibration ledger: 2A/2B/3C/3F use [1e-5, 1], 4C/4E use
+    [1e-4, 0.1]. The default [0.01, 1.0] is retained only as a backstop for
+    callers that do not pass a range; no figure protocol relies on it.
     """
     contrasts = np.logspace(np.log10(c_range[0]), np.log10(c_range[1]), n_contrasts)
     responses = np.zeros(n_contrasts)
@@ -120,21 +122,27 @@ def _run_figure_2_panel(protocol: str, n_contrasts: int = 8):
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
     )
+    # Contrast window from the author Figure2A.m/Figure2B.m cRange (CODE-020):
+    # [1e-5, 1], not the prior guessed [0.01, 1]. The model half-saturates at
+    # c≈0.002-0.005, so [0.01,1] clips the rising limb + contrast-gain left-shift.
+    c_range = (s["c_range_lo"], s["c_range_hi"])
     stim = lambda c: [{"x": 0.0, "theta": 0.0, "contrast": c}]
     attended = lambda c: {"spatial_center": 0.0, "feature_center": None}
     unattended = lambda c: {"spatial_center": None, "feature_center": None}
-    c, att = _contrast_sweep(stim, attended, overrides, n_contrasts)
-    _, unatt = _contrast_sweep(stim, unattended, overrides, n_contrasts)
+    c, att = _contrast_sweep(stim, attended, overrides, n_contrasts, c_range=c_range)
+    _, unatt = _contrast_sweep(stim, unattended, overrides, n_contrasts, c_range=c_range)
     return measurements.crf_pair_record(c, att, unatt, contrast_key="c")
 
 
 def run_figure_2A(n_contrasts: int = 8):
-    """Citation: C-013 / spec.simulation_protocols.figure_2A
+    """Citation: C-013, CODE-020 / spec.simulation_protocols.figure_2A
 
-    Assumption: A-006 / SQ-001 — the 1D discretized suppressive pooling is
-    too broad so the contrast-gain CRF will not bend over within [0.01, 1];
-    the per-protocol effective suppressive-width scale (0.55, implementation
-    ledger) pulls half-saturation below 1 without raising the SQ-001 gain.
+    Single suppression normalization (SQ-005, A-013): NO per-panel suppression
+    gain or width scale — the prior SQ-001/SQ-002 knobs are deleted. The CRF
+    bends over inside its window because the contrast sweep uses the author
+    Figure2A.m cRange [1e-5, 1] (CODE-020), resolved from the ledger; the model
+    half-saturates at c≈0.002-0.005, which the prior guessed [0.01,1] floor
+    clipped off (rendering a flat plateau and hiding the contrast-gain left-shift).
     """
     return _run_figure_2_panel("figure_2A", n_contrasts)
 
@@ -159,23 +167,27 @@ def _run_figure_3_panel(protocol: str, n_contrasts: int = 8):
         baseline_modulated_by_attention=s["baseline_modulated"],
         baseline_unmodulated=s["baseline_unmodulated"],
     )
+    # Contrast window from the author Figure3C.m/Figure3F.m cRange (CODE-020):
+    # [1e-5, 1], not the prior guessed [0.01, 1] (same clipped-window bug as Fig 2).
+    c_range = (s["c_range_lo"], s["c_range_hi"])
     stim = lambda c: [{"x": 0.0, "theta": 0.0, "contrast": c}]
     attended = lambda c: {"spatial_center": 0.0, "feature_center": None}
     unattended = lambda c: {"spatial_center": None, "feature_center": None}
-    c, att = _contrast_sweep(stim, attended, overrides, n_contrasts)
-    _, unatt = _contrast_sweep(stim, unattended, overrides, n_contrasts)
+    c, att = _contrast_sweep(stim, attended, overrides, n_contrasts, c_range=c_range)
+    _, unatt = _contrast_sweep(stim, unattended, overrides, n_contrasts, c_range=c_range)
     return measurements.crf_pair_record(
         c, att, unatt, contrast_key="c", with_absolute_difference=True
     )
 
 
 def run_figure_3C(n_contrasts: int = 8):
-    """Citation: C-014 / spec.simulation_protocols.figure_3C
+    """Citation: C-014, CODE-017, CODE-020 / spec.simulation_protocols.figure_3C
 
-    Assumption: A-006 / SQ-001 — same over-broad 1D suppressive pooling as
-    2A; the per-protocol effective suppressive-width scale (0.45,
-    implementation ledger) lets the CRFs converge at high contrast so the
-    absolute difference falls below 75% of its peak.
+    Single suppression normalization (SQ-005, A-013): NO per-panel suppression
+    gain or width scale (the SQ-001 knobs are deleted). Baselines are the author
+    Figure3C.m values (CODE-017: baselineMod=5e-7, baselineUnmod=5). The CRFs
+    converge at high contrast inside the author Figure3C.m cRange [1e-5, 1]
+    (CODE-020), resolved from the ledger — not the prior guessed [0.01, 1].
     """
     return _run_figure_3_panel("figure_3C", n_contrasts)
 
@@ -283,14 +295,19 @@ def run_figure_4E(n_contrasts: int = 8):
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
     )
+    # Contrast window from the author Figure4E.m cRange (CODE-020): [1e-4, 0.1],
+    # not the prior guessed [0.01, 1]. (The %-modulation MAGNITUDE divergence is a
+    # separate geometry finding — co-located vs four separated stimuli — not fixed
+    # here; this only corrects the contrast WINDOW.)
+    c_range = (s["c_range_lo"], s["c_range_hi"])
     stim = lambda c: [
         {"x": 0.0, "theta": 0.0, "contrast": c},
         {"x": 0.0, "theta": 180.0, "contrast": c},
     ]
     attend_pref = lambda c: {"spatial_center": 0.0, "feature_center": 0.0}
     attend_nonpref = lambda c: {"spatial_center": 0.0, "feature_center": 180.0}
-    c, att_pref = _contrast_sweep(stim, attend_pref, overrides, n_contrasts)
-    _, att_nonpref = _contrast_sweep(stim, attend_nonpref, overrides, n_contrasts)
+    c, att_pref = _contrast_sweep(stim, attend_pref, overrides, n_contrasts, c_range=c_range)
+    _, att_nonpref = _contrast_sweep(stim, attend_nonpref, overrides, n_contrasts, c_range=c_range)
     return measurements.crf_ratio_record(c, att_pref, att_nonpref)
 
 

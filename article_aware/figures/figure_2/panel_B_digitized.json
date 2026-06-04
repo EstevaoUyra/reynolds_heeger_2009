@@ -5,7 +5,7 @@
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
-    0.01,
+    1e-05,
     1.0
   ],
   "curves": {
@@ -17,47 +17,47 @@
       ],
       "points": [
         [
-          0.013,
+          1.927e-05,
           0.02
         ],
         [
-          0.02,
+          5.657e-05,
           0.04
         ],
         [
-          0.03,
+          0.0001559,
           0.1
         ],
         [
-          0.045,
+          0.0004296,
           0.22
         ],
         [
-          0.065,
+          0.001077,
           0.4
         ],
         [
-          0.09,
+          0.00243,
           0.58
         ],
         [
-          0.13,
+          0.006093,
           0.72
         ],
         [
-          0.18,
+          0.01375,
           0.8
         ],
         [
-          0.25,
+          0.03125,
           0.835
         ],
         [
-          0.4,
+          0.1012,
           0.852
         ],
         [
-          0.6,
+          0.2789,
           0.858
         ],
         [
@@ -74,47 +74,47 @@
       ],
       "points": [
         [
-          0.013,
+          1.927e-05,
           0.018
         ],
         [
-          0.02,
+          5.657e-05,
           0.03
         ],
         [
-          0.03,
+          0.0001559,
           0.065
         ],
         [
-          0.045,
+          0.0004296,
           0.12
         ],
         [
-          0.065,
+          0.001077,
           0.2
         ],
         [
-          0.09,
+          0.00243,
           0.3
         ],
         [
-          0.13,
+          0.006093,
           0.42
         ],
         [
-          0.18,
+          0.01375,
           0.5
         ],
         [
-          0.25,
+          0.03125,
           0.55
         ],
         [
-          0.4,
+          0.1012,
           0.585
         ],
         [
-          0.6,
+          0.2789,
           0.6
         ],
         [
@@ -131,59 +131,59 @@
       ],
       "points": [
         [
-          0.011,
+          1.269e-05,
           99.0
         ],
         [
-          0.017,
+          3.768e-05,
           95.0
         ],
         [
-          0.028,
+          0.0001312,
           92.0
         ],
         [
-          0.04,
+          0.00032,
           86.5
         ],
         [
-          0.055,
+          0.0007094,
           76.5
         ],
         [
-          0.066,
+          0.001119,
           71.0
         ],
         [
-          0.078,
+          0.001699,
           63.5
         ],
         [
-          0.092,
+          0.002567,
           59.8
         ],
         [
-          0.109,
+          0.003923,
           57.0
         ],
         [
-          0.129,
+          0.005977,
           49.5
         ],
         [
-          0.18,
+          0.01375,
           46.0
         ],
         [
-          0.25,
+          0.03125,
           44.0
         ],
         [
-          0.4,
+          0.1012,
           42.5
         ],
         [
-          0.6,
+          0.2789,
           42.0
         ],
         [
@@ -203,9 +203,36 @@
     ],
     "tool_rationale": "ONE targeted re-trace of the dashed percent_modulation curve only. The dashed is style/region-separable from the two solid CRFs and is the lowest dark line at high contrast, so trace_darkest_in_band in a moving band that follows the dashed isolates it cleanly. Right-axis calibration shares the same pixel rows as the left axis (frame 0 at row 332, 100/1.0 at row 41).",
     "calibration": {
-      "x": [[39, 0.01], [257, 1.0]],
-      "y_left": [[332, 0.0], [41, 1.0]],
-      "y_right": [[332, 0.0], [41, 100.0]],
+      "x": [
+        [
+          39,
+          1e-05
+        ],
+        [
+          257,
+          1.0
+        ]
+      ],
+      "y_left": [
+        [
+          332,
+          0.0
+        ],
+        [
+          41,
+          1.0
+        ]
+      ],
+      "y_right": [
+        [
+          332,
+          0.0
+        ],
+        [
+          41,
+          100.0
+        ]
+      ],
       "x_scale": "log",
       "frame_source": "panel 306x371 px; left axis col~39, right axis col~257, bottom frame row 332 = 0/0.0, top frame row 41 = 1.0/100 (matches independent audit calibration)"
     },
@@ -220,6 +247,7 @@
       "Dashed low-contrast head (x<0.02) is partly hidden against the top frame / 100 line; the x=0.011 -> 99% anchor is read from faint top-left pixels (rows 42-44) and is the least pixel-anchored point. The monotone-descending body (x>=0.04) and the ~42% high-contrast plateau are well pixel-supported.",
       "x has no numeric ticks; x_range [0.01, 1.0] inherited from the frame (not independently checkable), consistent with the prior digitization and the audit.",
       "Dashed has gaps (it is a dashed line); some columns dropped as expected. Centroid reads taken at columns where a dashed segment is present."
-    ]
+    ],
+    "re_digitization_2026_06_04": "X-AXIS RE-LABELED to the AUTHOR contrast window [1e-5, 1] (paper/code/attentionModel/Figure2B.m cRange=[1e-5 1]; CODE-013/014/015/018). The paper panel has NO numeric x ticks, so the prior pass guessed the left frame edge at 0.01 (2 decades); the authors' script axis floor is 1e-5. The CURVE INK on the paper is unchanged - this is a pure x-axis frame RELABEL: each traced point keeps its exact pixel position, its contrast value is recomputed from the SAME log-fractional position across the frame under the author window (c_new = lo*(hi/lo)^f, f = the point's fractional log-x position in the old frame). The calibration.x pixel-col anchors were relabeled likewise. The overlay_*.png (ink-on-paper) is therefore still pixel-faithful; only the x-axis tick labels move. Resolution authority: author code (Phase-A resolver ladder rung 1). This closes the PAPER_ISSUE digitized-window tripwire (test_audit_2026_06_04_supplement.py) and makes the half-max / left-shift claims testable in-window."
   }
 }

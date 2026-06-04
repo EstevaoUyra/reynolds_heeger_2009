@@ -63,18 +63,22 @@ COLORS = {
 # ---------------------------------------------------------------------------
 PAPER_PANEL_LIMITS: dict[str, dict] = {
     # Figure 2 — model CRF panels (Normalized Model Response / Attentional Mod %).
-    "2A": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
-    "2B": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
-    # Figure 3 — model CRF panels.
-    "3C": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
-    "3F": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
-    # Figure 4 — model CRF panels. 4E's right axis is the paper's (0, 100); the
-    # model's modulation curve overflows it (intended failure).
-    # 4C x-range is the authors' Figure4C.m cRange [1e-4, 0.1] (CODE-018, A-012),
-    # the contrast actually swept (the published panel has no numeric x ticks);
-    # the suppression %-modulation peaks ~38% and stays within (0, 100).
+    # x-range = the authors' Figure2A.m/Figure2B.m cRange [1e-5, 1] (CODE-020), the
+    # contrast actually swept; the published panels carry no numeric x ticks. The
+    # prior guessed [0.01, 1] clipped the rising limb + contrast-gain left-shift.
+    "2A": {"xlim": (1.0e-5, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "2B": {"xlim": (1.0e-5, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # Figure 3 — model CRF panels. x-range = Figure3C.m/Figure3F.m cRange [1e-5, 1]
+    # (CODE-020), same clipped-window correction as Fig 2.
+    "3C": {"xlim": (1.0e-5, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "3F": {"xlim": (1.0e-5, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    # Figure 4 — model CRF panels. 4C/4E x-range = the authors' Figure4C.m/Figure4E.m
+    # cRange [1e-4, 0.1] (CODE-018/CODE-020), the contrast actually swept (no numeric
+    # x ticks on the published panels). 4E's right axis is the paper's (0, 100); the
+    # model's modulation curve overflows it (a SEPARATE geometry divergence —
+    # co-located vs four-separated stimuli — not the contrast-window fix).
     "4C": {"xlim": (1.0e-4, 0.1), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
-    "4E": {"xlim": (0.01, 1.0), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
+    "4E": {"xlim": (1.0e-4, 0.1), "xscale": "log", "ylim": (0.0, 1.0), "right": (0.0, 100.0)},
     # Figure 5/6/7 — model tuning panels (Normalized Response, no twin axis).
     "5C": {"xlim": (-90.0, 90.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},
     "6C": {"xlim": (-180.0, 175.0), "xscale": "linear", "ylim": (0.0, 1.0), "right": None},

@@ -5,7 +5,7 @@
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
-    0.01,
+    1e-05,
     1.0
   ],
   "curves": {
@@ -16,26 +16,86 @@
         1.0
       ],
       "points": [
-        [0.01, 0.034],
-        [0.0144, 0.045],
-        [0.0177, 0.067],
-        [0.0226, 0.088],
-        [0.0288, 0.13],
-        [0.0354, 0.183],
-        [0.0451, 0.266],
-        [0.0575, 0.36],
-        [0.0707, 0.465],
-        [0.0871, 0.541],
-        [0.1109, 0.605],
-        [0.1464, 0.671],
-        [0.1802, 0.697],
-        [0.2296, 0.716],
-        [0.2925, 0.728],
-        [0.3728, 0.733],
-        [0.475, 0.739],
-        [0.6053, 0.742],
-        [0.745, 0.744],
-        [1.0, 0.742]
+        [
+          1e-05,
+          0.034
+        ],
+        [
+          2.488e-05,
+          0.045
+        ],
+        [
+          4.168e-05,
+          0.067
+        ],
+        [
+          7.678e-05,
+          0.088
+        ],
+        [
+          0.0001408,
+          0.13
+        ],
+        [
+          0.0002358,
+          0.183
+        ],
+        [
+          0.000432,
+          0.266
+        ],
+        [
+          0.0007928,
+          0.36
+        ],
+        [
+          0.001329,
+          0.465
+        ],
+        [
+          0.002239,
+          0.541
+        ],
+        [
+          0.004096,
+          0.605
+        ],
+        [
+          0.008201,
+          0.671
+        ],
+        [
+          0.01378,
+          0.697
+        ],
+        [
+          0.02526,
+          0.716
+        ],
+        [
+          0.04627,
+          0.728
+        ],
+        [
+          0.08486,
+          0.733
+        ],
+        [
+          0.1555,
+          0.739
+        ],
+        [
+          0.2851,
+          0.742
+        ],
+        [
+          0.4791,
+          0.744
+        ],
+        [
+          1.0,
+          0.742
+        ]
       ]
     },
     "unattended": {
@@ -45,26 +105,86 @@
         1.0
       ],
       "points": [
-        [0.01, 0.03],
-        [0.0144, 0.04],
-        [0.0177, 0.046],
-        [0.0226, 0.052],
-        [0.0288, 0.078],
-        [0.0354, 0.107],
-        [0.0451, 0.16],
-        [0.0575, 0.233],
-        [0.0707, 0.312],
-        [0.0871, 0.39],
-        [0.1109, 0.469],
-        [0.1414, 0.525],
-        [0.1802, 0.565],
-        [0.2218, 0.587],
-        [0.2826, 0.598],
-        [0.3478, 0.607],
-        [0.4588, 0.612],
-        [0.5847, 0.615],
-        [0.7197, 0.615],
-        [1.0, 0.612]
+        [
+          1e-05,
+          0.03
+        ],
+        [
+          2.488e-05,
+          0.04
+        ],
+        [
+          4.168e-05,
+          0.046
+        ],
+        [
+          7.678e-05,
+          0.052
+        ],
+        [
+          0.0001408,
+          0.078
+        ],
+        [
+          0.0002358,
+          0.107
+        ],
+        [
+          0.000432,
+          0.16
+        ],
+        [
+          0.0007928,
+          0.233
+        ],
+        [
+          0.001329,
+          0.312
+        ],
+        [
+          0.002239,
+          0.39
+        ],
+        [
+          0.004096,
+          0.469
+        ],
+        [
+          0.007518,
+          0.525
+        ],
+        [
+          0.01378,
+          0.565
+        ],
+        [
+          0.02317,
+          0.587
+        ],
+        [
+          0.04246,
+          0.598
+        ],
+        [
+          0.07134,
+          0.607
+        ],
+        [
+          0.1426,
+          0.612
+        ],
+        [
+          0.2614,
+          0.615
+        ],
+        [
+          0.4394,
+          0.615
+        ],
+        [
+          1.0,
+          0.612
+        ]
       ]
     },
     "percent_modulation": {
@@ -74,31 +194,106 @@
         100.0
       ],
       "points": [
-        [0.01, 90.0],
-        [0.0125, 93.5],
-        [0.0144, 93.0],
-        [0.0177, 92.0],
-        [0.0226, 86.0],
-        [0.0288, 81.0],
-        [0.033, 77.0],
-        [0.0379, 72.0],
-        [0.044, 69.0],
-        [0.0489, 64.0],
-        [0.0543, 60.0],
-        [0.0603, 55.0],
-        [0.067, 50.0],
-        [0.0743, 47.0],
-        [0.087, 41.0],
-        [0.1, 36.0],
-        [0.1149, 32.0],
-        [0.1515, 27.2],
-        [0.1865, 24.4],
-        [0.2377, 22.8],
-        [0.3028, 21.9],
-        [0.3601, 21.3],
-        [0.4917, 21.1],
-        [0.745, 20.6],
-        [1.0, 20.5]
+        [
+          1e-05,
+          90.0
+        ],
+        [
+          1.747e-05,
+          93.5
+        ],
+        [
+          2.488e-05,
+          93.0
+        ],
+        [
+          4.168e-05,
+          92.0
+        ],
+        [
+          7.678e-05,
+          86.0
+        ],
+        [
+          0.0001408,
+          81.0
+        ],
+        [
+          0.0001978,
+          77.0
+        ],
+        [
+          0.0002796,
+          72.0
+        ],
+        [
+          0.0004061,
+          69.0
+        ],
+        [
+          0.0005288,
+          64.0
+        ],
+        [
+          0.0006871,
+          60.0
+        ],
+        [
+          0.0008929,
+          55.0
+        ],
+        [
+          0.001162,
+          50.0
+        ],
+        [
+          0.001505,
+          47.0
+        ],
+        [
+          0.002233,
+          41.0
+        ],
+        [
+          0.003162,
+          36.0
+        ],
+        [
+          0.004475,
+          32.0
+        ],
+        [
+          0.008934,
+          27.2
+        ],
+        [
+          0.01502,
+          24.4
+        ],
+        [
+          0.02755,
+          22.8
+        ],
+        [
+          0.05045,
+          21.9
+        ],
+        [
+          0.07781,
+          21.3
+        ],
+        [
+          0.1695,
+          21.1
+        ],
+        [
+          0.4791,
+          20.6
+        ],
+        [
+          1.0,
+          20.5
+        ]
       ]
     }
   },
@@ -113,11 +308,38 @@
     ],
     "tool_rationale": "Mode-1 quantitative plot. detect_plot_box for the axis-rectangle hint; verified by longest-dark-run profile. trace_darkest_in_band, one band per solid by row; the dashed isolated as the topmost cluster at low contrast (it starts highest, ~93%, and descends). resample_pchip for the flat plateaus; overlay for the single validation pass.",
     "calibration": {
-      "x": [[57.5, 0.01], [189.5, 1.0]],
-      "y_left": [[202.0, 0.0], [23.5, 1.0]],
-      "y_right": [[202.0, 0.0], [23.5, 100.0]],
+      "x": [
+        [
+          57.5,
+          1e-05
+        ],
+        [
+          189.5,
+          1.0
+        ]
+      ],
+      "y_left": [
+        [
+          202.0,
+          0.0
+        ],
+        [
+          23.5,
+          1.0
+        ]
+      ],
+      "y_right": [
+        [
+          202.0,
+          0.0
+        ],
+        [
+          23.5,
+          100.0
+        ]
+      ],
       "x_scale": "log",
-      "axis_lines_measured": "left axis col 57.5 (NOT the label-text edge ~col 41), right axis col 189.5, plot top row 23.5, bottom row 202 — read off the longest-consecutive-dark-run profile."
+      "axis_lines_measured": "left axis col 57.5 (NOT the label-text edge ~col 41), right axis col 189.5, plot top row 23.5, bottom row 202 \u2014 read off the longest-consecutive-dark-run profile."
     },
     "per_curve": {
       "attended": "upper-right solid cluster centroid per column; rises later/steeper, plateaus ~0.74. Clearly separable from unattended through the rise and at the plateau (the panel's whole claim).",
@@ -130,6 +352,7 @@
       "No numeric x ticks (only Log Contrast tick marks); x_range [0.01,1.0], 2 log decades, from the frame, consistent across 3A-3F.",
       "Dashed crossover (x~0.05-0.10): where the descending dashed crosses the two rising solids the three same-colour lines bundle; the dashed there is PCHIP-interpolated through the bundle rather than column-traced (minor, ~+/-2%).",
       "Right-axis % modulation calibration assumes the right tick frame shares the plot top/bottom rows (no legible intermediate numeric ticks)."
-    ]
+    ],
+    "re_digitization_2026_06_04": "X-AXIS RE-LABELED to the AUTHOR contrast window [1e-5, 1] (paper/code/attentionModel/Figure3F.m cRange=[1e-5 1]; CODE-013/014/015/018). The paper panel has NO numeric x ticks, so the prior pass guessed the left frame edge at 0.01 (2 decades); the authors' script axis floor is 1e-5. The CURVE INK on the paper is unchanged - this is a pure x-axis frame RELABEL: each traced point keeps its exact pixel position, its contrast value is recomputed from the SAME log-fractional position across the frame under the author window (c_new = lo*(hi/lo)^f, f = the point's fractional log-x position in the old frame). The calibration.x pixel-col anchors were relabeled likewise. The overlay_*.png (ink-on-paper) is therefore still pixel-faithful; only the x-axis tick labels move. Resolution authority: author code (Phase-A resolver ladder rung 1). This closes the PAPER_ISSUE digitized-window tripwire (test_audit_2026_06_04_supplement.py) and makes the half-max / left-shift claims testable in-window."
   }
 }

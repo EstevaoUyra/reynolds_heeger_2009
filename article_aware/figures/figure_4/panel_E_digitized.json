@@ -5,8 +5,8 @@
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
-    0.01,
-    1.0
+    0.0001,
+    0.1
   ],
   "curves": {
     "attend_pref": {
@@ -16,24 +16,78 @@
         1.0
       ],
       "points": [
-        [0.01, 0.117],
-        [0.0131, 0.126],
-        [0.0172, 0.17],
-        [0.0225, 0.223],
-        [0.0296, 0.286],
-        [0.0387, 0.35],
-        [0.0508, 0.417],
-        [0.0666, 0.48],
-        [0.0873, 0.539],
-        [0.1145, 0.578],
-        [0.1501, 0.612],
-        [0.1968, 0.634],
-        [0.2581, 0.652],
-        [0.3384, 0.666],
-        [0.4437, 0.673],
-        [0.5817, 0.682],
-        [0.7627, 0.682],
-        [1.0, 0.682]
+        [
+          0.0001,
+          0.117
+        ],
+        [
+          0.0001499,
+          0.126
+        ],
+        [
+          0.0002256,
+          0.17
+        ],
+        [
+          0.0003375,
+          0.223
+        ],
+        [
+          0.0005093,
+          0.286
+        ],
+        [
+          0.0007613,
+          0.35
+        ],
+        [
+          0.001145,
+          0.417
+        ],
+        [
+          0.001719,
+          0.48
+        ],
+        [
+          0.002579,
+          0.539
+        ],
+        [
+          0.003874,
+          0.578
+        ],
+        [
+          0.005815,
+          0.612
+        ],
+        [
+          0.00873,
+          0.634
+        ],
+        [
+          0.01311,
+          0.652
+        ],
+        [
+          0.01969,
+          0.666
+        ],
+        [
+          0.02956,
+          0.673
+        ],
+        [
+          0.04437,
+          0.682
+        ],
+        [
+          0.06661,
+          0.682
+        ],
+        [
+          0.1,
+          0.682
+        ]
       ]
     },
     "attend_nonpref": {
@@ -43,24 +97,78 @@
         1.0
       ],
       "points": [
-        [0.01, 0.061],
-        [0.0131, 0.087],
-        [0.0172, 0.114],
-        [0.0225, 0.153],
-        [0.0296, 0.194],
-        [0.0387, 0.244],
-        [0.0508, 0.293],
-        [0.0666, 0.341],
-        [0.0873, 0.382],
-        [0.1145, 0.418],
-        [0.1501, 0.442],
-        [0.1968, 0.461],
-        [0.2581, 0.477],
-        [0.3384, 0.484],
-        [0.4437, 0.49],
-        [0.5817, 0.497],
-        [0.7627, 0.5],
-        [1.0, 0.503]
+        [
+          0.0001,
+          0.061
+        ],
+        [
+          0.0001499,
+          0.087
+        ],
+        [
+          0.0002256,
+          0.114
+        ],
+        [
+          0.0003375,
+          0.153
+        ],
+        [
+          0.0005093,
+          0.194
+        ],
+        [
+          0.0007613,
+          0.244
+        ],
+        [
+          0.001145,
+          0.293
+        ],
+        [
+          0.001719,
+          0.341
+        ],
+        [
+          0.002579,
+          0.382
+        ],
+        [
+          0.003874,
+          0.418
+        ],
+        [
+          0.005815,
+          0.442
+        ],
+        [
+          0.00873,
+          0.461
+        ],
+        [
+          0.01311,
+          0.477
+        ],
+        [
+          0.01969,
+          0.484
+        ],
+        [
+          0.02956,
+          0.49
+        ],
+        [
+          0.04437,
+          0.497
+        ],
+        [
+          0.06661,
+          0.5
+        ],
+        [
+          0.1,
+          0.503
+        ]
       ]
     },
     "percent_modulation": {
@@ -70,35 +178,123 @@
         100.0
       ],
       "points": [
-        [0.01, 53.5],
-        [0.0131, 53.8],
-        [0.0172, 53.7],
-        [0.0225, 53.0],
-        [0.0296, 52.2],
-        [0.0387, 51.2],
-        [0.0508, 49.4],
-        [0.0666, 47.1],
-        [0.0873, 44.9],
-        [0.1145, 42.4],
-        [0.1501, 40.5],
-        [0.1968, 38.8],
-        [0.2581, 37.6],
-        [0.3384, 36.7],
-        [0.4437, 36.2],
-        [0.5817, 35.8],
-        [0.7627, 35.9],
-        [1.0, 36.0]
+        [
+          0.0001,
+          53.5
+        ],
+        [
+          0.0001499,
+          53.8
+        ],
+        [
+          0.0002256,
+          53.7
+        ],
+        [
+          0.0003375,
+          53.0
+        ],
+        [
+          0.0005093,
+          52.2
+        ],
+        [
+          0.0007613,
+          51.2
+        ],
+        [
+          0.001145,
+          49.4
+        ],
+        [
+          0.001719,
+          47.1
+        ],
+        [
+          0.002579,
+          44.9
+        ],
+        [
+          0.003874,
+          42.4
+        ],
+        [
+          0.005815,
+          40.5
+        ],
+        [
+          0.00873,
+          38.8
+        ],
+        [
+          0.01311,
+          37.6
+        ],
+        [
+          0.01969,
+          36.7
+        ],
+        [
+          0.02956,
+          36.2
+        ],
+        [
+          0.04437,
+          35.8
+        ],
+        [
+          0.06661,
+          35.9
+        ],
+        [
+          0.1,
+          36.0
+        ]
       ]
     }
   },
   "provenance": {
     "figure_type": "line/curve CRF pair + dashed %-modulation, log-x, twin right axis",
-    "tools": ["detect_plot_box", "build_calibration", "trace_darkest_in_band", "crop_region", "resample_pchip", "overlay"],
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band",
+      "crop_region",
+      "resample_pchip",
+      "overlay"
+    ],
     "tool_rationale": "Mode-1 plot: two same-colour solid CRFs that converge at low contrast and a dashed %-mod that crosses both. detect_plot_box gave a hint; the bottom frame had to be re-anchored by hand (see caveats). Per-column dark-cluster scan + right-to-left nearest-neighbour continuity tracking separated the three curves; crop_region zooms verified the crossing; PCHIP renders the overlay.",
     "calibration": {
-      "x": [[50, 0.01], [178, 1.0]],
-      "y_left": [[165, 0.0], [11, 1.0]],
-      "y_right": [[165, 0.0], [11, 100.0]],
+      "x": [
+        [
+          50,
+          0.0001
+        ],
+        [
+          178,
+          0.1
+        ]
+      ],
+      "y_left": [
+        [
+          165,
+          0.0
+        ],
+        [
+          11,
+          1.0
+        ]
+      ],
+      "y_right": [
+        [
+          165,
+          0.0
+        ],
+        [
+          11,
+          100.0
+        ]
+      ],
       "x_scale": "log",
       "y_scale": "linear"
     },
@@ -115,12 +311,99 @@
     ],
     "corrections_this_pass": {
       "reason": "Reviewer flagged weird movements near the curve intersection in overlay_4E.png.",
-      "attend_nonpref_before_near_crossing": [[0.0666, 0.479], [0.0873, 0.448], [0.1145, 0.423], [0.1501, 0.44]],
-      "attend_nonpref_after_near_crossing": [[0.0666, 0.341], [0.0873, 0.382], [0.1145, 0.418], [0.1501, 0.442]],
-      "attend_pref_before_near_crossing": [[0.0508, 0.293], [0.0666, 0.395], [0.0873, 0.545]],
-      "attend_pref_after_near_crossing": [[0.0508, 0.417], [0.0666, 0.48], [0.0873, 0.539]],
-      "percent_modulation_before_dip": [[0.0666, 47.9], [0.0873, 38.3], [0.1145, 41.7]],
-      "percent_modulation_after": [[0.0666, 47.1], [0.0873, 44.9], [0.1145, 42.4]]
-    }
+      "attend_nonpref_before_near_crossing": [
+        [
+          0.0666,
+          0.479
+        ],
+        [
+          0.0873,
+          0.448
+        ],
+        [
+          0.1145,
+          0.423
+        ],
+        [
+          0.1501,
+          0.44
+        ]
+      ],
+      "attend_nonpref_after_near_crossing": [
+        [
+          0.0666,
+          0.341
+        ],
+        [
+          0.0873,
+          0.382
+        ],
+        [
+          0.1145,
+          0.418
+        ],
+        [
+          0.1501,
+          0.442
+        ]
+      ],
+      "attend_pref_before_near_crossing": [
+        [
+          0.0508,
+          0.293
+        ],
+        [
+          0.0666,
+          0.395
+        ],
+        [
+          0.0873,
+          0.545
+        ]
+      ],
+      "attend_pref_after_near_crossing": [
+        [
+          0.0508,
+          0.417
+        ],
+        [
+          0.0666,
+          0.48
+        ],
+        [
+          0.0873,
+          0.539
+        ]
+      ],
+      "percent_modulation_before_dip": [
+        [
+          0.0666,
+          47.9
+        ],
+        [
+          0.0873,
+          38.3
+        ],
+        [
+          0.1145,
+          41.7
+        ]
+      ],
+      "percent_modulation_after": [
+        [
+          0.0666,
+          47.1
+        ],
+        [
+          0.0873,
+          44.9
+        ],
+        [
+          0.1145,
+          42.4
+        ]
+      ]
+    },
+    "re_digitization_2026_06_04": "X-AXIS RE-LABELED to the AUTHOR contrast window [1e-4, 0.1] (paper/code/attentionModel/Figure4E.m cRange=[1e-4 0.1]; CODE-013/014/015/018). The paper panel has NO numeric x ticks, so the prior pass guessed the left frame edge at 0.01 (2 decades); the authors' script axis floor is 1e-4. The CURVE INK on the paper is unchanged - this is a pure x-axis frame RELABEL: each traced point keeps its exact pixel position, its contrast value is recomputed from the SAME log-fractional position across the frame under the author window (c_new = lo*(hi/lo)^f, f = the point's fractional log-x position in the old frame). The calibration.x pixel-col anchors were relabeled likewise. The overlay_*.png (ink-on-paper) is therefore still pixel-faithful; only the x-axis tick labels move. Resolution authority: author code (Phase-A resolver ladder rung 1). This closes the PAPER_ISSUE digitized-window tripwire (test_audit_2026_06_04_supplement.py) and makes the half-max / left-shift claims testable in-window."
   }
 }

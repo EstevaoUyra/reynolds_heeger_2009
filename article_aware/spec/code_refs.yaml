@@ -253,3 +253,31 @@
     The caption says "attention directed to the right" — consistent with Ax=+100 here. This is
     the paper-grounded check on the suppression fix: the rendered S and R fields exercise the
     CODE-011 (IthetaWidth=360) and CODE-014 (sigma=1e-6) values against the authors' own figure.
+
+# ===========================================================================
+# Per-figure CRF contrast sweep windows (the Figure*.m `cRange`)
+# ===========================================================================
+
+- id: CODE-020
+  param: per-figure CRF contrast sweep window (cRange)
+  source: "paper/code/Figure2A.m:4; Figure2B.m:4; Figure3C.m:7; Figure3F.m:7; Figure4C.m:7; Figure4E.m:7"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Figure2A.m / Figure2B.m: cRange = [1e-5 1];
+    % Figure3C.m / Figure3F.m: cRange = [1e-5 1];
+    % Figure4C.m / Figure4E.m: cRange = [1e-4 0.1];
+    % every script then: logContrasts = linspace(log10(cRange(1)),log10(cRange(2)),numContrasts);
+  code_alone: true   # the paper panels carry NO numeric x ticks (stimulus glyphs only)
+  notes: |
+    THE CRF CONTRAST WINDOW, CODE-ALONE. The published Fig-2/3/4 panels show no numeric
+    x-axis ticks (only "Log Contrast" and stimulus glyphs), so the swept contrast range is
+    NOT recoverable from the paper image — it is set ONLY by each Figure*.m `cRange`. The
+    single-grating panels (2A/2B/3C/3F) sweep [1e-5, 1] (FIVE log decades); the
+    Martinez-Trujillo & Treue four-stimulus panels (4C/4E) sweep [1e-4, 0.1] (three decades,
+    a lower-contrast window). The model half-saturates at c ≈ 0.002-0.005, so the entire
+    rising limb and the contrast-gain left-shift of 2A/2B/3C/3F live BELOW 0.01 — clipping
+    the sweep at the prior-assumed 0.01 floor renders those panels as flat plateaus and hides
+    the diagnostic shift. This value RESOLVES the 2A/2B/3C/3F/4E "under-saturation / no
+    left-shift" figure-scope CONTRACT_BUG (audit 2026-06-04): the forward model is unchanged;
+    only the per-panel sweep window (protocols.py) and the matching view xlim + digitized
+    x_range were wrong (guessed [0.01,1] / [0.01,1]). 4C already swept [1e-4,0.1] (CODE-018).

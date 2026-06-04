@@ -290,6 +290,74 @@ figure_3F.tuning_width:
   quote: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°."
   note: "Figure 3F feature tuning width."
 
+# ---------------------------------------------------------------------------
+# Per-figure CRF contrast sweep WINDOW (the Figure*.m `cRange`). CODE-ALONE
+# (CODE-020): the published panels carry no numeric x ticks, so the swept
+# contrast range is set ONLY by the author script. Single-grating panels
+# (2A/2B/3C/3F) sweep [1e-5, 1]; the 4C/4E four-stimulus panels sweep
+# [1e-4, 0.1] (4C already carried its range in run_figure_4C from CODE-018).
+# The model half-saturates at c≈0.002-0.005, so the [0.01,1] guess clipped the
+# entire rising limb + contrast-gain left-shift off-window (the 2A/2B/3C/3F/4E
+# figure-scope CONTRACT_BUG, audit 2026-06-04). No model change — only the
+# sweep window, the view xlim, and the digitized x_range were wrong.
+# ---------------------------------------------------------------------------
+figure_2A.c_range_lo:
+  value: 1.0e-5
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure2A.m:4  cRange = [1e-5 1];"
+  note: "Figure 2A contrast-sweep floor (author Figure2A.m cRange)."
+figure_2A.c_range_hi:
+  value: 1.0
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure2A.m:4  cRange = [1e-5 1];"
+  note: "Figure 2A contrast-sweep ceiling (author Figure2A.m cRange)."
+figure_2B.c_range_lo:
+  value: 1.0e-5
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure2B.m:4  cRange = [1e-5 1];"
+  note: "Figure 2B contrast-sweep floor (author Figure2B.m cRange)."
+figure_2B.c_range_hi:
+  value: 1.0
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure2B.m:4  cRange = [1e-5 1];"
+  note: "Figure 2B contrast-sweep ceiling (author Figure2B.m cRange)."
+figure_3C.c_range_lo:
+  value: 1.0e-5
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure3C.m:7  cRange = [1e-5 1];"
+  note: "Figure 3C contrast-sweep floor (author Figure3C.m cRange)."
+figure_3C.c_range_hi:
+  value: 1.0
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure3C.m:7  cRange = [1e-5 1];"
+  note: "Figure 3C contrast-sweep ceiling (author Figure3C.m cRange)."
+figure_3F.c_range_lo:
+  value: 1.0e-5
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure3F.m:7  cRange = [1e-5 1];"
+  note: "Figure 3F contrast-sweep floor (author Figure3F.m cRange)."
+figure_3F.c_range_hi:
+  value: 1.0
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure3F.m:7  cRange = [1e-5 1];"
+  note: "Figure 3F contrast-sweep ceiling (author Figure3F.m cRange)."
+
 # Figure-3 baselines — RESOLVED FROM CODE (SQ-005). Table 1 marks only 'X'; the
 # authors' Figure3C.m / Figure3F.m give the numbers. These OVERTURN the spec's
 # A-007 single-shared 0.05·α assumption: the code uses a tiny modulated baseline
@@ -440,6 +508,25 @@ figure_4E.tuning_width:
   audited: true
   quote: "Table 1 (Per-Figure Parameters), row | 4E | 5 | 5 | 20 | 5 | – |; constants line: ... [code: Figure4E.m:5 AthetaWidth = 20]"
   note: "Figure 4E ATTENTION-field feature tuning width (model_spec figure_4E; confirmed Figure4E.m AthetaWidth=20, CODE-018)."
+figure_4E.c_range_lo:
+  value: 1.0e-4
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure4E.m:7  cRange = [1e-4 0.1];"
+  note: >-
+    Figure 4E contrast-sweep floor (author Figure4E.m cRange). The four-stimulus
+    Martinez-Trujillo & Treue panels (4C/4E) sweep a LOWER-contrast window than the
+    single-grating panels. NOTE: 4E's %-modulation MAGNITUDE divergence (the co-located
+    vs four-separated-stimulus geometry) is a SEPARATE finding (test_audit Finding B); this
+    entry only fixes the contrast WINDOW so the window/axis tests are testable in-window.
+figure_4E.c_range_hi:
+  value: 0.1
+  units: "contrast (c in [0,1])"
+  source: CODE-020
+  audited: true
+  quote: "Figure4E.m:7  cRange = [1e-4 0.1];"
+  note: "Figure 4E contrast-sweep ceiling (author Figure4E.m cRange)."
 
 figure_5C.stimulus_size:
   value: 10.0

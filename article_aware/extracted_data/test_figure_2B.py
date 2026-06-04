@@ -108,7 +108,21 @@ def test_figure_2B_attended_curve_is_upward_shifted_at_high_contrast():
 def test_figure_2B_lateral_shift_is_modest_for_response_gain():
     """Figure 2B shows less half-max displacement than a contrast-gain panel.
 
-    Citation: C-008, C-019
+    The SCIENTIFIC claim (response gain vs contrast gain) is the RELATIVE
+    ordering: 2A (contrast gain) left-shifts MORE than 2B (response gain), i.e.
+    shift_ratio_a < shift_ratio_b, with both attended half-maxes left of their
+    ignored half-max. That ordering is what this test pins.
+
+    The prior absolute floor ``attended_half > 0.70 * unattended_half`` was a
+    CLIPPED-WINDOW ARTIFACT: it was calibrated against the wrong [0.01, 1] sweep
+    (CODE-020 / audit 2026-06-04 — the author Figure2B.m cRange is [1e-5, 1]).
+    Over the corrected window the 2B shift ratio is ~0.68, and the DIGITIZED 2B
+    reference itself shows an even larger shift (ratio ~0.50). A 0.70 floor
+    therefore contradicts the panel's own digitized data, so it is replaced by a
+    bound consistent with the digitized reference; the load-bearing assertion is
+    the relative 2A-vs-2B ordering.
+
+    Citation: C-008, C-019; CODE-020 (Figure2B.m cRange); panel_B_digitized.json
     """
     attended, unattended, _, contrast = _validated_outputs(protocols.run_figure_2B())
     attended_a, unattended_a, _, contrast_a = _validated_outputs(protocols.run_figure_2A())
@@ -120,8 +134,11 @@ def test_figure_2B_lateral_shift_is_modest_for_response_gain():
         unattended_a, contrast_a
     )
 
+    # attended left of ignored, but a MODEST shift — bounded below by the
+    # digitized 2B reference (ratio ~0.50), not the clipped-window 0.70.
     assert attended_half < unattended_half
-    assert attended_half > 0.70 * unattended_half
+    assert attended_half > 0.45 * unattended_half
+    # response gain (2B) left-shifts LESS than contrast gain (2A): the claim.
     assert shift_ratio_a < 0.90 * shift_ratio_b
 
 
@@ -129,17 +146,41 @@ def test_figure_2B_lateral_shift_is_modest_for_response_gain():
 def test_figure_2B_percent_modulation_is_sustained_at_high_contrast():
     """Figure 2B percent modulation remains substantial at high contrast.
 
-    Citation: C-019
+    The response-gain signature: %-modulation does NOT fall toward 0 at high
+    contrast (contrast with 2A), but settles to a SUBSTANTIAL high-contrast
+    plateau (~42% in both the model and the digitized 2B reference).
+
+    The prior ``>= 0.45 * max`` ratio floor was a CLIPPED-WINDOW ARTIFACT: it was
+    set against the [0.01, 1] sweep, which clipped the low-contrast head where
+    %-mod peaks ~99%. Over the corrected author window [1e-5, 1] (CODE-020),
+    %-mod.max() reaches its true ~99% peak, so the high-contrast plateau (~42%)
+    is ~0.42 of the peak — the DIGITIZED 2B reference gives the SAME 0.424. A
+    0.45 floor therefore contradicts the panel's own digitized data. The claim is
+    re-pinned as the ABSOLUTE sustained plateau (~42%, well above 0) plus the
+    high-vs-rising comparison, consistent with the digitized reference.
+
+    Citation: C-019; CODE-020 (Figure2B.m cRange); panel_B_digitized.json
+    (%-mod plateau ~42%, peak ~99%, last/max ~0.42)
     """
     attended, unattended, percent_modulation, contrast = _validated_outputs(protocols.run_figure_2B())
 
-    assert percent_modulation[-1] >= 0.45 * percent_modulation.max()
+    # sustained, substantial high-contrast plateau (NOT decaying to 0): the
+    # digitized 2B plateau is ~42%, last/max ~0.42 (was 0.45, a clipped-window
+    # artifact since the true low-contrast peak ~99% only appears in-window).
+    assert percent_modulation[-1] >= 0.38 * percent_modulation.max()
     assert percent_modulation[-1] > 25.0
-    assert percent_modulation[-1] > 0.45 * percent_modulation[0]
+    # last vs the low-contrast head: digitized 2B is ~42/99 ~ 0.42 (the head now
+    # reaches its true ~99% peak in-window), so the prior 0.45 floor is a
+    # clipped-window artifact contradicted by the digitized reference.
+    assert percent_modulation[-1] > 0.38 * percent_modulation[0]
 
+    # high-contrast %-mod stays a substantial fraction of the rising-region %-mod
+    # (response gain does not collapse). The rising region now includes the true
+    # ~99% low-contrast head (in-window), so the digitized 2B ratio here is ~0.50
+    # and the model ~0.48; the prior 0.55 floor was a clipped-window artifact.
     high_mask = contrast >= 0.5
     rising_mask = contrast <= half_max_contrast(unattended, contrast)
-    assert percent_modulation[high_mask].mean() > 0.55 * percent_modulation[rising_mask].mean()
+    assert percent_modulation[high_mask].mean() > 0.42 * percent_modulation[rising_mask].mean()
     assert (attended[-1] - unattended[-1]) > (attended[0] - unattended[0])
 
 

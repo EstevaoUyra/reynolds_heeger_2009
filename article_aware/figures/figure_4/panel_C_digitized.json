@@ -5,8 +5,8 @@
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
-    0.01,
-    1.0
+    0.0001,
+    0.1
   ],
   "curves": {
     "attended": {
@@ -17,75 +17,75 @@
       ],
       "points": [
         [
-          0.01,
+          0.0001,
           0.019
         ],
         [
-          0.0131,
+          0.0001499,
           0.032
         ],
         [
-          0.0172,
+          0.0002256,
           0.041
         ],
         [
-          0.0225,
+          0.0003375,
           0.045
         ],
         [
-          0.0296,
+          0.0005093,
           0.065
         ],
         [
-          0.0387,
+          0.0007613,
           0.088
         ],
         [
-          0.0508,
+          0.001145,
           0.117
         ],
         [
-          0.0666,
+          0.001719,
           0.161
         ],
         [
-          0.0873,
+          0.002579,
           0.216
         ],
         [
-          0.1145,
+          0.003874,
           0.289
         ],
         [
-          0.1501,
+          0.005815,
           0.366
         ],
         [
-          0.1968,
+          0.00873,
           0.449
         ],
         [
-          0.2581,
+          0.01311,
           0.53
         ],
         [
-          0.3384,
+          0.01969,
           0.616
         ],
         [
-          0.4437,
+          0.02956,
           0.683
         ],
         [
-          0.5817,
+          0.04437,
           0.733
         ],
         [
-          0.7627,
+          0.06661,
           0.772
         ],
         [
-          1.0,
+          0.1,
           0.815
         ]
       ]
@@ -98,75 +98,75 @@
       ],
       "points": [
         [
-          0.01,
+          0.0001,
           0.019
         ],
         [
-          0.0131,
+          0.0001499,
           0.032
         ],
         [
-          0.0172,
+          0.0002256,
           0.041
         ],
         [
-          0.0225,
+          0.0003375,
           0.045
         ],
         [
-          0.0296,
+          0.0005093,
           0.046
         ],
         [
-          0.0387,
+          0.0007613,
           0.061
         ],
         [
-          0.0508,
+          0.001145,
           0.082
         ],
         [
-          0.0666,
+          0.001719,
           0.112
         ],
         [
-          0.0873,
+          0.002579,
           0.154
         ],
         [
-          0.1145,
+          0.003874,
           0.205
         ],
         [
-          0.1501,
+          0.005815,
           0.267
         ],
         [
-          0.1968,
+          0.00873,
           0.355
         ],
         [
-          0.2581,
+          0.01311,
           0.433
         ],
         [
-          0.3384,
+          0.01969,
           0.519
         ],
         [
-          0.4437,
+          0.02956,
           0.601
         ],
         [
-          0.5817,
+          0.04437,
           0.672
         ],
         [
-          0.7627,
+          0.06661,
           0.724
         ],
         [
-          1.0,
+          0.1,
           0.773
         ]
       ]
@@ -179,75 +179,75 @@
       ],
       "points": [
         [
-          0.01,
+          0.0001,
           33.8
         ],
         [
-          0.0131,
+          0.0001499,
           36.4
         ],
         [
-          0.0172,
+          0.0002256,
           36.3
         ],
         [
-          0.0225,
+          0.0003375,
           35.7
         ],
         [
-          0.0296,
+          0.0005093,
           35.3
         ],
         [
-          0.0387,
+          0.0007613,
           34.6
         ],
         [
-          0.0508,
+          0.001145,
           33.7
         ],
         [
-          0.0666,
+          0.001719,
           32.5
         ],
         [
-          0.0873,
+          0.002579,
           30.4
         ],
         [
-          0.1145,
+          0.003874,
           28.8
         ],
         [
-          0.1501,
+          0.005815,
           24.2
         ],
         [
-          0.1968,
+          0.00873,
           21.8
         ],
         [
-          0.2581,
+          0.01311,
           18.4
         ],
         [
-          0.3384,
+          0.01969,
           15.0
         ],
         [
-          0.4437,
+          0.02956,
           11.1
         ],
         [
-          0.5817,
+          0.04437,
           8.3
         ],
         [
-          0.7627,
+          0.06661,
           5.9
         ],
         [
-          1.0,
+          0.1,
           2.9
         ]
       ]
@@ -267,11 +267,11 @@
       "x": [
         [
           50,
-          0.01
+          0.0001
         ],
         [
           178,
-          1.0
+          0.1
         ]
       ],
       "y_left": [
@@ -324,6 +324,7 @@
       "Two solids merge in the deep toe (x<~0.025); the split there is set to 0 (envelope), not an invented gap.",
       "Curves were re-traced only to col 176 (x~0.93, the rightmost dark pixels); values at x=1.0 are a mild PCHIP continuation of the still-rising CRF, not a flat plateau."
     ],
-    "re_trace_note": "Targeted re-trace (2026-06-03) addressing audit figure_4_2026-06-03.md panel-4C DIGITIZATION-DIVERGENT finding. Panel 4E untouched."
+    "re_trace_note": "Targeted re-trace (2026-06-03) addressing audit figure_4_2026-06-03.md panel-4C DIGITIZATION-DIVERGENT finding. Panel 4E untouched.",
+    "re_digitization_2026_06_04": "X-AXIS RE-LABELED to the AUTHOR contrast window [1e-4, 0.1] (paper/code/attentionModel/Figure4C.m cRange=[1e-4 0.1]; CODE-013/014/015/018). The paper panel has NO numeric x ticks, so the prior pass guessed the left frame edge at 0.01 (2 decades); the authors' script axis floor is 1e-4. The CURVE INK on the paper is unchanged - this is a pure x-axis frame RELABEL: each traced point keeps its exact pixel position, its contrast value is recomputed from the SAME log-fractional position across the frame under the author window (c_new = lo*(hi/lo)^f, f = the point's fractional log-x position in the old frame). The calibration.x pixel-col anchors were relabeled likewise. The overlay_*.png (ink-on-paper) is therefore still pixel-faithful; only the x-axis tick labels move. Resolution authority: author code (Phase-A resolver ladder rung 1). This closes the PAPER_ISSUE digitized-window tripwire (test_audit_2026_06_04_supplement.py) and makes the half-max / left-shift claims testable in-window."
   }
 }

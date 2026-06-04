@@ -6,8 +6,9 @@ title "Mixed Attention Effect".
 
 ## Axis limits (read from the paper figure_3.jpg)
 
-- **x:** Log Contrast. Scale **log**. Model sweep contrast ∈ [0.01, 1.0];
-  `xlim = (0.01, 1.0)`.
+- **x:** Log Contrast. Scale **log**. Model sweep contrast ∈ [1e-5, 1.0];
+  `xlim = (1e-5, 1.0)` — the author Figure3C.m `cRange = [1e-5 1]` (CODE-020),
+  not the prior guessed [0.01, 1].
 - **y-left:** "Normalized Model Response". Linear. **ylim = (0.0, 1.0)**
   (paper ticks 0..1).
 - **y-right (twin):** "Attentional Modulation (%)". Linear. **ylim = (0.0, 100.0)**.

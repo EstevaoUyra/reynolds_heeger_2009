@@ -5,7 +5,7 @@
   "x_variable": "contrast",
   "x_scale": "log",
   "x_range": [
-    0.01,
+    1e-05,
     1.0
   ],
   "curves": {
@@ -17,59 +17,59 @@
       ],
       "points": [
         [
-          0.012,
+          1.577e-05,
           0.018
         ],
         [
-          0.02,
+          5.657e-05,
           0.035
         ],
         [
-          0.03,
+          0.0001559,
           0.085
         ],
         [
-          0.04,
+          0.00032,
           0.16
         ],
         [
-          0.05,
+          0.000559,
           0.245
         ],
         [
-          0.065,
+          0.001077,
           0.345
         ],
         [
-          0.08,
+          0.00181,
           0.43
         ],
         [
-          0.1,
+          0.003162,
           0.5
         ],
         [
-          0.13,
+          0.006093,
           0.555
         ],
         [
-          0.16,
+          0.01024,
           0.585
         ],
         [
-          0.2,
+          0.01789,
           0.595
         ],
         [
-          0.27,
+          0.03788,
           0.605
         ],
         [
-          0.4,
+          0.1012,
           0.61
         ],
         [
-          0.65,
+          0.3406,
           0.615
         ],
         [
@@ -86,59 +86,59 @@
       ],
       "points": [
         [
-          0.012,
+          1.577e-05,
           0.012
         ],
         [
-          0.02,
+          5.657e-05,
           0.02
         ],
         [
-          0.03,
+          0.0001559,
           0.045
         ],
         [
-          0.04,
+          0.00032,
           0.085
         ],
         [
-          0.05,
+          0.000559,
           0.135
         ],
         [
-          0.065,
+          0.001077,
           0.23
         ],
         [
-          0.08,
+          0.00181,
           0.33
         ],
         [
-          0.1,
+          0.003162,
           0.41
         ],
         [
-          0.13,
+          0.006093,
           0.5
         ],
         [
-          0.16,
+          0.01024,
           0.555
         ],
         [
-          0.2,
+          0.01789,
           0.575
         ],
         [
-          0.27,
+          0.03788,
           0.6
         ],
         [
-          0.4,
+          0.1012,
           0.61
         ],
         [
-          0.65,
+          0.3406,
           0.615
         ],
         [
@@ -155,59 +155,59 @@
       ],
       "points": [
         [
-          0.012,
+          1.577e-05,
           98.0
         ],
         [
-          0.02,
+          5.657e-05,
           93.0
         ],
         [
-          0.03,
+          0.0001559,
           82.0
         ],
         [
-          0.04,
+          0.00032,
           70.0
         ],
         [
-          0.05,
+          0.000559,
           57.0
         ],
         [
-          0.065,
+          0.001077,
           41.0
         ],
         [
-          0.08,
+          0.00181,
           30.0
         ],
         [
-          0.1,
+          0.003162,
           19.0
         ],
         [
-          0.13,
+          0.006093,
           11.0
         ],
         [
-          0.16,
+          0.01024,
           7.0
         ],
         [
-          0.2,
+          0.01789,
           4.0
         ],
         [
-          0.27,
+          0.03788,
           2.0
         ],
         [
-          0.4,
+          0.1012,
           1.2
         ],
         [
-          0.65,
+          0.3406,
           0.8
         ],
         [
@@ -219,14 +219,51 @@
   },
   "provenance": {
     "figure_type": "line/curve CRF, log-x; twin-y (left 0-1 normalized response, right 0-100 attentional modulation %)",
-    "tools": ["detect_plot_box", "build_calibration", "trace_darkest_in_band", "resample_pchip", "overlay", "crop_region"],
+    "tools": [
+      "detect_plot_box",
+      "build_calibration",
+      "trace_darkest_in_band",
+      "resample_pchip",
+      "overlay",
+      "crop_region"
+    ],
     "tool_rationale": "Mode-1 quantitative CRF plot: two solid sigmoids on the left axis plus one dashed % curve on the right axis. detect_plot_box gave a frame hint; final calibration is tick/frame-anchored from pixel-measured axis lines (see calibration). overlay + crop_region used for the adversarial alignment check.",
     "calibration": {
       "image": "../panel_A.jpg",
-      "image_size_wh": [306, 371],
-      "x": [[33, 0.01], [250, 1.0]],
-      "y_left": [[332, 0.0], [40, 1.0]],
-      "y_right": [[333, 0.0], [41, 100.0]],
+      "image_size_wh": [
+        306,
+        371
+      ],
+      "x": [
+        [
+          33,
+          1e-05
+        ],
+        [
+          250,
+          1.0
+        ]
+      ],
+      "y_left": [
+        [
+          332,
+          0.0
+        ],
+        [
+          40,
+          1.0
+        ]
+      ],
+      "y_right": [
+        [
+          333,
+          0.0
+        ],
+        [
+          41,
+          100.0
+        ]
+      ],
       "x_scale": "log",
       "anchor_method": "Axis lines measured by longest-consecutive-dark-run per column/row on panel_A.jpg. Left y-axis = cols 33-34 (rows 40-332); right y-axis = cols 250-251 (rows 41-333); bottom x-axis = row 331-333. Tick labels verified by crop: left '1'/'0' and right '100'/'0' sit at the top/bottom frame corners respectively. x has NO numeric ticks on the paper (stimulus glyphs only), so x anchors are the frame edges set to the swept range [0.01, 1.0] per panel_A.md.",
       "right_axis_render_note": "overlay() takes one calibration; the right-axis percent_modulation curve (0-100) is rendered by passing value/100 through the left 0-1 calibration. Left and right axis pixel rows coincide (332<->40 vs 333<->41), so this lands the dashed curve on the right-axis ink to within ~1px."
@@ -241,6 +278,7 @@
       "x has no numeric ticks on the paper; x_range [0.01, 1.0] is taken from the frame edges per panel_A.md, not from labelled ticks.",
       "DATA was confirmed faithful by pixel spot-checks (plateau, mid-rise of both CRFs); only the overlay's pixel mapping was wrong before this pass. The previous overlay used an approximate frame-edge calibration with no provenance block, producing a whole-curve shift. This pass re-rendered with the tick/frame-anchored calibration above.",
       "percent_modulation dashed ink is broken/thick; its read values carry ~+/-3% uncertainty (e.g. x=0.1 reads ~19-23%)."
-    ]
+    ],
+    "re_digitization_2026_06_04": "X-AXIS RE-LABELED to the AUTHOR contrast window [1e-5, 1] (paper/code/attentionModel/Figure2A.m cRange=[1e-5 1]; CODE-013/014/015/018). The paper panel has NO numeric x ticks, so the prior pass guessed the left frame edge at 0.01 (2 decades); the authors' script axis floor is 1e-5. The CURVE INK on the paper is unchanged - this is a pure x-axis frame RELABEL: each traced point keeps its exact pixel position, its contrast value is recomputed from the SAME log-fractional position across the frame under the author window (c_new = lo*(hi/lo)^f, f = the point's fractional log-x position in the old frame). The calibration.x pixel-col anchors were relabeled likewise. The overlay_*.png (ink-on-paper) is therefore still pixel-faithful; only the x-axis tick labels move. Resolution authority: author code (Phase-A resolver ladder rung 1). This closes the PAPER_ISSUE digitized-window tripwire (test_audit_2026_06_04_supplement.py) and makes the half-max / left-shift claims testable in-window."
   }
 }

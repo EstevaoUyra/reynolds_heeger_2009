@@ -7,8 +7,11 @@ preferred stimulus **scales up** the response (a response-gain-like effect).
 
 ## Axis limits (read from the paper figure_4.jpg)
 
-- **x:** Log Contrast. Scale **log**. Model sweep contrast ∈ [0.01, 1.0];
-  `xlim = (0.01, 1.0)`.
+- **x:** Log Contrast. Scale **log**. Model sweep contrast ∈ [1e-4, 0.1];
+  `xlim = (1e-4, 0.1)` — the author Figure4E.m `cRange = [1e-4 0.1]` (CODE-020),
+  not the prior guessed [0.01, 1]. (The %-modulation MAGNITUDE overflow below is a
+  SEPARATE geometry divergence — co-located vs four separated stimuli — not the
+  contrast-window correction.)
 - **y-left:** "Normalized Response". Linear. **ylim = (0.0, 1.0)**.
 - **y-right (twin):** "Attentional Modulation (%)". Linear. **ylim = (0.0, 100.0)**.
   The paper's right axis runs 0 (bottom) to 100 (top) — same as every other model

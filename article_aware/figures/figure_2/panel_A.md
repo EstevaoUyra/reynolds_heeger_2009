@@ -5,10 +5,12 @@
 
 ## Axis limits (read from the paper figure_2.jpg)
 
-- **x:** Log Contrast. Scale **log**. The model sweep is contrast ∈ [0.01, 1.0]
-  (log-spaced); set `xlim = (0.01, 1.0)`. The paper shows no numeric x ticks
-  (stimulus glyphs only), so the discriminating axis facts are scale=log and the
-  swept range.
+- **x:** Log Contrast. Scale **log**. The model sweep is contrast ∈ [1e-5, 1.0]
+  (log-spaced); set `xlim = (1e-5, 1.0)`. The paper shows no numeric x ticks
+  (stimulus glyphs only), so the swept range is set by the author Figure2A.m
+  `cRange = [1e-5 1]` (CODE-020) — NOT the prior guessed [0.01, 1], which clipped
+  the rising limb + contrast-gain left-shift (the model half-saturates at
+  c≈0.002-0.005). The discriminating axis facts are scale=log and this range.
 - **y-left:** "Normalized Model Response". Scale linear. **ylim = (0.0, 1.0)**
   (paper ticks: 0 at bottom, 1 at top).
 - **y-right (twin):** "Attentional Modulation (%)". Scale linear.
