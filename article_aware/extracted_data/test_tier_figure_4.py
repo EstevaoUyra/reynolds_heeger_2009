@@ -83,6 +83,56 @@ def test_4C_modulation_positive_and_declines_to_high_contrast():
     assert pm.max() <= 100.0 + 5.0
 
 
+@tier_test(
+    tier="hard", spec_ref="figures.figure_4.panel_C", figure=4,
+    claim_id="T-4C-H-modmag",
+    paper_issue="4C %-attentional-modulation peaks ~+101% vs the digitized ~36% "
+    "(~3x too strong) — the MAJOR magnitude divergence the post-change audit "
+    "(post-change-audit-2026-06-03.md) flagged once the 4C direction was corrected "
+    "to facilitation. The peak overflows the paper's (0,100) right axis "
+    "(see test_panel_axes.py::test_figure_4C_data_within_paper_axis). "
+    "GENUINE-DIVERGENCE: faithful direction, divergent magnitude — do NOT loosen "
+    "the tolerance or tune the model to green it.",
+)
+def test_4C_modulation_peak_matches_digitized():
+    """HARD (INTENDED FAILURE): the 4C %-modulation PEAK matches the digitized
+    reference (~36.4%) +/- 12. The model's facilitation is the right direction but
+    ~3x too strong (peak ~+101%), so it blows past the bound — that red is the
+    audit's major 4C magnitude finding. It flips green only if the model's 4C
+    modulation genuinely shrinks toward the paper's ~36%. Do NOT widen the bound."""
+    c, _, _, pm = _record_4C()
+    ref_peak_pm = max(
+        ref_value_at(4, "C", "percent_modulation", cc, log_x=True) for cc in c
+    )
+    assert ref_peak_pm < 50.0           # the digitized reference peaks ~36%
+    assert abs(float(np.max(pm)) - ref_peak_pm) < 12.0
+
+
+@tier_test(
+    tier="hard", spec_ref="figures.figure_4.panel_C", figure=4,
+    claim_id="T-4C-H-platgap",
+    paper_issue="4C high-contrast plateau gap (attended-unattended at c=1) is "
+    "~0.20 vs the digitized near-coincident ~0.04 — the facilitation gap does NOT "
+    "narrow toward saturation the way the paper's curves do (the same shape failure "
+    "Q-029 catches qualitatively). post-change-audit-2026-06-03.md MAJOR 4C "
+    "magnitude finding (rendered plateaus ~0.60/0.40 vs digitized ~0.815/0.773). "
+    "GENUINE-DIVERGENCE: faithful direction, divergent magnitude/shape — do NOT "
+    "loosen the tolerance or tune the model.",
+)
+def test_4C_high_contrast_gap_narrows_to_digitized():
+    """HARD (INTENDED FAILURE): the attended-unattended gap at the HIGHEST contrast
+    matches the digitized near-coincident plateau (~0.042) +/- 0.10. The paper's
+    facilitation narrows toward saturation; the model's stays wide (~0.20), so this
+    fails — the audit's plateau-gap-too-wide finding. Flips green only if the model
+    genuinely saturates and the gap narrows. Do NOT widen the bound."""
+    c, att, una, _ = _record_4C()
+    gap_model = value_at_log(c, att, _C_HI) - value_at_log(c, una, _C_HI)
+    ref_gap = (ref_value_at(4, "C", "attended", _C_HI, log_x=True)
+               - ref_value_at(4, "C", "unattended", _C_HI, log_x=True))
+    assert ref_gap < 0.10               # digitized plateaus are near-coincident
+    assert abs(gap_model - ref_gap) < 0.10
+
+
 # === Figure 4E — attend preferred scales response (KNOWN DIVERGENCE) =======
 
 @tier_test(tier="qualitative", spec_ref="figures.figure_4.panel_E", figure=4,

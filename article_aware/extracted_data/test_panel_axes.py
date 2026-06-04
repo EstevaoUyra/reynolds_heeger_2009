@@ -157,9 +157,32 @@ def test_figure_4C_axes_match_paper(tmp_path_factory):
     _assert_axes_match_paper(_panel(4, "4C", tmp_path_factory))
 
 
-@deterministic_test(spec_ref="figures.figure_4.panel_C", figure=4, claim_id="AX-4C-within")
+@deterministic_test(
+    spec_ref="figures.figure_4.panel_C",
+    figure=4,
+    claim_id="AX-4C-within",
+    paper_issue="4C %-attentional-modulation peaks ~101% (peak 101.1 at the "
+    "low-contrast end), overflowing the paper's (0, 100) right axis — a MAJOR "
+    "magnitude divergence the post-change audit (post-change-audit-2026-06-03.md) "
+    "surfaced once the 4C DIRECTION was corrected to facilitation. The digitized "
+    "reference (panel_C_digitized.json) peaks ~36%; the model is ~3x too strong. "
+    "GENUINE-DIVERGENCE: faithful direction, divergent magnitude — do NOT widen "
+    "the axis or tune the model to green it.",
+)
 def test_figure_4C_data_within_paper_axis(tmp_path_factory):
-    """Citation: C-015"""
+    """INTENDED FAILURE (tripwire): 4C's %-modulation curve overflows the paper's
+    (0, 100) right axis.
+
+    Before the direction fix, 4C rendered (wrong-sign) suppression and this test
+    passed for the wrong reason. The fix flipped 4C to facilitation (correct
+    direction) but at ~3x the paper's magnitude: the %-mod now peaks ~101%, above
+    the pinned (0, 100) axis. With autoscale OFF, the data-within-axis check fails
+    — that RED is the audit's MAJOR 4C magnitude finding, not a build breakage.
+    It flips green only if the model's 4C modulation genuinely shrinks toward the
+    paper's ~36%. Do NOT green by widening the axis or editing the model.
+
+    Citation: C-015, C-019
+    """
     _assert_data_within_axes(_panel(4, "4C", tmp_path_factory))
 
 
