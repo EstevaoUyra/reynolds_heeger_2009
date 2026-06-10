@@ -1,68 +1,65 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-<!-- CURRENT STATE — updated 2026-06-10. The doc-vs-contract-drift fix (F1/F2/F3, commit 0157325)
-     is INDEPENDENTLY VERIFIED FAITHFUL: model_spec/figure_3/figure_4 docs now match the author code
-     (CODE-017 Fig-3 baselines, Figure4C.m suppression build) operator-for-operator. The paper-fix
-     verify did NOT pass within MAX_PAPERFIX: three stale-contract findings (F-A/F-B/F-C) survive in
-     `pseudocode/` and `assumptions.yaml` and contradict the now-binding calibration. model.py is
-     untouched and remains independently faithful. Exit = blocked on model:contract. -->
+<!-- CURRENT STATE — updated 2026-06-10. The Figure 6C CONTRACT_BUG correction (commit 862f4d7) is
+     INDEPENDENTLY VERIFIED FAITHFUL: the new author `Ashape='cross'` field (model.py:284
+     _build_attention_field_cross) was reproduced from scratch from the author MATLAB and is
+     byte-identical to the impl (peak ratio 1.1088, FWHM ratio 0.8873). model.py is faithful and the
+     'oval' default path (Figs 2/3/4/5/7) is untouched. BUT the paper-fix verify did NOT pass within
+     MAX_PAPERFIX: the shipped/committed Figure 6 PNGs PREDATE the fix and still render the OLD
+     over-scaled curve, contradicting the now-FAITHFUL header — a figure-scope divergence that cannot
+     be re-rendered here (matplotlib absent). Exit = blocked on model:contract. -->
 
 ## Current exit
 
 ```json
-{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 3, "blocked": ["model:contract"]}
+{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 1, "blocked": ["model:contract"]}
 ```
 
 ## 👉 DECISION NEEDED
 
 **Contract-blocked (paper-fix / audit-spec).** The paper-fix verify did NOT pass within
-MAX_PAPERFIX. The F1/F2/F3 doc fix was applied and is **verified faithful** (see below), but the
-verify pass found **three open contract findings** that still bind a reader to the WRONG, superseded
-calibration. They are stale-doc divergences, not model-equation faults — but `pseudocode/` and
-`assumptions.yaml` are **binding contract artifacts** (audit-spec skill), so a Phase-B reader
-following them builds the wrong model. They need an EDIT in the fix phase, not another audit
-re-confirming they are stale (process concern C2). **trajectory: toward_paper** (no leniency drift;
-the new divergences were left RED, nothing force-greened).
+MAX_PAPERFIX. The Figure 6C CONTRACT_BUG fix (commit `862f4d7`) is **VERIFIED FAITHFUL** at the
+model+numeric level (see below), and the 3 MUST-PASS contract tests are GREEN. The block is a single
+**figure-scope** divergence: the **shipped/committed Figure 6 renders are STALE** — they predate the
+fix and still show the OLD over-scaled curve, so a reader sees a FAITHFUL header over a divergent
+image. **trajectory: toward_paper** (no leniency drift; the divergence was left RED, nothing
+force-greened).
 
-**The three open findings (all logged DIVERGENT, none closed):**
+**The one open finding (flagged, not closed):**
 
-- **F-A (model) — stale A-007 0.05/0.05 baselines survive in the Fig-3 pseudocode.**
-  `article_aware/pseudocode/figure_3_protocol.md:16-18` still binds
-  `baseline_modulated_by_attention = 0.05 / baseline_unmodulated = 0.05 (per A-007)`. A-007 is
-  **superseded by CODE-017** (3C 5e-7/5.0; 3F 5e-7/0.0, verified against `Figure3C.m:5-6` /
-  `Figure3F.m:5-6`). F1/F3 applied CODE-017 to `model_spec.yaml` and `figure_3.md` but NOT to this
-  pseudocode. A grep confirms this is the **only** place a 0.05 baseline survives as an *active
-  instruction* — a reader following step 2/6 builds the wrong symmetric 0.05/0.05 baseline.
-  *Fix:* rewrite Inputs (16-18) + Procedure 2/6 to CODE-017, citing CODE-017 not A-007.
+- **F1 (figure) — STALE RENDERED ARTIFACT vs the now-FAITHFUL model.** The resolve commit `862f4d7`
+  is 2026-06-10 05:52, but `implementation/figure_outputs/figure_6.png` is 04:57 (pre-commit), the
+  README-displayed `figures_reproduced/figure_6.png` is Jun 4 13:57 (much older), and the overlay
+  `article_aware/figures/figure_6/overlay_6C.png` is Jun 3 16:42. The committed panel C draws the
+  attend-fixation gray curve peaking at ~0.855 under shared-max norm, i.e. peak ratio ~1/0.855 =
+  **1.17 = the PRE-FIX over-scaled state**; the corrected model puts gray at ~1/1.108 = **0.903**
+  (peak ratio 1.109). So the shipping image contradicts the README's FAITHFUL claim and the
+  now-correct numeric text. The 2 panel-axes 6C tests (`test_panel_axes.py`) FAIL with
+  `ModuleNotFoundError: No module named 'matplotlib'` — matplotlib is genuinely absent here, so the
+  renders **cannot be regenerated in this environment**. The numeric contract is correct and the
+  README TEXT is honest; only the displayed/committed PNGs are stale.
+  *Fix:* re-render Figure 6 in an environment with matplotlib (`pip install matplotlib`, then
+  regenerate `implementation/figure_outputs/figure_6.png`, `figures_reproduced/figure_6.png`, and
+  `article_aware/figures/figure_6/overlay_6C.png`) and commit the refreshed artifacts so the panel
+  shows the corrected curve (attend-fixation gray peak ~0.903, peak ratio 1.109). Verify by eye that
+  the gray/blue peak ratio and widths match the digitized panel before re-asserting FAITHFUL. Until
+  re-rendered, the FAITHFUL header is over-claimed relative to the shipped image.
 
-- **F-B (figure) — Fig-2/3 pseudocode describes a DIFFERENT experiment + a stale sweep window.**
-  `figure_2_protocol.md:9,16,22` and `figure_3_protocol.md:12,21,29-30` describe "single stimulus at
-  x=0", unattended = "constant 1 (no modulation)", sweep "[0.01,1], 8 points". Author
-  Figure2A/2B/3C/3F.m use **TWO separated stimuli at x=±100, recorded at x=+100**, BOTH conditions a
-  real attention field (attended Ax=+100 'Att RF' vs unattended attend-away Ax=−100, not A=1), sweep
-  cRange=[1e-5,1] (also contradicts the model's own `calibration.yaml`/CODE-020). The x=0 single-stim
-  reduction is numerically faithful AT THE RECORDED NEURON (attend-away gain at x=+100 = 2.2e-10 ≈
-  A=1, 6.7σ; contra drive at x=+100 = 0.0), so this is a contract-**description** gap + stale window,
-  not a figure-output divergence. Tracked open as **SQ-002** pending human review.
-  *Fix:* update Fig-2/3 pseudocode to the two-separated-stimulus geometry + [1e-5,1], OR document the
-  x=0 reduction as an explicit justified equivalence (with the verified recorded-neuron bit-identity).
-
-- **F-C (model) — A-013 forbidden-knob rule (3) now contradicts the binding CODE-017.**
-  `assumptions.yaml:411-413` still reads: "per-panel baselines that DIFFER across Fig-3 panels (use
-  the single A-007 0.05·α)". But CODE-017 (now binding, verified) establishes that 3C and 3F
-  baselines **do** legitimately differ (unmod 5.0 vs 0.0) — the authors' own per-figure code values.
-  As written, A-013(3) forbids the exact per-panel asymmetry the author code mandates. A-007's head
-  was updated to acknowledge CODE-017; this cross-reference was not (binding-rule vs binding-calibration).
-  *Fix:* amend A-013(3) to forbid per-panel baselines **tuned-to-fit-a-curve** while permitting the
-  authors' own per-figure code values (CODE-017); drop the "use the single A-007 0.05·α" clause.
+**Where the model fix is verified (so the block is figure-only):** I independently reproduced
+`Figure6C.m` + `attentionModel.m` + `makeGaussian.m` + `conv2sepYcirc.m` from scratch in standalone
+Python — the author 'cross' field gives peak ratio 1.1088 / FWHM ratio 0.8873, and the impl
+`run_figure_6C(n_directions=356)` returns **byte-identical** values (att-away peak 12.4528, att-RF
+13.8076), matching digitized 1.108. `_build_attention_field_cross` (model.py:284) reduces to the
+model_spec EQ-attention CROSS closed form to machine precision (max|Δ|=3.6e-15); the default 'oval'
+path is allclose-identical with/without `shape:'cross'`, so Figs 2/3/4/5/7 are untouched. Provenance
+is clean (ledger keys `figure_6C.stim_rf_x=100/stim_contra_x=-100/attend_fixation_x=0`, CODE-018,
+all `audited:true`). SQ-006 and SQ-009 are genuinely RESOLVED.
 
 **Where to look:**
-- `logs/spec_audit/contract_audit_2026-06-10_paperfix_verify.md` — the verify verdict (DIVERGENT) with
-  F-A/F-B/F-C and the VERIFIED-FAITHFUL F1/F2/F3 section.
-- `logs/faithfulness_audit/2026-06-10-independent-rerender.md`, `2026-06-04.md` — author-code reruns
-  (4E 386%→52%, 7C 2.73→1.41) backing the figure-scope geometry divergences.
-- `logs/spec_questions.md` — **SQ-002** (the Fig-2/3 geometry/description gap, F-B); SQ-005 / SQ-006
-  / SQ-007 human resolutions; DR-4C-sign **RESOLVED** (code-resolvable, digitizer label swap).
+- `logs/spec_audit/contract_audit_2026-06-10_paperfix_verify.md` — the paper-fix verify verdict.
+- `logs/faithfulness_audit/2026-06-10-independent-rerender-v2.md`,
+  `2026-06-10-rerender-and-author-verify.md` — the author-code reruns and 6C 'cross' verification.
+- `logs/spec_questions.md` — **SQ-006** / **SQ-009** (6C 'cross' field, both RESOLVED).
 
 **Carryover process concern (C1, DR-4C-sign authority).** DR-4C-sign was closed (2026-06-10) on a
 code re-run + caption re-reading. The published-caption-vs-model-panel *reading* is a human-owned
@@ -250,12 +247,19 @@ against the current digitized reference. The 5C sweep contrast is now `1.0` (COD
 | hard | 5C peak ratio vs digitized | ❌ **FAIL** |
 | soft | 5C shape / unattended peak vs digitized | ⚠️ soft (reported) |
 
-### Figure 6 — Feature-based attention sharpening  ✅ FAITHFUL — author `Ashape='cross'` field implemented
+### Figure 6 — Feature-based attention sharpening  ✅ model FAITHFUL · ⚠️ shipped render STALE (pre-fix curve)
 
 <table>
-<tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
+<tr><th>Paper</th><th>Digitized</th><th>Implementation (STALE — pre-fix)</th></tr>
 <tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
+
+> **⚠️ The displayed Implementation panel is STALE (F1, DECISION NEEDED).** `figures_reproduced/figure_6.png`
+> (Jun 4) and `implementation/figure_outputs/figure_6.png` (Jun 10 04:57) both PREDATE the resolve
+> commit `862f4d7` (05:52) and still render the OLD over-scaled curve: attend-fixation gray peaks at
+> ~0.855 (shared-max norm) → peak ratio ~1.17, the PRE-FIX state. The corrected model puts gray at
+> ~0.903 (peak ratio 1.109). The MODEL is faithful (numbers below); only the PNGs are stale, and they
+> cannot be regenerated here (matplotlib absent — re-render and commit, see DECISION NEEDED).
 
 The 6C CONTRACT_BUG (2026-06-10) is **RESOLVED** via lineage rung 1 (this paper's own code). `run_figure_6C`
 now honors the binding ledger geometry it already recorded — RF stimulus + recorded column at
@@ -275,14 +279,16 @@ Sweep contrast is `1.0` (CODE-021, `Figure6C.m:21`).
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 6C | ✅ faithful | ✅ faithful — author 'cross' field, peak 1.109 / FWHM ratio 0.887 |
-| **figure** | ✅ **faithful** | ✅ **faithful** |
+| panel 6C (model/numeric) | ✅ faithful | ✅ faithful — author 'cross' field, peak 1.109 / FWHM ratio 0.887 |
+| panel 6C (shipped render) | ✅ faithful | ⚠️ **STALE** — committed PNG shows pre-fix peak ratio ~1.17 (F1) |
+| **figure** | ✅ **faithful** | ⚠️ **model faithful, render stale** (F1, re-render needed) |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 6C attended ≥ tall at peak · sharpening present | ✅ pass |
 | MUST-PASS (CONTRACT_BUG) | 6C peak ratio 1.108±0.01 · FWHM ratio [0.87,0.89] · honors ledger geometry | ✅ pass (3/3) |
 | soft | 6C 'cross' mechanism tripwire (proxy ≠ cross) | ✅ XPASS (resolved) |
+| panel-axes (render) | 6C panel matches axis spec | ⚠️ FAIL — matplotlib absent (cannot re-render here) |
 
 ### Figure 7 — Two stimuli in RF: combined attention shifts  ❌ BROKEN — var/fix ratio RED (geometry)
 
@@ -315,7 +321,21 @@ is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". The 7C s
 
 The forward model (`model.py`, Eqs. 5–6) is FAITHFUL operator-for-operator to the authors' MATLAB
 (`paper/code/attentionModel/attentionModel.m`) — confirmed by independent audits and re-confirmed by
-the 2026-06-10 paper-fix verify. Every open divergence is **contract-description / figure-scope**.
+the 2026-06-10 paper-fix verify (the 6C 'cross' field was independently reproduced from author MATLAB,
+byte-identical to the impl). Every open divergence is **figure-scope / contract-description**.
+
+0. **FIGURE (F1) — STALE Figure 6 render vs the now-FAITHFUL model. THE CURRENT BLOCK (flagged_count 1).**
+   `implementation/figure_outputs/figure_6.png` (Jun 10 04:57) and `figures_reproduced/figure_6.png`
+   (Jun 4) PREDATE the resolve commit `862f4d7` (05:52) and render the OLD over-scaled curve (gray
+   peak ~0.855, peak ratio ~1.17); the corrected model is peak ratio 1.109 (gray ~0.903). The PNGs
+   cannot be regenerated here (matplotlib absent; `test_panel_axes.py` 6C tests FAIL with
+   `ModuleNotFoundError`). *Fix:* re-render + commit Fig 6 (incl. `overlay_6C.png`) in a
+   matplotlib env; verify by eye against the digitized panel. *Source:* `model.py:284`
+   `_build_attention_field_cross`; `protocols.py run_figure_6C`; `Figure6C.m` / `attentionModel.m:146-162`;
+   `code_refs.yaml` CODE-018; `logs/faithfulness_audit/2026-06-10-rerender-and-author-verify.md`.
+
+The items below are **prior-pass contract findings, not re-litigated this pass** (they were the earlier
+block; the current verify focused on 6C). They remain on record pending a fix-phase edit:
 
 1. **CONTRACT (F-A) — stale A-007 baselines in the Fig-3 pseudocode. OPEN, fix-phase edit.**
    `article_aware/pseudocode/figure_3_protocol.md:16-18` binds the superseded `baseline_* = 0.05 (per
@@ -369,6 +389,7 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-10 | **paper-fix verify — 6C model VERIFIED FAITHFUL, BLOCKED on stale render.** Commit `862f4d7` 'cross' field reproduced from scratch from author MATLAB, byte-identical to impl (peak 1.1088 / FWHM 0.8873; reduces to model_spec CROSS closed form, max\|Δ\|=3.6e-15; 'oval' path untouched, Figs 2/3/4/5/7 unaffected); 3 MUST-PASS contract tests GREEN; SQ-006/SQ-009 RESOLVED. Verify did NOT pass within MAX_PAPERFIX: F1 — the committed Figure 6 PNGs predate the fix (render OLD peak ratio ~1.17 vs corrected 1.109) and cannot be regenerated here (matplotlib absent). Exit `blocked:[model:contract]`, flagged_count 1, trajectory toward_paper. README refreshed: exit/DECISION/Fig-6 tables now flag the stale render; FAITHFUL header scoped to model+numeric. |
 | 2026-06-10 | **Phase-A resolve — 6C CONTRACT_BUG RESOLVED (lineage rung 1, author code).** `build_attention_field` now implements the author `Ashape='cross'` additive separable spatial×feature field (`attentionModel.m:146-162`; default 'oval' path byte-identical, no other panel affected); `run_figure_6C` routed through the binding ledger geometry (RF/recorded column stim_rf_x=100, contra/attend-opposite stim_contra_x=-100, attend-fixation attend_fixation_x=0) instead of the invented -50/50 flat-x full-γ proxy. Peak ratio 1.167→**1.109** (digitized 1.108), FWHM ratio 0.79→**0.887** (band [0.87,0.89]) — no tuning. 3 MUST-PASS contract tests GREEN; soft 'cross' mechanism tripwire XPASS. 6C test FWHM measured at the authors' native 1° sweep grid (measurement-fidelity, not a model knob). 19 matplotlib-render test failures are a missing-dep environment issue, unrelated. |
 | 2026-06-10 | **paper-fix verify — BLOCKED on contract.** F1/F2/F3 doc-vs-contract-drift fix VERIFIED FAITHFUL (model_spec Fig-3 baselines = CODE-017; figure_3.md/figure_4.md rewritten to author code; EQ-1/2/5/6 match attentionModel.m). Verify did NOT pass within MAX_PAPERFIX: 3 stale-contract findings remain DIVERGENT — **F-A** figure_3_protocol.md:16-18 still binds superseded A-007 0.05/0.05; **F-B** Fig-2/3 pseudocode describes a single-stim-x=0/[0.01,1] experiment vs author two-separated-stimulus/[1e-5,1] (SQ-002); **F-C** A-013(3) forbids the CODE-017 3C/3F baseline asymmetry. model.py untouched/faithful. DR-4C-sign RESOLVED (digitizer label swap; caption-authority carryover C1). Exit `blocked:[model:contract]`, flagged_count 3, trajectory toward_paper. |
 | 2026-06-10 | Phase-A contract resolution of four blocked divergences (author-code grounded; model.py untouched): retired `suppressive_drive_gain` removed from stage spec; 5C/6C/7C sweep contrast 0.5→1.0 (CODE-021); 4E/7C author SEPARATED geometry adopted; DR-4C-sign investigated→code-resolvable. Added A-014. |
