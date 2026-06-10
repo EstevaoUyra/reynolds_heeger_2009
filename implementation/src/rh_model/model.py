@@ -63,7 +63,7 @@ class ModelParams:
         DEFAULT_X_MIN, DEFAULT_X_MAX + DEFAULT_DX, DEFAULT_DX
     ))
     theta_grid: np.ndarray = field(default_factory=lambda: np.arange(
-        -DEFAULT_THETA_PERIOD / 2, DEFAULT_THETA_PERIOD / 2, DEFAULT_DTHETA
+        -DEFAULT_THETA_PERIOD / 2, DEFAULT_THETA_PERIOD / 2 + DEFAULT_DTHETA, DEFAULT_DTHETA
     ))
     theta_period: float = DEFAULT_THETA_PERIOD
 
@@ -210,7 +210,13 @@ def build_stimulus_drive(
     stim_image = np.zeros((len(theta_grid), len(x_grid)))
     for stim in stimuli:
         gx = gaussian_1d(x_grid, stim["x"], stimulus_size)
-        gt = gaussian_periodic_1d(theta_grid, stim["theta"], tuning_width, theta_period)
+        # Per-stimulus θ profile: the author makeGaussian(theta, center, sigma, height=1)
+        # is a NON-periodic peak-1 Gaussian over theta=[-180:180]' (Figure*.m; makeGaussian.m
+        # = normpdf, here with an explicit height of 1). It does NOT wrap at ±180. The earlier
+        # periodic form wrapped the +180-edge null stimulus's off-grid tail back, inflating its
+        # θ-column mass (+43%) and the suppressive drive S (+17%) — Finding 1 (Fig 7C). The
+        # stimulation/suppression/attention KERNELS stay circular (that operator is correct).
+        gt = gaussian_1d(theta_grid, stim["theta"], tuning_width)
         stim_image = stim_image + stim["contrast"] * np.outer(gt, gx)
     ex = normpdf_1d(x_grid, 0.0, stimulation_field_size)
     etheta = normpdf_periodic_1d(

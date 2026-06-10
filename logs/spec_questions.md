@@ -323,3 +323,71 @@ resolution: |
   ACTIONS: A-012 paper_issue → status RESOLVED (digitizer-label-swap, not a paper defect); README
   DECISION-NEEDED #4 closed; panel_C.md / figure_4_protocol.md framing updated; the digitized JSON
   solid-label swap remains documented so downstream tier comparisons account for it.
+
+## SQ-008 — Finding-1 θ-stimulus fix (361 grid + non-periodic profile) conflicts with the pre-existing Q-043 7C flank-sign must-pass
+date: 2026-06-10
+spec_ref: |
+  article_aware/extracted_data/test_audit_2026_06_10.py (T-A610-7C-suppressive-drive /
+  -theta-grid-361 / -ratio, MUST-PASS, the most-recent contract change);
+  article_aware/extracted_data/test_figure_7C.py::test_attention_effects_have_opposite_signs_around_preferred_flanks
+  (Q-043, deterministic_test = MUST-PASS / gating);
+  implementation/src/rh_model/model.py (build_stimulus_drive θ profile; theta_grid);
+  article_aware/figures/figure_7/panel_C_digitized.json
+owner: human / Phase A (faithfulness lead)
+status: OPEN — Phase-B partial-STUCK on ONE pre-existing must-pass (Q-043), routed to Phase A.
+question: |
+  Phase B implemented the 2026-06-10 audit Finding-1 fix EXACTLY as the contract prescribes
+  (test_audit_2026_06_10.py + model_spec.yaml theta_grid:[-180,180,1]=361 + code_refs.yaml
+  makeGaussian(theta,center,1,height=1) non-periodic stimulus θ profile; the circular
+  stimulation/suppression/attention KERNELS untouched, per the finding's "do NOT touch the
+  bit-identical convolution"):
+    - model.py theta_grid: arange(-180,180)=360 -> arange(-180,181)=361 (closed interval).
+    - build_stimulus_drive per-stimulus θ profile: gaussian_periodic_1d -> gaussian_1d
+      (non-periodic peak-1 Gaussian; the author makeGaussian with height=1, no ±180 wrap).
+  This drives ALL THREE Finding-1 MUST-PASS tests GREEN with NO free parameter / NO tuning:
+    S(0,100) 0.001186 -> 0.001012 (author value, was +17%); E(0,100) unchanged (0.00730);
+    7C attend-variable/fixation peak ratio 1.413 -> ~1.32 (author 1.323 / digitized 1.325).
+    The two GENUINE_DIVERGENCE tripwires (6C cross-mechanism, Fig-1 enhancement) correctly
+    stay RED. implementation/tests 17/17 green.
+
+  BUT the same faithful fix flips ONE pre-existing gating qualitative must-pass RED:
+    Q-043 (test_attention_effects_have_opposite_signs_around_preferred_flanks) asserts that
+    attending the variable stimulus RAISES the response over fixation at >=75% of the central-
+    flank samples (15<=|θ|<=60). On the corrected mechanism the attend-variable curve now dips
+    BELOW fixation for |θ| >~ 47° (verified on a 121-pt grid, not a coarse-sampling artifact),
+    so the fraction-positive drops 0.833 -> 0.667 (< 0.75) and Q-043 fails. The near flanks
+    (±17–27°) are still strongly raised (+1.83/+1.22), exactly as the paper claims; only the
+    OUTER flank edges invert.
+
+  This is a genuine MUST-PASS-vs-MUST-PASS tension, not a code bug and not tunable:
+    - The Finding-1 fix is the contract-sanctioned mechanism (audit + model_spec + code_refs);
+      it cannot be partially applied or tuned without violating the implement-SKILL guard.
+    - Q-043's >=0.75 threshold matches the DIGITIZED panel, which shows attend-variable ABOVE
+      fixation across the ENTIRE central flank including the edges (digitized var-fix at the
+      six protocol-grid flank samples = +0.021/+0.094/+0.193/+0.135/+0.043/+0.046, frac>0=1.0
+      — i.e. NO dip at ±47/57°). So the corrected mechanism introduces a real flank-shape
+      divergence the paper panel does not show: feature attention (AthetaWidth=45) to the
+      variable direction over-narrows the tuning and suppresses the far flanks.
+    Per the implement-SKILL ("a must-pass test you cannot satisfy with the cited mechanism is
+    escalated, never forced"; "never edit a test to make it pass") Phase B did NOT tune the
+    mechanism and did NOT touch Q-043. The Finding-1 trio is green; Q-043 is left RED as the
+    honest STUCK on that one pre-existing test.
+chosen_assumption: |
+  NONE forced. Implemented only the contract-sanctioned Finding-1 fix in implementation/src;
+  left Q-043 RED. The pre-existing Q-043 threshold and the new Finding-1 contract are in direct
+  tension and only Phase A can adjudicate which the spec intends.
+escalation_options_for_phaseA: |
+  (a) RECLASSIFY Q-043's outer-flank assertion: the >=0.75 fraction-positive over 15<=|θ|<=60
+      pre-dates Finding-1 and was authored against the periodic-wrap (buggy) θ profile. Under the
+      faithful corrected mechanism the paper-correct content survives at the NEAR flanks; the
+      outer-edge inversion is a known shape divergence. Either narrow the central-flank window
+      (e.g. |θ|<=45) so Q-043 tests the region the faithful mechanism + the paper agree on, or
+      lower the fraction threshold / make Q-043 a soft tripwire on the outer-edge inversion.
+  (b) If the spec instead holds that the faithful mechanism MUST keep attend-variable above
+      fixation across the full ±60° flank (as the digitized panel shows), that is a NEW genuine
+      divergence of the corrected model from the panel (the AthetaWidth=45 feature gain over-
+      sharpens) — open it as a faithfulness finding, NOT a Phase-B tuning target. The decisive
+      artifact is whether Figure7C.m's attend-variable curve itself dips at the outer flanks
+      (Phase B cannot read paper/).
+  (c) Confirm Q-043 was authored before Finding-1 and is simply stale relative to the most-recent
+      contract change; if so, retire/replace it in line with the 2026-06-10 audit.
