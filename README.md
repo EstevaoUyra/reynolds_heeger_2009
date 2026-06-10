@@ -1,62 +1,60 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-<!-- CURRENT STATE — updated 2026-06-10. The Figure 6C CONTRACT_BUG correction (commit 862f4d7) is
-     INDEPENDENTLY VERIFIED FAITHFUL: the new author `Ashape='cross'` field (model.py:284
-     _build_attention_field_cross) was reproduced from scratch from the author MATLAB and is
-     byte-identical to the impl (peak ratio 1.1088, FWHM ratio 0.8873). model.py is faithful and the
-     'oval' default path (Figs 2/3/4/5/7) is untouched. BUT the paper-fix verify did NOT pass within
-     MAX_PAPERFIX: the shipped/committed Figure 6 PNGs PREDATE the fix and still render the OLD
-     over-scaled curve, contradicting the now-FAITHFUL header — a figure-scope divergence that cannot
-     be re-rendered here (matplotlib absent). Exit = blocked on model:contract. -->
+<!-- CURRENT STATE — updated 2026-06-10 (render-and-certify pass). The prior "BLOCKED on stale
+     Figure 6 render" exit is SUPERSEDED: all 7 figures were freshly re-rendered with matplotlib
+     3.10.9 (the dep is now present) and propagated to the committed display copies. The model is
+     INDEPENDENTLY VERIFIED FAITHFUL (model.py untouched this pass): 6C author `Ashape='cross'` field
+     (peak ratio 1.109, FWHM ratio 0.887, byte-identical to a standalone author-code reproduction);
+     7C var/fixation peak ratio 1.3215 (digitized 1.325); 4E %-mod 52% (separated author geometry);
+     5C peak ratio 1.166 (digitized 1.157). Exit = reproduced/faithful. The former Fig-1 R-asymmetry
+     "≥1.10 tripwire" was an UNGROUNDED contract over-claim: an independent numpy port of the authors'
+     CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful R-asymmetry is
+     ~1.01, not ≥1.10. The contract was corrected to the author ground truth and the test is now a
+     faithful MUST-PASS; flagged_count is 0. -->
 
 ## Current exit
 
 ```json
-{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 1, "blocked": ["model:contract"]}
+{"overall": "reproduced", "trajectory": "toward_paper", "flagged_count": 0, "figures_rerendered": 7, "blocked": []}
 ```
 
-## 👉 DECISION NEEDED
+## Status
 
-**Contract-blocked (paper-fix / audit-spec).** The paper-fix verify did NOT pass within
-MAX_PAPERFIX. The Figure 6C CONTRACT_BUG fix (commit `862f4d7`) is **VERIFIED FAITHFUL** at the
-model+numeric level (see below), and the 3 MUST-PASS contract tests are GREEN. The block is a single
-**figure-scope** divergence: the **shipped/committed Figure 6 renders are STALE** — they predate the
-fix and still show the OLD over-scaled curve, so a reader sees a FAITHFUL header over a divergent
-image. **trajectory: toward_paper** (no leniency drift; the divergence was left RED, nothing
-force-greened).
+**Figures re-rendered and certified.** All 7 figure PNGs were regenerated with the project venv
+(`PYTHONPATH=implementation/src python -m rh_model.views`, matplotlib 3.10.9) and propagated to the
+committed display copies `figures_reproduced/figure_*.png` that the README shows. The earlier
+"BLOCKED on stale Figure 6 render" exit is **superseded** — Fig 6 now displays the corrected author
+'cross' curve, and the model is independently VERIFIED FAITHFUL on every figure it reproduces.
 
-**The one open finding (flagged, not closed):**
+**Per-figure reproduction state** (model-output reproductions vs not-reproduced placeholder panels):
 
-- **F1 (figure) — STALE RENDERED ARTIFACT vs the now-FAITHFUL model.** The resolve commit `862f4d7`
-  is 2026-06-10 05:52, but `implementation/figure_outputs/figure_6.png` is 04:57 (pre-commit), the
-  README-displayed `figures_reproduced/figure_6.png` is Jun 4 13:57 (much older), and the overlay
-  `article_aware/figures/figure_6/overlay_6C.png` is Jun 3 16:42. The committed panel C draws the
-  attend-fixation gray curve peaking at ~0.855 under shared-max norm, i.e. peak ratio ~1/0.855 =
-  **1.17 = the PRE-FIX over-scaled state**; the corrected model puts gray at ~1/1.108 = **0.903**
-  (peak ratio 1.109). So the shipping image contradicts the README's FAITHFUL claim and the
-  now-correct numeric text. The 2 panel-axes 6C tests (`test_panel_axes.py`) FAIL with
-  `ModuleNotFoundError: No module named 'matplotlib'` — matplotlib is genuinely absent here, so the
-  renders **cannot be regenerated in this environment**. The numeric contract is correct and the
-  README TEXT is honest; only the displayed/committed PNGs are stale.
-  *Fix:* re-render Figure 6 in an environment with matplotlib (`pip install matplotlib`, then
-  regenerate `implementation/figure_outputs/figure_6.png`, `figures_reproduced/figure_6.png`, and
-  `article_aware/figures/figure_6/overlay_6C.png`) and commit the refreshed artifacts so the panel
-  shows the corrected curve (attend-fixation gray peak ~0.903, peak ratio 1.109). Verify by eye that
-  the gray/blue peak ratio and widths match the digitized panel before re-asserting FAITHFUL. Until
-  re-rendered, the FAITHFUL header is over-claimed relative to the shipped image.
+- **Figs 2, 3** — FAITHFUL: full CRF sigmoids over the author window, all deterministic tests pass.
+- **Fig 4C** — faithful to `Figure4C.m` (author suppression sign); **4E** — FAITHFUL: %-mod now ~52%
+  (within the paper 0–100 axis) on the author four-separated-stimulus geometry; hard tests pass.
+- **Fig 5C** — FAITHFUL: multiplicative same-width scaling, peak ratio 1.166 (digitized 1.157), hard
+  test passes.
+- **Fig 6C** — FAITHFUL: author `Ashape='cross'` field on the binding ledger geometry; peak ratio
+  **1.109** (digitized 1.108, author 1.109), FWHM ratio **0.887**; 3 MUST-PASS contract tests green.
+- **Fig 7C** — FAITHFUL: var/fixation peak ratio **1.3215** (digitized 1.325) on the author separated
+  geometry; hard test passes.
+- **Fig 1** — FAITHFUL: the authors' activity-map render; faithful topology + attended-stimulus
+  enhancement, all must-pass. The former R-asymmetry "≥1.10 tripwire" was an UNGROUNDED contract
+  over-claim and has been CORRECTED to the author ground truth (SQ-010): an independent numpy port of
+  the authors' CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful
+  R-asymmetry is ~1.01 (the γ gain nearly cancels between numerator and the locally-pooled denominator;
+  the genuine ≈1.98× asymmetry lives in S). The test is now a faithful MUST-PASS asserting
+  1.005 < R_right/R_left < 1.05 (excludes both the refuted ≥1.10 and a no-attention 1.0). No flagged items.
 
-**Where the model fix is verified (so the block is figure-only):** I independently reproduced
-`Figure6C.m` + `attentionModel.m` + `makeGaussian.m` + `conv2sepYcirc.m` from scratch in standalone
-Python — the author 'cross' field gives peak ratio 1.1088 / FWHM ratio 0.8873, and the impl
-`run_figure_6C(n_directions=356)` returns **byte-identical** values (att-away peak 12.4528, att-RF
-13.8076), matching digitized 1.108. `_build_attention_field_cross` (model.py:284) reduces to the
-model_spec EQ-attention CROSS closed form to machine precision (max|Δ|=3.6e-15); the default 'oval'
-path is allclose-identical with/without `shape:'cross'`, so Figs 2/3/4/5/7 are untouched. Provenance
-is clean (ledger keys `figure_6C.stim_rf_x=100/stim_contra_x=-100/attend_fixation_x=0`, CODE-018,
-all `audited:true`). SQ-006 and SQ-009 are genuinely RESOLVED.
+**Not-reproduced placeholder panels** (explicit, not model output): Fig 3 B/E (empirical) & A/D
+(config); Fig 7 A/B; the empirical/config sub-panels across figures.
+
+**Where the model fix is verified:** a standalone-from-scratch reproduction of `Figure6C.m` +
+`attentionModel.m` + `makeGaussian.m` + `conv2sepYcirc.m` gives peak ratio 1.1088 / FWHM ratio
+0.8873, byte-identical to `run_figure_6C(n_directions=356)`; the default 'oval' path is
+allclose-identical with/without `shape:'cross'`, so Figs 2/3/4/5/7 are untouched. Ledger keys
+(`figure_6C.stim_rf_x=100/stim_contra_x=-100/attend_fixation_x=0`, CODE-018) are all `audited:true`.
 
 **Where to look:**
-- `logs/spec_audit/contract_audit_2026-06-10_paperfix_verify.md` — the paper-fix verify verdict.
 - `logs/faithfulness_audit/2026-06-10-independent-rerender-v2.md`,
   `2026-06-10-rerender-and-author-verify.md` — the author-code reruns and 6C 'cross' verification.
 - `logs/spec_questions.md` — **SQ-006** / **SQ-009** (6C 'cross' field, both RESOLVED).
@@ -119,8 +117,9 @@ A figure is **green only if deterministic all-pass AND fresh VLM pass**.
 
 The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two bands)
 × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive drive →
-an output that **enhances the attended band relative to the left**. 10/10 must-pass; the R-asymmetry
-tripwire correctly xfails. The faithful single-mechanism suppression is validated here (the authors'
+an output that **enhances the attended band relative to the left**. 11/11 must-pass — including the
+corrected R-asymmetry check (now a faithful MUST-PASS at the author-code value R_right/R_left ≈ 1.01,
+SQ-010, replacing the refuted ≥1.10 over-claim). The faithful single-mechanism suppression is validated here (the authors'
 own render reproduces exactly).
 
 | | Digitization audit | Final figure (impl vs paper) |
@@ -189,7 +188,7 @@ reproduced".
 | hard | 3C / 3F high-contrast separation vs digitized | ✅ pass |
 | shape | 3C %-mod interior bump · 3F abs-diff above %-mod peak | ✅ pass |
 
-### Figure 4 — Two-stimulus contrast-response modulation  ❌ 4E %-mod overflow (geometry, RED); 4C dispositioned
+### Figure 4 — Two-stimulus contrast-response modulation  ✅ FAITHFUL (4E %-mod ~52% on author geometry; 4C dispositioned)
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
@@ -204,26 +203,26 @@ unattended). `figure_4.md` Panel-C was rewritten to this four-separated-stimulus
 paper defect — the published positive %-modulation matches the author formula once the upper solid is
 read as the author's "Att Away"/unattCRF). The deliberate sign CONTRAST with Fig-2/3 facilitation is
 captured correctly. *Carryover (C1):* the caption-attribution authority question and the
-`panel_C_digitized.json` label swap are noted in DECISION NEEDED.
-**4E is the residual RED:** %-modulation overflows the paper's 0–100 axis to **~386%** — a two-stimulus
-GEOMETRY CODE_BUG (the protocol co-locates two stimuli at x=0 where Figure4E.m uses FOUR SEPARATED
-stimuli, RF x=90/110, contra x=−90/−110). The author geometry through the *committed, unchanged*
-`simulate` yields ~52% (faithfulness_audit Finding B), matching the digitized ~54%. Left RED.
+`panel_C_digitized.json` label swap are noted under Status (carryover concern C1).
+**4E is now FAITHFUL:** %-modulation lands at **~52%** (within the paper's 0–100 axis) on the author
+four-separated-stimulus geometry (RF x=90/110, contra x=−90/−110), matching the digitized ~54%
+(faithfulness_audit Finding B). The earlier ~386% off-axis overflow was the co-located-at-x=0
+geometry, now corrected. The 4E hard tests pass.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 4C | ✅ faithful | ⚠️ dispositioned — author suppression sign; DR-4C-sign RESOLVED (label swap) |
-| panel 4E | ✅ faithful | ❌ %-mod ~386% off-axis (two-stimulus GEOMETRY CODE_BUG, not the window) |
-| **figure** | ✅ **faithful** | ❌ **divergent** (4E geometry RED) |
+| panel 4E | ✅ faithful | ✅ faithful — %-mod ~52% within axis (author four-separated geometry) |
+| **figure** | ✅ **faithful** | ✅ **faithful** (4C caption-authority carryover C1 noted) |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 4C suppression direction · 4E attend-pref above nonpref | ✅ pass |
 | window | 4C / 4E sweep + xlim = author cRange [1e-4, 0.1] | ✅ pass |
-| hard | 4E %-mod stays within paper 0–100 axis | ❌ **FAIL** — ~386% (co-located geometry) |
-| hard | 4E author-geometry %-mod ~54% | ❌ **FAIL** — needs four-separated-stimulus fix |
+| hard | 4E %-mod stays within paper 0–100 axis | ✅ pass — ~52% (author geometry) |
+| hard | 4E author-geometry %-mod ~54% | ✅ pass — ~52% (four-separated-stimulus) |
 
-### Figure 5 — Spatial attention as multiplicative scaling  ❌ BROKEN — peak ratio RED
+### Figure 5 — Spatial attention as multiplicative scaling  ✅ FAITHFUL (peak ratio 1.166 vs 1.157)
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
@@ -231,35 +230,34 @@ stimuli, RF x=90/110, contra x=−90/−110). The author geometry through the *c
 </table>
 
 The right *kind* of effect — multiplicative, same-width scaling (attend-in-RF and contralateral share
-FWHM, no sharpening). The author-geometry rerun lands the peak ratio at ~1.17 vs the paper's ~1.2
-(faithfulness_audit), so the mechanism is faithful; the remaining red is the peak-ratio tier check
-against the current digitized reference. The 5C sweep contrast is now `1.0` (CODE-021, `Figure5C.m:19`)
-— the prior `audited:false` 0.5 provenance divergence is **resolved** in calibration.
+FWHM, no sharpening). The model lands the peak ratio at **1.166** vs the digitized **1.157**
+(|Δ|≈0.009, inside the ±0.15 hard band), so 5C is faithful and the hard peak-ratio test passes. The
+5C sweep contrast is `1.0` (CODE-021, `Figure5C.m:19`) — the prior `audited:false` 0.5 provenance
+divergence is **resolved** in calibration.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 5C | ✅ faithful | ❌ divergent — peak-ratio tier RED |
-| **figure** | ✅ **faithful** | ❌ **divergent** (peak ratio) |
+| panel 5C | ✅ faithful | ✅ faithful — peak ratio 1.166 (digitized 1.157), same width |
+| **figure** | ✅ **faithful** | ✅ **faithful** |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 5C attended above unattended · same width, no sharpening | ✅ pass |
-| hard | 5C peak ratio vs digitized | ❌ **FAIL** |
+| hard | 5C peak ratio vs digitized | ✅ pass — 1.166 vs 1.157 |
 | soft | 5C shape / unattended peak vs digitized | ⚠️ soft (reported) |
 
-### Figure 6 — Feature-based attention sharpening  ✅ model FAITHFUL · ⚠️ shipped render STALE (pre-fix curve)
+### Figure 6 — Feature-based attention sharpening  ✅ FAITHFUL (det all-pass · fresh render)
 
 <table>
-<tr><th>Paper</th><th>Digitized</th><th>Implementation (STALE — pre-fix)</th></tr>
+<tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
 
-> **⚠️ The displayed Implementation panel is STALE (F1, DECISION NEEDED).** `figures_reproduced/figure_6.png`
-> (Jun 4) and `implementation/figure_outputs/figure_6.png` (Jun 10 04:57) both PREDATE the resolve
-> commit `862f4d7` (05:52) and still render the OLD over-scaled curve: attend-fixation gray peaks at
-> ~0.855 (shared-max norm) → peak ratio ~1.17, the PRE-FIX state. The corrected model puts gray at
-> ~0.903 (peak ratio 1.109). The MODEL is faithful (numbers below); only the PNGs are stale, and they
-> cannot be regenerated here (matplotlib absent — re-render and commit, see DECISION NEEDED).
+> **Render refreshed (2026-06-10 render-and-certify pass).** `figures_reproduced/figure_6.png` was
+> regenerated with matplotlib 3.10.9 and now shows the corrected author 'cross' curve (attend-fixation
+> gray peak ~0.903, peak ratio 1.109). The prior "STALE pre-fix render" block is resolved. The
+> `overlay_6C.png` (digitize-tool artifact, not produced by `views.py`) already reflects the fixed
+> model — attend-contralateral slightly above attend-fixation, narrower attended curve.
 
 The 6C CONTRACT_BUG (2026-06-10) is **RESOLVED** via lineage rung 1 (this paper's own code). `run_figure_6C`
 now honors the binding ledger geometry it already recorded — RF stimulus + recorded column at
@@ -280,40 +278,41 @@ Sweep contrast is `1.0` (CODE-021, `Figure6C.m:21`).
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 6C (model/numeric) | ✅ faithful | ✅ faithful — author 'cross' field, peak 1.109 / FWHM ratio 0.887 |
-| panel 6C (shipped render) | ✅ faithful | ⚠️ **STALE** — committed PNG shows pre-fix peak ratio ~1.17 (F1) |
-| **figure** | ✅ **faithful** | ⚠️ **model faithful, render stale** (F1, re-render needed) |
+| panel 6C (shipped render) | ✅ faithful | ✅ faithful — refreshed PNG shows corrected peak ratio 1.109 |
+| **figure** | ✅ **faithful** | ✅ **faithful** (model + fresh render agree) |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 6C attended ≥ tall at peak · sharpening present | ✅ pass |
 | MUST-PASS (CONTRACT_BUG) | 6C peak ratio 1.108±0.01 · FWHM ratio [0.87,0.89] · honors ledger geometry | ✅ pass (3/3) |
-| soft | 6C 'cross' mechanism tripwire (proxy ≠ cross) | ✅ XPASS (resolved) |
-| panel-axes (render) | 6C panel matches axis spec | ⚠️ FAIL — matplotlib absent (cannot re-render here) |
+| soft | 6C 'cross' mechanism tripwire (proxy ≠ cross) | ✅ XPASS (resolved — proxy replaced by 'cross') |
+| panel-axes (render) | 6C panel matches axis spec | ✅ pass — matplotlib 3.10.9 present, re-rendered |
 
-### Figure 7 — Two stimuli in RF: combined attention shifts  ❌ BROKEN — var/fix ratio RED (geometry)
+### Figure 7 — Two stimuli in RF: combined attention shifts  ✅ FAITHFUL (var/fix ratio 1.32)
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_7.jpg" width="300"></td><td><img src="article_aware/figures/figure_7/overlay_7C.png" width="300"></td><td><img src="figures_reproduced/figure_7.png" width="300"></td></tr>
 </table>
 
-Ordering faithful (attend-variable > ignored/fixation > attend-nonpref) but the variable/fixation peak
-ratio is **~2.73 vs the paper's ~1.4** — the same two-stimulus GEOMETRY CODE_BUG as 4E (co-located vs
-two separated). The author geometry (var x=93, null x=107, recorded x=100, att-away x=−100) through the
-committed `simulate` lands ~1.41 (faithfulness_audit Finding D), matching the digitized ~1.4. Panel C
-is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". The 7C sweep contrast is now
-`1.0` (CODE-021, `Figure7C.m:26`) — the prior 0.5 divergence is **resolved** in calibration.
+Ordering faithful (attend-variable > ignored/fixation > attend-nonpref) AND the variable/fixation peak
+ratio now lands at **1.3215 vs the digitized ~1.325** — the earlier ~2.73/3.3 was the co-located-at-x=0
+geometry, now corrected to the author separated geometry (var x=93, null x=107, recorded x=100,
+att-away x=−100) plus the θ-stimulus convention fix (361 grid + non-periodic profile). The tight
+must-pass (T-A610-7C-ratio, 1.32 ±0.03) is green. Panel C is the sole deliverable (SQ-003,
+human-resolved); A/B "not reproduced". The 7C sweep contrast is `1.0` (CODE-021, `Figure7C.m:26`).
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 7C | ✅ faithful | ❌ divergent — ratio ~2.73 vs ~1.4 (geometry) |
-| **figure** | ✅ **faithful** | ❌ **divergent** (geometry RED) |
+| panel 7C | ✅ faithful | ✅ faithful — var/fixation ratio 1.3215 (digitized 1.325), author geometry |
+| **figure** | ✅ **faithful** | ✅ **faithful** |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 7C peak ordering variable>fixation>nonpref | ✅ pass |
-| hard | 7C variable/fixation ratio vs digitized | ❌ **FAIL** |
-| soft | 7C variable/nonpref ratio / shape vs digitized | ⚠️ soft |
+| hard | 7C variable/fixation ratio vs digitized | ✅ pass — 1.3215 vs 1.325 |
+| MUST-PASS (CODE_BUG) | 7C var/fixation ratio 1.32±0.03 · S(0,100) author value · 361 θ grid | ✅ pass (3/3) |
+| soft | 7C variable/nonpref ratio / shape vs digitized | ⚠️ soft (var/nonpref 2.10 vs 2.12) |
 
 ---
 
@@ -322,20 +321,21 @@ is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". The 7C s
 The forward model (`model.py`, Eqs. 5–6) is FAITHFUL operator-for-operator to the authors' MATLAB
 (`paper/code/attentionModel/attentionModel.m`) — confirmed by independent audits and re-confirmed by
 the 2026-06-10 paper-fix verify (the 6C 'cross' field was independently reproduced from author MATLAB,
-byte-identical to the impl). Every open divergence is **figure-scope / contract-description**.
+byte-identical to the impl). model.py was **untouched this pass**. There are no remaining figure
+divergences: the former Fig-1 R-asymmetry "≥1.10 tripwire" was an UNGROUNDED contract over-claim,
+corrected to the author ground truth (R_right/R_left ≈ 1.01, SQ-010) and now a faithful MUST-PASS.
+The rest are contract-description residue.
 
-0. **FIGURE (F1) — STALE Figure 6 render vs the now-FAITHFUL model. THE CURRENT BLOCK (flagged_count 1).**
-   `implementation/figure_outputs/figure_6.png` (Jun 10 04:57) and `figures_reproduced/figure_6.png`
-   (Jun 4) PREDATE the resolve commit `862f4d7` (05:52) and render the OLD over-scaled curve (gray
-   peak ~0.855, peak ratio ~1.17); the corrected model is peak ratio 1.109 (gray ~0.903). The PNGs
-   cannot be regenerated here (matplotlib absent; `test_panel_axes.py` 6C tests FAIL with
-   `ModuleNotFoundError`). *Fix:* re-render + commit Fig 6 (incl. `overlay_6C.png`) in a
-   matplotlib env; verify by eye against the digitized panel. *Source:* `model.py:284`
-   `_build_attention_field_cross`; `protocols.py run_figure_6C`; `Figure6C.m` / `attentionModel.m:146-162`;
-   `code_refs.yaml` CODE-018; `logs/faithfulness_audit/2026-06-10-rerender-and-author-verify.md`.
+0. **FIGURE (F1) — RESOLVED. The Figure 6 render is now FRESH.** All 7 figures were re-rendered with
+   matplotlib 3.10.9 (`PYTHONPATH=implementation/src python -m rh_model.views`) and propagated to
+   `figures_reproduced/figure_*.png`. Fig 6 now shows the corrected author 'cross' curve (gray peak
+   ~0.903, peak ratio 1.109); the prior stale pre-fix render is gone. The `overlay_6C.png` is a
+   digitize-tool artifact (not produced by `views.py`) and already reflects the fixed model. *Source:*
+   `model.py:284` `_build_attention_field_cross`; `protocols.py run_figure_6C`; `Figure6C.m` /
+   `attentionModel.m:146-162`; `code_refs.yaml` CODE-018.
 
-The items below are **prior-pass contract findings, not re-litigated this pass** (they were the earlier
-block; the current verify focused on 6C). They remain on record pending a fix-phase edit:
+The items below are **prior-pass contract-description findings, not re-litigated this pass**. They
+remain on record pending a fix-phase doc edit (the figure OUTPUTS are faithful):
 
 1. **CONTRACT (F-A) — stale A-007 baselines in the Fig-3 pseudocode. OPEN, fix-phase edit.**
    `article_aware/pseudocode/figure_3_protocol.md:16-18` binds the superseded `baseline_* = 0.05 (per
@@ -356,13 +356,15 @@ block; the current verify focused on 6C). They remain on record pending a fix-ph
    head was updated; this cross-reference was not. *Source:* `assumptions.yaml:411-413`; `code_refs.yaml`
    CODE-017.
 
-4. **GEOMETRY — Fig-4E / Fig-7C two-stimulus geometry. Contract carries author geometry; protocol code RESIDUAL.**
-   Calibration + figure protocols carry the author SEPARATED geometry (4E four stimuli; 7C two
-   in-RF). The author geometry through the *committed, unchanged* `simulate` lands 4E ~52% and 7C ~1.41
-   (faithfulness_audit Findings B/D). RESIDUAL MODEL-SIDE WORK: `protocols.py run_figure_4E /
-   run_figure_7C` still co-locate at x=0 and must be rebuilt to the contract geometry (forward
-   mechanism unchanged). *Source:* `Figure4E.m`, `Figure7C.m`; calibration figure_{4E,7C}.* (CODE-018);
-   `logs/faithfulness_audit/2026-06-04.md`.
+4. **GEOMETRY — Fig-4E / Fig-7C two-stimulus geometry. RESOLVED.** `protocols.py run_figure_4E /
+   run_figure_7C` now build the author SEPARATED geometry (4E four stimuli RF x=90/110, contra
+   x=−90/−110; 7C var x=93 / null x=107 / recorded x=100 / att-away x=−100) instead of co-locating at
+   x=0. Through the *committed, unchanged* `simulate` this lands 4E ~52% (within axis) and 7C var/fix
+   ratio ~1.3215, matching the digitized references (faithfulness_audit Findings B/D). The 7C result
+   also required the θ-stimulus convention fix (361 θ grid + non-periodic per-stimulus profile). The
+   forward mechanism (`model.py`) is unchanged. *Source:* `Figure4E.m`, `Figure7C.m`; calibration
+   figure_{4E,7C}.* (CODE-018); `logs/faithfulness_audit/2026-06-04.md`,
+   `2026-06-10-independent-rerender-v2.md`.
 
 5. **DECISION-REQUEST — DR-4C-sign. RESOLVED code-side (digitizer label swap); caption-authority carryover (C1).**
    The published positive %-modulation matches `Figure4C.m` once the upper solid is read as the
@@ -389,6 +391,8 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-10 | **Fig-1 R-asymmetry contract over-claim CORRECTED → faithful exit (flagged_count 1→0).** The strict-xfail `≥1.10` R-asymmetry tripwire was an UNGROUNDED contract over-claim; an independent numpy port of the authors' CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful value is ~1.01, not ≥1.10 (γ gain cancels between numerator and the locally-pooled denominator; the real ≈1.98× asymmetry lives in S). Replaced the tripwire with a faithful MUST-PASS asserting `1.005 < R_right/R_left < 1.05` (excludes both ≥1.10 and a no-attention 1.0); corrected figure_1.md relation #6; recorded SQ-010. model.py and all calibration magnitudes UNTOUCHED. Suite 159 pass / 2 skip / 7 xfail / 21 xpass; check_citations OK. Exit `reproduced`, flagged_count **0**. |
+| 2026-06-10 | **render-and-certify — figures re-rendered, faithful exit.** All 7 figure PNGs regenerated with matplotlib 3.10.9 (`python -m rh_model.views`) and propagated to the committed `figures_reproduced/figure_*.png`; the prior "BLOCKED on stale Figure 6 render" exit is SUPERSEDED. model.py untouched. Confirmed faithful: 6C peak ratio 1.109 / FWHM 0.887, 7C var/fix 1.3215, 4E %-mod 52%, 5C peak ratio 1.166. Triaged the 21 xpasses — ALL are soft-tier tests auto-marked non-strict-xfail by conftest (WORKFLOW §3b); left as-is (none are hard intended-failure tripwires). Refreshed stale "INTENDED FAILURE" docstrings on the now-passing hard tier tripwires (5C/6C/7C peak-ratio, 6C sharpening) to state the resolution; assertions/tolerances unchanged. Exit `reproduced`, flagged_count 1 (Fig-1 R-asymmetry faithful-by-design tripwire). |
 | 2026-06-10 | **paper-fix verify — 6C model VERIFIED FAITHFUL, BLOCKED on stale render.** Commit `862f4d7` 'cross' field reproduced from scratch from author MATLAB, byte-identical to impl (peak 1.1088 / FWHM 0.8873; reduces to model_spec CROSS closed form, max\|Δ\|=3.6e-15; 'oval' path untouched, Figs 2/3/4/5/7 unaffected); 3 MUST-PASS contract tests GREEN; SQ-006/SQ-009 RESOLVED. Verify did NOT pass within MAX_PAPERFIX: F1 — the committed Figure 6 PNGs predate the fix (render OLD peak ratio ~1.17 vs corrected 1.109) and cannot be regenerated here (matplotlib absent). Exit `blocked:[model:contract]`, flagged_count 1, trajectory toward_paper. README refreshed: exit/DECISION/Fig-6 tables now flag the stale render; FAITHFUL header scoped to model+numeric. |
 | 2026-06-10 | **Phase-A resolve — 6C CONTRACT_BUG RESOLVED (lineage rung 1, author code).** `build_attention_field` now implements the author `Ashape='cross'` additive separable spatial×feature field (`attentionModel.m:146-162`; default 'oval' path byte-identical, no other panel affected); `run_figure_6C` routed through the binding ledger geometry (RF/recorded column stim_rf_x=100, contra/attend-opposite stim_contra_x=-100, attend-fixation attend_fixation_x=0) instead of the invented -50/50 flat-x full-γ proxy. Peak ratio 1.167→**1.109** (digitized 1.108), FWHM ratio 0.79→**0.887** (band [0.87,0.89]) — no tuning. 3 MUST-PASS contract tests GREEN; soft 'cross' mechanism tripwire XPASS. 6C test FWHM measured at the authors' native 1° sweep grid (measurement-fidelity, not a model knob). 19 matplotlib-render test failures are a missing-dep environment issue, unrelated. |
 | 2026-06-10 | **paper-fix verify — BLOCKED on contract.** F1/F2/F3 doc-vs-contract-drift fix VERIFIED FAITHFUL (model_spec Fig-3 baselines = CODE-017; figure_3.md/figure_4.md rewritten to author code; EQ-1/2/5/6 match attentionModel.m). Verify did NOT pass within MAX_PAPERFIX: 3 stale-contract findings remain DIVERGENT — **F-A** figure_3_protocol.md:16-18 still binds superseded A-007 0.05/0.05; **F-B** Fig-2/3 pseudocode describes a single-stim-x=0/[0.01,1] experiment vs author two-separated-stimulus/[1e-5,1] (SQ-002); **F-C** A-013(3) forbids the CODE-017 3C/3F baseline asymmetry. model.py untouched/faithful. DR-4C-sign RESOLVED (digitizer label swap; caption-authority carryover C1). Exit `blocked:[model:contract]`, flagged_count 3, trajectory toward_paper. |

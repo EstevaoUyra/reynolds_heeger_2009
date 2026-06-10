@@ -146,14 +146,18 @@ def test_4E_attend_pref_above_attend_nonpref():
 @tier_test(
     tier="hard", spec_ref="figures.figure_4.panel_E", figure=4,
     claim_id="T-4E-H-modmag",
-    paper_issue="4E % attentional modulation (~310-390%) overflows the paper's "
-    "0-100 axis — known model divergence (panel_E.md). Intended failing hard test.",
 )
 def test_4E_modulation_stays_within_paper_axis():
-    """HARD (INTENDED FAILURE): the paper's 4E % modulation stays WITHIN 0-100;
-    the model's reaches ~390%. Require max % modulation <= digitized ceiling
-    (~55) + tol 20. The model blows past it — that red is the success criterion.
-    Do NOT widen the bound or edit the model."""
+    """HARD MUST-PASS: the 4E % attentional modulation stays WITHIN the paper's
+    0-100 axis (max %-mod <= digitized ceiling ~55 + tol 20).
+
+    RESOLVED (2026-06-10): on the author four-separated-stimulus geometry (RF x=90/110,
+    contra x=−90/−110) the model now peaks at ~52%, inside the axis. The earlier
+    "INTENDED FAILURE — model ~390% off-axis" framing described the co-located-at-x=0
+    geometry that has since been corrected (CODE-018). SAME bound kept (passes because
+    the geometry is correct now, NOT because the bound was widened). Do NOT widen or
+    edit the model. Citation: Figure4E.m four-separated geometry; digitized
+    figures/figure_4/panel_E."""
     c, _, _, pm = _record_4E()
     ref_max = max(
         ref_value_at(4, "E", "percent_modulation", cc, log_x=True) for cc in c

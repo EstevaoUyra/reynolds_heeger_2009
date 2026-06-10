@@ -4,10 +4,12 @@ Two stimuli in the RF, three attention conditions on direction tuning. Evaluated
 on the implementation record (protocols.run_figure_7C) in the pinned display
 frame; expected values from the digitized reference.
 
-KNOWN DIVERGENCE: the curve ORDERING (attend-variable > ignored >
-attend-nonpreferred) is correct, but the model's attend-variable/ignored peak
-ratio is ~3.3 vs the paper's ~1.4 — the attention gain is more than twice too
-strong. The hard ratio test FAILS by design.
+STATUS (2026-06-10): RESOLVED. The curve ORDERING (attend-variable > ignored >
+attend-nonpreferred) is correct AND the model's attend-variable/ignored peak ratio
+now lands at ~1.3215 (digitized 1.325) after the author separated geometry +
+θ-stimulus convention fixes. The hard ratio test PASSES (it was an intended failure
+under the earlier co-located geometry; the model is faithful now). The soft
+variable/nonpref ratio is also within band (~2.10 vs digitized 2.12).
 """
 
 from __future__ import annotations
@@ -38,13 +40,19 @@ def test_7C_peak_ordering():
 @tier_test(
     tier="hard", spec_ref="figures.figure_7.panel_C", figure=7,
     claim_id="T-7C-H-varfix",
-    paper_issue="7C attend-variable/ignored peak ratio ~3.3 vs paper ~1.4 — "
-    "attention gain more than twice too strong. Intended failing hard test.",
 )
 def test_7C_variable_over_fixation_ratio_matches_digitized():
-    """HARD (INTENDED FAILURE): attend-variable/ignored peak ratio ~ digitized
-    (~1.39) +/- 0.3. The model's ~3.3 blows past it — that red is the success
-    criterion. Do NOT loosen the tolerance or edit the model."""
+    """HARD MUST-PASS: attend-variable/ignored peak ratio ~ digitized (~1.325) +/- 0.3.
+
+    RESOLVED (2026-06-10): the model now lands at var/fixation peak ratio ~1.3215
+    (digitized 1.325), squarely inside the band. The earlier "INTENDED FAILURE —
+    model ~3.3 blows past it" framing described the co-located-at-x=0 geometry that
+    has since been corrected to the author separated geometry (var x=93, null x=107,
+    recorded x=100, att-away x=-100) AND the θ-stimulus convention (361 grid +
+    non-periodic profile) fix. SAME assertion/tolerance kept (passes because the
+    model is correct now, NOT because the tolerance was loosened). Do NOT loosen or
+    edit the model. Citation: CODE-018 author geometry; T-A610-7C-ratio (tight 1.32
+    ±0.03 must-pass); digitized figures/figure_7/panel_C (var/fixation ratio 1.325)."""
     _, var, fix, _ = _record()
     model_ratio = float(var.max() / fix.max())
     ref_ratio = ref_peak(7, "C", "attend_variable") / ref_peak(7, "C", "fixation")
