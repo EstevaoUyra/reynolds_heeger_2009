@@ -134,7 +134,12 @@ human_resolution: |
 ## SQ-006 — feature-based attention is spatially GLOBAL (Fig 6C / 7C attend-opposite); needs a named ledger assumption
 date: 2026-06-03
 spec_ref: simulation_protocols.figure_6C; pseudocode/figure_6_protocol.md (Procedure 6C step 2); pipeline.build_attention_field; constants C-017, C-021, C-023
-status: RESOLVED-IN-BUILD (Phase B), pending Phase-A formalization of the assumption entry.
+status: RESOLVED (2026-06-10) — FORMALIZED as assumption A-014 (feature_attention_is_spatially_global)
+  in article_aware/spec/assumptions.yaml (escalation option (a)). The figure_6/7 protocols + model_spec
+  figure_6C/7C now cite A-014; the feature-selective conditions are theta-selective and FLAT in x at the
+  recorded RF, spatial-attention-away is the attend-fixation baseline. Grounded in C-023 + Figure6C.m
+  (spatial attention to x=-100 yet affects recorded x=+100, CODE-018). (Was: RESOLVED-IN-BUILD pending
+  Phase-A formalization.)
 question: |
   The 2026-06-03 CODE_BUG finding (test_figure_6C_code_bug.py, MUST-PASS) showed run_figure_6C
   built the attend-opposite-stimulus condition as a SPATIAL Gaussian centered at x_opposite=-50
@@ -185,10 +190,20 @@ spec_ref: |
   article_aware/extracted_data/test_contract_suppression_consistency.py;
   article_aware/extracted_data/test_figure_{2A,2B,3C,3F,4C}.py (half-max/left-shift claims);
   article_aware/extracted_data/test_tier_figure_{4,7}.py; figure_{2,3,4}/panel_*_digitized.json
-status: PARTIAL-STUCK (Phase B). The SQ-005 mechanism was IMPLEMENTED and is correct where the
-  contract is self-consistent (Figure 1 is fully green; CRF saturation + response-gain signatures
-  pass). Three groups of must-pass tests remain RED for reasons OUTSIDE a paper-blind builder's
-  sanctioned levers; escalated to Phase A / organizer. No knob was tuned to force any of them.
+status: RESOLVED (2026-06-10). GAP 1 (CRF contrast axis) and GAP 2 (suppression-consistency test
+  shape) were resolved at the CONTRACT level by Phase A on prior passes (author cRange windows
+  CODE-020; test_contract_suppression_consistency.py rewritten to the no-per-panel-gain invariant) and
+  the implementation now passes both. GAP 3 (Fig-4E %-mod and Fig-7C ratio over-modulation) is RESOLVED
+  IN-BUILD this pass: the 2026-06-04 audit (test_audit_2026_06_04.py Findings B/D, MUST-PASS) identified
+  the over-modulation as a GEOMETRY CODE_BUG — the protocols simulated TWO CO-LOCATED stimuli at x=0
+  instead of the authors' FOUR/TWO SEPARATED stimuli (Figure4E.m/Figure7C.m, CODE-018). Phase B rewired
+  run_figure_4E to the four-separated-stimulus yoked-contrast layout (x=±90/±110, RF at x=100) and
+  run_figure_7C to the two-separated-stimulus layout (variable x=93, null x=107, RF x=100, attend-away
+  x=-100), reading the geometry keys Phase A already added to article_aware/spec/calibration.yaml. Under
+  the FAITHFUL mechanism over the correct geometry the magnitudes drop to 4E %-mod ~50% (digitized ~54%)
+  and 7C var/away ratio ~1.41 (digitized ~1.33-1.4) — NO knob tuned (A-013). Full suite green: 150
+  passed, 9 xfailed (legitimate tripwires: Fig-1 R-asymmetry, 6C oval-vs-cross, seven soft-tier shapes),
+  18 xpassed (soft tier). (Was: PARTIAL-STUCK — 3 must-pass gaps RED, escalated to Phase A.)
 what_was_built: |
   Implemented the SQ-005 author-code mechanism end to end (implementation/src/rh_model, no
   article_aware edits):
@@ -276,3 +291,34 @@ escalation_options_for_phaseA: |
   GAP 3: reclassify the Fig-4E %-mod and Fig-7C ratio claims from tier="hard" to soft/xfail
     tripwires (they ARE genuine magnitude divergences of the faithful 2-stimulus mechanism, as their
     own paper_issue notes), or supply a verified faithful target the mechanism can hit.
+
+## DR-4C-sign — published Fig-4C curve order / modulation sign vs the model
+date: 2026-06-04 (opened); 2026-06-10 (resolved)
+spec_ref: assumptions A-012 (paper_issue); figures/figure_4/panel_C.md; pseudocode/figure_4_protocol.md (Procedure 4C); paper/code/Figure4C.m
+owner: human (faithfulness lead); expiry 2026-07-15
+status: RESOLVED (2026-06-10) — CODE-RESOLVABLE; closed, no human ruling needed.
+question: |
+  Was the published Figure 4C panel (which appears to draw the attended curve ABOVE attend-away and
+  whose caption B/C says "percentage INCREASE") a GENUINE paper-vs-code discrepancy against the
+  authors' released Figure4C.m (which computes 100*(unattCRF-attCRF)/unattCRF and, per C-021, makes
+  attend-null-in-RF a SUPPRESSION, attended below)? Or is the published panel reproducible from the
+  author code (code-resolvable)?
+resolution: |
+  CODE-RESOLVABLE. NO genuine paper/code contradiction — the apparent conflict was a DIGITIZER LABEL
+  SWAP, not a defect in either authors' artifact. Decisive evidence (Figure4C.m + panel_C_digitized.json):
+    1. Figure4C.m legend (line 69) is 'Att Away','Att RF': unattCRF=Att-Away (Ax=-110, contralateral),
+       attCRF=Att-RF (Ax=110, attend-null-in-RF). Dashed modulation = 100*(unattCRF-attCRF)/unattCRF
+       (line 74), drawn POSITIVE (~36% peak, declining) in the published panel.
+    2. For that dashed to be positive, unattCRF (Att-Away) must be the UPPER solid and attCRF (Att-RF)
+       the LOWER — i.e. attending the null in the RF SUPPRESSES the recorded preferred neuron (C-021).
+       So the published UPPER solid is the CONTRALATERAL/unattended condition, NOT "attended".
+    3. Recomputing 100*(upper-lower)/upper on the DIGITIZED curves reproduces the digitized percent-
+       modulation POINTWISE (~29-30% mid-range, declining toward high contrast), confirming
+       published-panel == Figure4C.m. (Verified numerically against panel_C_digitized.json.)
+  The only error was the digitizer's: panel_C_digitized.json labeled the UPPER solid "attended" (it is
+  the author's Att-Away/unattCRF). The model already follows Figure4C.m and is correct. The empirical
+  Fig-4B caption's "percentage increase" describes the Reynolds/Martinez-Trujillo DATA panel, not the
+  model panel C; the author MODEL code is the authoritative spec source and is internally consistent.
+  ACTIONS: A-012 paper_issue → status RESOLVED (digitizer-label-swap, not a paper defect); README
+  DECISION-NEEDED #4 closed; panel_C.md / figure_4_protocol.md framing updated; the digitized JSON
+  solid-label swap remains documented so downstream tier comparisons account for it.

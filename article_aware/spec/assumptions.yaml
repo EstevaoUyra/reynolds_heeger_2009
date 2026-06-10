@@ -297,7 +297,7 @@
     - "A-006 (2D-plane pooling)"
 
 - id: A-012
-  name: figure_4C_author_code_protocol_and_paper_panel_sign_defect
+  name: figure_4C_author_code_protocol_and_digitizer_label_swap
   description: |
     Figure 4C is implemented EXACTLY as the authors' released Figure4C.m
     (CODE-018), resolving the prior contract mis-mapping. The protocol is FOUR
@@ -335,29 +335,35 @@
     ancestor would not override the authors' own released simulation script).
   paper_issue:
     decision_request: DR-4C-sign
+    status: RESOLVED (code-resolvable, 2026-06-10) — NO genuine paper/code contradiction; closed.
     owner: human (faithfulness lead)
     expiry: 2026-07-15
     summary: |
-      PAPER/CODE INCONSISTENCY on the 4C curve order & modulation sign. The
-      authors' released Figure4C.m draws "Att RF" (attend-null-in-RF) as the
-      LOWER curve and reports 100·(unatt-att)/unatt (suppression), consistent
-      with C-021. But the PUBLISHED Figure 4 panel C + caption B/C (C-015) DRAW
-      the attend-nonpref-in-RF (red) curve ABOVE attend-away and label the dashed
-      curve a "percentage INCREASE in firing rate" (facilitation / contrast gain),
-      and the digitized panel_C_digitized.json traced the UPPER solid as
-      "attended". The two authoritative authors' artifacts (code vs published
-      panel) therefore disagree on which condition is drawn on top and on the
-      modulation SIGN; only the %-modulation MAGNITUDE curve (~36% peak,
-      declining) is common to both and is reproduced by the model.
-      RESOLUTION TAKEN: follow the released CODE + C-021 (suppression: attended
-      below unattended; percent_modulation = 100·(unatt-att)/unatt, positive).
-      This is dispositioned as a documented PAPER defect, not a model fault. The
-      digitized JSON's solid-curve labels (attended=upper) are SWAPPED relative
-      to the code convention; downstream tier comparisons must account for that.
-      Human to confirm the intended convention (code/C-021 suppression vs
-      published-panel facilitation drawing).
+      RESOLVED 2026-06-10 (code-resolvable; DR closed, no human ruling needed).
+      The apparent "paper/code sign inconsistency" was a DIGITIZER LABEL SWAP, not
+      a defect in either authors' artifact — the published panel and Figure4C.m
+      AGREE. Decisive evidence:
+        - Figure4C.m legend (line 69) is `'Att Away','Att RF'`: unattCRF=Att-Away
+          (Ax=-110, contralateral), attCRF=Att-RF (Ax=110, attend-null-in-RF).
+        - Dashed modulation = 100·(unattCRF-attCRF)/unattCRF (line 74), drawn
+          POSITIVE in the published panel (~36% peak, declining). For this to be
+          positive, unattCRF (Att-Away) must be the UPPER solid and attCRF (Att-RF)
+          the LOWER — i.e. attending the null in the RF SUPPRESSES the recorded
+          preferred neuron (C-021). So the published UPPER solid is the
+          CONTRALATERAL/unattended condition, NOT "attended".
+        - Recomputing the author dashed formula 100·(upper-lower)/upper on the
+          digitized curves reproduces the digitized % modulation POINTWISE
+          (~29–30% mid-range, declining), confirming published-panel == code.
+      The only error was the digitizer's: panel_C_digitized.json labeled the UPPER
+      solid "attended" (it is the author's Att-Away/unattCRF). The model already
+      follows Figure4C.m and is correct. The empirical Fig-4B caption's "percentage
+      increase" describes the Reynolds/Martinez-Trujillo DATA panel, not the model
+      panel C; the author MODEL code is the authoritative spec source and is
+      internally consistent. No paper defect; no convention call for a human.
+      Downstream tier comparisons must still account for the digitized JSON's solid
+      label swap (upper-labeled-"attended" = author Att-Away).
   alternatives_considered:
-    - "Follow the PUBLISHED panel drawing (attend-nonpref-in-RF above, facilitation, percentage-increase): contradicts the authors' released Figure4C.m and C-021; would require relabeling the curves opposite to the code. Recorded as the open DR-4C-sign question, not silently adopted."
+    - "Treat as a genuine paper-vs-code defect and keep DR-4C-sign OPEN for a human ruling: REJECTED on the evidence — the published dashed % modulation is positive and matches the author 100·(unattCRF-attCRF)/unattCRF pointwise once the digitizer's curve label-swap is corrected, so the published panel and Figure4C.m AGREE (attend-null-in-RF is the LOWER/suppressed curve). The only error was the digitizer's label, not an authors' artifact. Closed as code-resolvable."
     - "Prior RETIRED build: two colocated stimuli at x=0 + spatial θ-flat attention → facilitation peak ~101%. Wrong geometry (neither code nor paper); produced a 3x-too-strong magnitude artifact. Removed."
   affects:
     - "simulation_protocols.figure_4C (four-stimulus geometry, attend-null oval field, cRange [1e-4,0.1])"
@@ -439,3 +445,43 @@
     - "A-007 (single shared Fig-3 baseline)"
     - "logs/spec_questions.md SQ-001 (remediation_2026-06-03), SQ-002, SQ-004 (resolution_2026-06-03)"
     - "rendering_conventions / constants: C-010, C-011, C-019, C-020"
+
+- id: A-014
+  name: feature_attention_is_spatially_global
+  description: |
+    Feature-based attention (the direction-selective attention field used in the
+    attend-stimulus conditions of Fig 6C and the attend-variable/attend-nonpref
+    conditions of Fig 7C) is SPATIALLY GLOBAL: its directional (θ) gain reaches
+    the recorded neuron's RF regardless of where spatial attention is directed.
+    Operationally, the attend-opposite-stimulus / feature-selective condition is
+    modelled as a θ-selective field that is FLAT (global) in x at the recorded
+    RF, so the directional gain multiplies the recorded neuron's drive. Spatial
+    attention directed AWAY from the RF is represented by the attend-fixation
+    BASELINE, NOT by zeroing the feature component over the RF.
+  rationale: |
+    Grounded in C-023 ("the stimulus drive is multiplied by an attention field
+    that is itself selective for motion direction" — the directional gain must
+    reach the recorded neuron) and the Fig-6 caption ("feature-based attention …
+    matched to the stimulus in the receptive field"). The authors' Figure6C.m
+    directs SPATIAL attention to the opposite-hemifield stimulus (Ax = -100) yet
+    the recorded neuron (RF at x = +100) still shows the directional sharpening —
+    only possible if the feature gain is not spatially confined to x = -100. A
+    purely-local spatial×feature product (A = 1 + (γ-1)·G_x·G_θ centred at -100)
+    gives G_x ≈ 0 at x = +100, so A ≈ 1 and the feature gain never reaches the
+    recorded neuron (the curves overlap, peak ratio ~1.01, no sharpening — the
+    CODE_BUG that test_figure_6C_code_bug.py named). Spatial globality of the
+    feature gain is the only mapping consistent with C-023 and the author script.
+    Formalizes SQ-006 (escalation option (a)).
+  alternatives_considered:
+    - "Confined spatial×feature product centred at the attended stimulus (G_x·G_θ): REJECTED — G_x≈0 at the recorded RF so the feature gain never reaches it; curves overlap, no sharpening (the 6C CODE_BUG)."
+    - "A separable global-feature × local-spatial-baseline factorization (SQ-006 option b): not adopted — the simpler spatially-global feature gain already matches C-023 and the author script; no evidence a separate spatial-baseline term is intended."
+  affects:
+    - "simulation_protocols.figure_6C (attend-opposite-stimulus: θ-selective, spatially global)"
+    - "simulation_protocols.figure_7C (attend-variable / attend-nonpref feature gains)"
+    - "pseudocode/figure_6_protocol.md (Procedure step 2); pseudocode/figure_7_protocol.md (Procedure step 2)"
+    - "pipeline.build_attention_field (feature-selective conditions are flat in x at the recorded RF)"
+  spec_refs:
+    - "C-023 (feature-based attention sharpens via a direction-selective field)"
+    - "C-017 (Fig-6 spatial attention away from RF; feature attention selective)"
+    - "CODE-018 (Figure6C.m Ashape='cross', Ax=-100 yet affects recorded RF at +100)"
+    - "logs/spec_questions.md SQ-006"

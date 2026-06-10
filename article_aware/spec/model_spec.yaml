@@ -487,8 +487,8 @@ simulation_protocols:
       stimulus_size: 5
       attention_field_size: 30
       peak_attention_gain_gamma: 2
-      baseline_modulated_by_attention: 0.05    # per A-007
-      baseline_unmodulated: 0.05               # per A-007
+      baseline_modulated_by_attention: 5.0e-7  # CODE-017 (Figure3C.m:5 baselineMod=5e-7); supersedes A-007
+      baseline_unmodulated: 5.0                 # CODE-017 (Figure3C.m:6 baselineUnmod=5); supersedes A-007. Binding value lives in calibration.yaml figure_3C.baseline_*
     expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
       - extracted_data/test_figure_3C.py
@@ -501,8 +501,8 @@ simulation_protocols:
       stimulus_size: 7
       attention_field_size: 7
       peak_attention_gain_gamma: 2
-      baseline_modulated_by_attention: 0.05    # per A-007
-      baseline_unmodulated: 0.05               # per A-007
+      baseline_modulated_by_attention: 5.0e-7  # CODE-017 (Figure3F.m:5 baselineMod=5e-7, same as 3C); supersedes A-007
+      baseline_unmodulated: 0.0                 # CODE-017 (Figure3F.m:6 baselineUnmod=0); supersedes A-007. ASYMMETRIC vs 3C (5 vs 0). Binding value in calibration.yaml figure_3F.baseline_*
     expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
       - extracted_data/test_figure_3F.py
@@ -517,7 +517,10 @@ simulation_protocols:
     # recorded neuron (attended_CRF below unattended_CRF; C-021). percent_modulation
     # = 100·(unattended-attended)/unattended (suppression sign), peaks ~38% and
     # declines (matches the digitized panel_C ~36%). cRange [1e-4, 0.1]; null
-    # contrast fixed 0.01. PAPER/CODE sign discrepancy: DR-4C-sign / A-012.
+    # contrast fixed 0.01. DR-4C-sign RESOLVED (code-resolvable, A-012): no genuine
+    # paper/code contradiction — the published panel agrees with Figure4C.m once the
+    # digitizer's solid-curve label swap is corrected (published upper solid = author
+    # Att-Away/unattCRF). The model follows the author code and is correct.
     parameter_overrides:
       stimulus_size: 5
       attention_field_size: 5
@@ -534,52 +537,99 @@ simulation_protocols:
     code_refs: [CODE-018]
 
   - id: figure_4E
-    name: "Figure 4E — Two stimuli (pref + nonpref); contrasts covary; attend pref vs nonpref"
+    name: "Figure 4E — Authors' Figure4E.m: 4 separated stimuli (yoked covarying contrast); attend pref vs nonpref"
     pseudocode_path: pseudocode/figure_4_protocol.md
+    # Authors' Figure4E.m (CODE-018). FOUR SEPARATED stimuli (RF pair x=90 θ=0 /
+    # x=110 θ=180; contralateral pair x=-90 / x=-110), recorded neuron RF at x=100.
+    # ALL FOUR contrasts covary (stim = c·(stim1+stim2+stim3+stim4)); cRange
+    # [1e-4, 0.1] (CODE-020). Co-locating two stimuli at x=0 (the prior build)
+    # inflates %-mod to ~386%; the author separated geometry yields ~52% (matches
+    # digitized ~54%, faithfulness_audit Finding B). %-modulation =
+    # 100·(attend_pref-attend_nonpref)/attend_nonpref (author Figure4E.m:71).
     parameter_overrides:
       stimulus_size: 5
       attention_field_size: 5
-      tuning_width: 20
+      tuning_width: 20            # AthetaWidth (attention feature width)
       peak_attention_gain_gamma: 5
-    expected_outputs: [attend_pref_CRF, attend_nonpref_CRF, ratio, c]
+      # geometry / window resolved from Figure4E.m (CODE-018/CODE-020):
+      #   rf_center=100, stim_pref_rf_x=90, stim_null_rf_x=110,
+      #   stim_pref_contra_x=-90, stim_null_contra_x=-110, theta_nonpref=180,
+      #   all four contrasts covary, sweep cRange=[1e-4, 0.1]
+    expected_outputs: [attend_pref_CRF, attend_nonpref_CRF, ratio, percent_modulation, c]
     expected_data_paths:
       - extracted_data/test_figure_4E.py
-    citation_refs: [C-015]
+    citation_refs: [C-015, C-021]
+    code_refs: [CODE-018, CODE-020]
 
   - id: figure_5C
-    name: "Figure 5C — Spatial attention, broad orientation attention field; orientation tuning curves"
+    name: "Figure 5C — Authors' Figure5C.m: spatial attention, broad orientation field; two separated stimuli (x=±100), tuning curve at RF"
     pseudocode_path: pseudocode/figure_5_protocol.md
+    # Authors' Figure5C.m (CODE-018/CODE-021). TWO separated stimuli, both θ=0,
+    # x=+100 (RF) and x=-100 (contra), contrast=1.0; stim = contrast²·stim1 + stim2
+    # (RF scaled by contrast², contra by 1 — inert at contrast=1). Attend-RF
+    # (Ax=+100) vs attend-away (Ax=-100), orientation-flat field (γ=2). Tuning =
+    # recorded column R(:, x=+100). RETIRES the prior fixed sweep contrast 0.5.
     parameter_overrides:
       stimulus_size: 10
       attention_field_size: 10
       peak_attention_gain_gamma: 2
+      contrast: 1.0              # CODE-021 (Figure5C.m:19); was an unfounded 0.5
+      # geometry (Figure5C.m): stim_rf_x=+100, stim_contra_x=-100, recorded x=+100
     expected_outputs: [theta_0_grid, attended_tuning, unattended_tuning, ratio]
     expected_data_paths:
       - extracted_data/test_figure_5C.py
     citation_refs: [C-016]
+    code_refs: [CODE-018, CODE-021]
 
   - id: figure_6C
-    name: "Figure 6C — Feature-based attention, sharpening of motion-direction tuning"
+    name: "Figure 6C — Authors' Figure6C.m: feature-based attention sharpens direction tuning; two separated stimuli (x=±100), cross field"
     pseudocode_path: pseudocode/figure_6_protocol.md
+    # Authors' Figure6C.m (CODE-018/CODE-021). TWO separated stimuli, both θ=0,
+    # x=+100 (RF) / x=-100 (contra), contrast=1.0; stim = contrast²·stim1 + stim2
+    # (inert at contrast=1). Attend-fixation (Ax=0, flat θ) vs attend-opposite
+    # (Ashape='cross', Ax=-100, Atheta=0, AthetaWidth=60°). Feature gain is
+    # SPATIALLY GLOBAL (A-014) so it reaches the recorded neuron at x=+100; tuning
+    # = column R(:, x=+100). Ashape='cross' approximated (oval mildly overshoots,
+    # ~1.17 vs ~1.11 — do NOT tune). RETIRES the prior fixed sweep contrast 0.5.
     parameter_overrides:
       stimulus_size: 10
       attention_field_size: 30
       tuning_width: 60
       peak_attention_gain_gamma: 2
+      contrast: 1.0              # CODE-021 (Figure6C.m:21); was an unfounded 0.5
+      # geometry (Figure6C.m): stim_rf_x=+100, stim_contra_x=-100, recorded x=+100,
+      #   attend-opposite spatial centre x=-100, feature global in x (A-014)
     expected_outputs: [theta_stim_grid, attend_fixation_tuning, attend_opposite_stimulus_tuning]
     expected_data_paths:
       - extracted_data/test_figure_6C.py
-    citation_refs: [C-017]
+    citation_refs: [C-017, C-023]
+    code_refs: [CODE-018, CODE-021]
+    assumption_refs: [A-014]
 
   - id: figure_7C
-    name: "Figure 7C — Two stimuli in RF (nonpref + variable); three attention conditions"
+    name: "Figure 7C — Authors' Figure7C.m: two SEPARATED stimuli in RF (x=93/107); three attention conditions"
     pseudocode_path: pseudocode/figure_7_protocol.md
+    # Authors' Figure7C.m (CODE-018/CODE-021). TWO SEPARATED in-RF stimuli (NOT
+    # co-located at x=0): variable at x=93, null θ=180 at x=107; RF centre x=100;
+    # recorded at (θ=0, x=100). contrast=1.0; each stimulus scaled LINEARLY by
+    # contrast, pair = stim_var + stim_null. Att-fixation = spatial field at
+    # att_away_loc=-100 (flat θ); att-nonpref = Ax=107, Atheta=180; att-variable =
+    # Ax=93, Atheta=θ_var; AthetaWidth=45°, γ=5; feature gain spatially global
+    # (A-014). Co-locating at x=0 inflates var/fix ratio to ~2.73; the author
+    # separated geometry yields ~1.41 (matches digitized ~1.4, faithfulness_audit
+    # Finding D). RETIRES the prior fixed sweep contrast 0.5. Panel C is the sole
+    # deliverable (SQ-003): the three Pair curves below.
     parameter_overrides:
       stimulus_size: 5
       attention_field_size: 5
       tuning_width: 45
       peak_attention_gain_gamma: 5
+      contrast: 1.0              # CODE-021 (Figure7C.m:26); was an unfounded 0.5
+      # geometry (Figure7C.m): stim_var_x=93, stim_null_x=107, rf_center=100,
+      #   att_away_loc=-100, theta_nonpref=180, recorded (θ=0, x=100)
     expected_outputs: [theta_var_grid, fixation_tuning, attend_nonpref_tuning, attend_variable_tuning]
     expected_data_paths:
       - extracted_data/test_figure_7C.py
-    citation_refs: [C-018]
+    citation_refs: [C-018, C-021]
+    code_refs: [CODE-018, CODE-021]
+    assumption_refs: [A-014]

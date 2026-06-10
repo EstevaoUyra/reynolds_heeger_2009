@@ -1,57 +1,75 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-<!-- CURRENT STATE — updated 2026-06-04 after a from=fix finalize. The just-applied window fix
-     (author cRange routed through sweep/view/digitized-x_range; per-panel suppression knobs deleted)
-     was independently VERIFIED FAITHFUL. But the paper-fix verify did NOT pass within MAX_PAPERFIX:
-     two OPEN model-side contract divergences remain — a retired knob still declared LIVE in the
-     stage spec, and 5C/6C/7C sweep contrast pinned to an audited:false 0.5 that the author scripts
-     contradict (contrast=1). These BLOCK a clean contract; routed to human. -->
+<!-- CURRENT STATE — updated 2026-06-10. The doc-vs-contract-drift fix (F1/F2/F3, commit 0157325)
+     is INDEPENDENTLY VERIFIED FAITHFUL: model_spec/figure_3/figure_4 docs now match the author code
+     (CODE-017 Fig-3 baselines, Figure4C.m suppression build) operator-for-operator. The paper-fix
+     verify did NOT pass within MAX_PAPERFIX: three stale-contract findings (F-A/F-B/F-C) survive in
+     `pseudocode/` and `assumptions.yaml` and contradict the now-binding calibration. model.py is
+     untouched and remains independently faithful. Exit = blocked on model:contract. -->
 
 ## Current exit
 
 ```json
-{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 2, "blocked": ["model:contract"]}
+{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 3, "blocked": ["model:contract"]}
 ```
 
 ## 👉 DECISION NEEDED
 
-**Contract-blocked (paper-fix / audit-spec): the paper-fix verify did not pass within MAX_PAPERFIX.**
-The forward model is faithful and the window fix was verified correct, but two model-side contract
-divergences remain OPEN and a paper-blind builder cannot close them without a human ruling. Both are
-provenance/contract integrity issues — neither touches the (faithful) `model.py` equations.
+**Contract-blocked (paper-fix / audit-spec).** The paper-fix verify did NOT pass within
+MAX_PAPERFIX. The F1/F2/F3 doc fix was applied and is **verified faithful** (see below), but the
+verify pass found **three open contract findings** that still bind a reader to the WRONG, superseded
+calibration. They are stale-doc divergences, not model-equation faults — but `pseudocode/` and
+`assumptions.yaml` are **binding contract artifacts** (audit-spec skill), so a Phase-B reader
+following them builds the wrong model. They need an EDIT in the fix phase, not another audit
+re-confirming they are stale (process concern C2). **trajectory: toward_paper** (no leniency drift;
+the new divergences were left RED, nothing force-greened).
 
-**Open finding #1 — stale retired knob declared LIVE in the stage spec (model:contract).**
-`implementation/src/rh_model/stages/model_spec.yaml:116` still lists the suppression stage's
-`params: ["<protocol>.suppressive_drive_gain"]  # impl ledger (SQ-001, 1D scale)`. That is the
-RETIRED per-panel knob (SQ-001/SQ-005, A-013): no per-panel suppression gain exists in the author
-code (`R = E./(I+sigma)+baselineUnmod`, attentionModel.m:175), `test_contract_suppression_consistency.py`
-asserts it resolves `None` on every protocol, and `suppression.py`'s docstring says it is retired
-and not read. A reader of the stage contract is told the stage consumes a gain that no longer exists
-— same stale-residue antipattern the README/docstring fix targeted, left in the stage spec.
-→ **Fix when ratified:** drop `<protocol>.suppressive_drive_gain` from line 116; reference the global
-`model.suppressive_field_size` / `model.suppressive_tuning_width` (the single space×feature pool).
+**The three open findings (all logged DIVERGENT, none closed):**
 
-**Open finding #2 — 5C/6C/7C sweep contrast = 0.5 (audited:false) contradicts the author code (model:contract).**
-`article_aware/spec/calibration.yaml` `figure_5C.contrast` / `figure_6C.contrast` / `figure_7C.contrast`
-are all `0.5`, `audited: false`, noted "fixed sweep contrast (0.5) is an assumption, not a verbatim
-paper value" (lines 559/594/629). But `Figure5C.m:19`, `Figure6C.m:21`, `Figure7C.m:26` all set
-`contrast = 1;`. These are load-bearing — they scale the stimulus drive for the entire tuning sweep —
-and are now resolvable from the SAME author-code lineage the just-applied c_range fix relied on. The
-contract uses 0.5 where the author uses 1.0. (Also `Figure5C.m:20 stim = contrast*stim1*contrast + stim2`
-scales stim1 by contrast², a structural difference only if 0.5 is kept.) Pre-existing contract bug,
-surfaced by the acquired ground truth, not introduced this pass.
-→ **Fix when ratified:** set 5C/6C/7C `contrast = 1.0`, source CODE-018 / lineage `Figure5C.m:19` /
-`Figure6C.m:21` / `Figure7C.m:26`, `audited: true` with verbatim quote — OR, if 0.5 is a deliberate
-display choice, state the author-code 1.0 contradiction explicitly (code-alone-honesty rule) and keep
-it a named assumption rather than an unexplained `audited:false`.
+- **F-A (model) — stale A-007 0.05/0.05 baselines survive in the Fig-3 pseudocode.**
+  `article_aware/pseudocode/figure_3_protocol.md:16-18` still binds
+  `baseline_modulated_by_attention = 0.05 / baseline_unmodulated = 0.05 (per A-007)`. A-007 is
+  **superseded by CODE-017** (3C 5e-7/5.0; 3F 5e-7/0.0, verified against `Figure3C.m:5-6` /
+  `Figure3F.m:5-6`). F1/F3 applied CODE-017 to `model_spec.yaml` and `figure_3.md` but NOT to this
+  pseudocode. A grep confirms this is the **only** place a 0.05 baseline survives as an *active
+  instruction* — a reader following step 2/6 builds the wrong symmetric 0.05/0.05 baseline.
+  *Fix:* rewrite Inputs (16-18) + Procedure 2/6 to CODE-017, citing CODE-017 not A-007.
 
-**Where to look** — `logs/spec_audit/sq005_correction_audit_2026-06-04.md` (Phase-A contract audit,
-VERDICT FAITHFUL for the mechanism); `logs/faithfulness_audit/2026-06-04.md` (independent re-render:
-model faithful, all divergences figure/contract-scope, author-geometry reruns 4E 386%→52%, 7C 2.73→1.41);
-the spec questions in `logs/spec_questions.md` (**SQ-007** GAP 1/2/3, **SQ-006** 7C factorization,
-**SQ-005** human_resolution). The 4E/7C two-stimulus GEOMETRY divergence (still RED, separate from the
-two contract findings above) and **DR-4C-sign** (the published-Fig-4C-vs-model sign decision-request,
-owner=human, expiry 2026-07-15) also await human ratification.
+- **F-B (figure) — Fig-2/3 pseudocode describes a DIFFERENT experiment + a stale sweep window.**
+  `figure_2_protocol.md:9,16,22` and `figure_3_protocol.md:12,21,29-30` describe "single stimulus at
+  x=0", unattended = "constant 1 (no modulation)", sweep "[0.01,1], 8 points". Author
+  Figure2A/2B/3C/3F.m use **TWO separated stimuli at x=±100, recorded at x=+100**, BOTH conditions a
+  real attention field (attended Ax=+100 'Att RF' vs unattended attend-away Ax=−100, not A=1), sweep
+  cRange=[1e-5,1] (also contradicts the model's own `calibration.yaml`/CODE-020). The x=0 single-stim
+  reduction is numerically faithful AT THE RECORDED NEURON (attend-away gain at x=+100 = 2.2e-10 ≈
+  A=1, 6.7σ; contra drive at x=+100 = 0.0), so this is a contract-**description** gap + stale window,
+  not a figure-output divergence. Tracked open as **SQ-002** pending human review.
+  *Fix:* update Fig-2/3 pseudocode to the two-separated-stimulus geometry + [1e-5,1], OR document the
+  x=0 reduction as an explicit justified equivalence (with the verified recorded-neuron bit-identity).
+
+- **F-C (model) — A-013 forbidden-knob rule (3) now contradicts the binding CODE-017.**
+  `assumptions.yaml:411-413` still reads: "per-panel baselines that DIFFER across Fig-3 panels (use
+  the single A-007 0.05·α)". But CODE-017 (now binding, verified) establishes that 3C and 3F
+  baselines **do** legitimately differ (unmod 5.0 vs 0.0) — the authors' own per-figure code values.
+  As written, A-013(3) forbids the exact per-panel asymmetry the author code mandates. A-007's head
+  was updated to acknowledge CODE-017; this cross-reference was not (binding-rule vs binding-calibration).
+  *Fix:* amend A-013(3) to forbid per-panel baselines **tuned-to-fit-a-curve** while permitting the
+  authors' own per-figure code values (CODE-017); drop the "use the single A-007 0.05·α" clause.
+
+**Where to look:**
+- `logs/spec_audit/contract_audit_2026-06-10_paperfix_verify.md` — the verify verdict (DIVERGENT) with
+  F-A/F-B/F-C and the VERIFIED-FAITHFUL F1/F2/F3 section.
+- `logs/faithfulness_audit/2026-06-10-independent-rerender.md`, `2026-06-04.md` — author-code reruns
+  (4E 386%→52%, 7C 2.73→1.41) backing the figure-scope geometry divergences.
+- `logs/spec_questions.md` — **SQ-002** (the Fig-2/3 geometry/description gap, F-B); SQ-005 / SQ-006
+  / SQ-007 human resolutions; DR-4C-sign **RESOLVED** (code-resolvable, digitizer label swap).
+
+**Carryover process concern (C1, DR-4C-sign authority).** DR-4C-sign was closed (2026-06-10) on a
+code re-run + caption re-reading. The published-caption-vs-model-panel *reading* is a human-owned
+question (A-012, expiry 2026-07-15); a code re-run cannot adjudicate it. `panel_C_digitized.json`
+still labels the upper solid 'attended' behind a per-test read-time swap. If the closure is to stand,
+route the **caption-attribution** question to a faithfulness auditor WITH the paper / to the human
+owner before expiry — not another code re-run.
 
 ---
 
@@ -78,10 +96,11 @@ with the suppressive drive the suppressive field convolved with the *attention-m
 (Eq. 6), `S = s ∗ [A·E]`. Resolved from the authors' released MATLAB (`paper/code/attentionModel/`),
 the suppression is a **separable space×feature** convolution — `conv2sepYcirc` (zero-pad x, circular θ)
 of two unit-volume Gaussians (IxWidth=20, IthetaWidth=360 near-flat θ pool), σ=1e-6 — with **NO
-per-panel suppression gain** (the SQ-001/SQ-002 knobs are deleted). **The equations map
-operator-for-operator to the paper and the author code, and are faithful** (independent audits
-2026-06-04: spec_audit VERDICT FAITHFUL, faithfulness_audit "model.py is FAITHFUL"). Every remaining
-divergence is figure/contract-scope, not a transcription fault.
+per-panel suppression gain**. **The equations map operator-for-operator to the paper and the author
+code, and are faithful** (independent audits: spec_audit VERDICT FAITHFUL, faithfulness_audit
+"model.py is FAITHFUL"; the 2026-06-10 paper-fix verify re-confirmed EQ-1/2/5/6 against
+attentionModel.m:165-175). Every open divergence is **figure / contract-scope**, not a transcription
+fault.
 
 Scope: 7 figures. Fig 1 is the authors' own activity-map render; Figs 2–7 are live
 `protocols.run_figure_*` → `measurements` → Phase-A `views`. Empirical/config sub-panels are explicit
@@ -94,8 +113,8 @@ Scope: 7 figures. Fig 1 is the authors' own activity-map render; Figs 2–7 are 
 Each figure is shown three ways: **paper** (original panel), **digitized** (tool-grounded curves on
 the paper pixels — the audited reference the tests compare against, `logs/digitization_audit/`), and
 **implementation** (the live model through the same pinned-axis view). Two checks per figure: the
-**digitization audit** (separate critic, paper vs digitization) and the **final-figure VLM**
-(implementation vs paper). A figure is **green only if deterministic all-pass AND fresh VLM pass**.
+**digitization audit** (paper vs digitization) and the **final-figure VLM** (implementation vs paper).
+A figure is **green only if deterministic all-pass AND fresh VLM pass**.
 
 ### Figure 1 — Activity-map render  ✅ FAITHFUL (det all-pass · VLM pass)
 
@@ -118,18 +137,19 @@ own render reproduces exactly).
 <tr><td><img src="article_aware/figures/figure_2.jpg" width="300"></td><td><img src="article_aware/figures/figure_2/overlay_2A.png" width="150"><img src="article_aware/figures/figure_2/overlay_2B.png" width="150"></td><td><img src="figures_reproduced/figure_2.png" width="300"></td></tr>
 </table>
 
-Over the author Figure2A/2B.m window `[1e-5, 1]` (CODE-020, **verified faithful this pass**: sweep,
-view xlim, and digitized x_range all resolve to the author window) the panels are full sigmoids: 2A is
+Over the author Figure2A/2B.m window `[1e-5, 1]` (CODE-020) the panels are full sigmoids: 2A is
 contrast-gain — attended **left-shifted** (half-max c≈0.00128) below ignored (c≈0.00253), converging
 to a shared plateau; 2B is response-gain — attended scaled UP above ignored with sustained ~42% %-mod.
-Empirically confirmed via `rh_model.simulate` over the author window (unattended CRF rises 0.004→0.99
-of max). All deterministic 2A/2B tests pass.
+All deterministic 2A/2B tests pass. **Contract caveat (F-B, open):** the Fig-2 pseudocode still
+describes a single-stim-x=0 / [0.01,1] experiment that contradicts the author two-separated-stimulus
+geometry and the binding [1e-5,1] window (numerically equivalent at the recorded neuron, but the
+contract description must be reconciled — SQ-002).
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 2A | ✅ faithful | ✅ faithful — contrast-gain left-shift, shared plateau, %-mod falls |
 | panel 2B | ✅ faithful | ✅ faithful — response-gain upward-shift, sustained ~42% %-mod |
-| **figure** | ✅ **faithful** | ✅ **faithful** |
+| **figure** | ✅ **faithful** | ✅ **faithful** (pseudocode description F-B open) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -147,23 +167,24 @@ of max). All deterministic 2A/2B tests pass.
 </table>
 
 Over the author Figure3C/3F.m window `[1e-5, 1]`: 3C attend-in-RF above contralateral with an interior
-%-mod bump and high-contrast convergence (unmod=5 baseline lifts the foot, CODE-017; CRF rises
-0.235→0.99); 3F sustained separation (attended ~0.74 above ignored ~0.61) with %-mod largest at low
-contrast declining to a ~20% plateau. All deterministic 3C/3F tests pass. Empirical (B/E) and config
-(A/D) panels correctly "not reproduced".
+%-mod bump and high-contrast convergence (unmod=5.0 baseline lifts the foot, **CODE-017**); 3F
+sustained separation (attended ~0.74 above ignored ~0.61) with %-mod largest at low contrast declining
+to a ~20% plateau. All deterministic 3C/3F tests pass; `model_spec.yaml` and `figure_3.md` carry the
+CODE-017 baselines (verified faithful, F1/F3). Empirical (B/E) and config (A/D) panels correctly "not
+reproduced".
 
-> **Residue (low-severity, figure-scope):** the digitized JSON `notes` arrays still carry stale prose
-> asserting the OLD `[0.01,1.0]` window (`figure_3/panel_C_digitized.json:373`, `panel_F:352`;
-> `figure_4/panel_C:322`, `panel_E:309`). The `x_range` FIELD (what tests read) is correct and the
-> adjacent re-digitization note supersedes the prose — not a referent error, but the contradictory
-> sentence could mislead a future digitizer into re-introducing the wrong floor. Update/delete to the
-> author window ([1e-5,1] for 3C/3F, [1e-4,0.1] for 4C/4E).
+> **Contract caveats (open):** **F-A** — the Fig-3 *pseudocode* (`figure_3_protocol.md:16-18`) still
+> binds the SUPERSEDED A-007 0.05/0.05 baselines (the only surviving active 0.05 instruction); a reader
+> following it builds the wrong symmetric baseline. **F-C** — A-013 rule (3) still forbids the per-panel
+> 3C/3F asymmetry that CODE-017 mandates. **Residue:** digitized JSON `notes` arrays still narrate the
+> OLD `[0.01,1.0]` window (`panel_C:373`, `panel_F:352`); the `x_range` FIELD (what tests read) is
+> correct, but the prose could mislead a future digitizer.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 3C | ✅ faithful | ✅ faithful — interior %-mod bump, converges at high contrast |
 | panel 3F | ✅ faithful | ✅ faithful — sustained separation, %-mod largest at low contrast |
-| **figure** | ✅ **faithful** | ✅ **faithful** |
+| **figure** | ✅ **faithful** | ✅ **faithful** (pseudocode F-A + rule F-C open) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -178,23 +199,25 @@ contrast declining to a ~20% plateau. All deterministic 3C/3F tests pass. Empiri
 <tr><td><img src="article_aware/figures/figure_4.jpg" width="300"></td><td><img src="article_aware/figures/figure_4/overlay_4C.png" width="150"><img src="article_aware/figures/figure_4/overlay_4E.png" width="150"></td><td><img src="figures_reproduced/figure_4.png" width="300"></td></tr>
 </table>
 
-Both panels render over the author Figure4C/4E.m window `[1e-4, 0.1]` (CODE-018/CODE-020, window
-verified faithful). **4C** follows the authors' released `Figure4C.m` (line 74 plots
-`100*(unattCRF-attCRF)/unattCRF` — suppression sign, attended BELOW unattended). This produces the
-OPPOSITE curve order from the published Fig-4C panel + caption ("percentage increase", attended-above);
-the contradiction is logged OPEN as **DR-4C-sign** (owner=human, expiry 2026-07-15) — the code is
-authoritative and C-021 prose sides with it, but a human must ratify before 4C is called reproduced.
-**4E is the residual RED:** %-modulation overflows the paper's 0–100 axis to **~386%**. This is a
-**two-stimulus GEOMETRY CODE_BUG**, not a forward-model divergence — the protocol co-locates two
-stimuli at x=0 where Figure4E.m uses FOUR SEPARATED stimuli (RF x=90/110, contra x=−90/−110). The
-author geometry through the *committed, unchanged* `simulate` yields ~52% (faithfulness_audit Finding
-B), matching the digitized ~54%. Left RED, out of this pass's scope.
+Both panels render over the author Figure4C/4E.m window `[1e-4, 0.1]` (CODE-018/CODE-020). **4C**
+follows the authors' released `Figure4C.m` (line 74 plots `100*(unattCRF-attCRF)/unattCRF` — the
+suppression sign: attend-null-in-RF SUPPRESSES the recorded preferred neuron, attended BELOW
+unattended). `figure_4.md` Panel-C was rewritten to this four-separated-stimulus build and is
+**verified faithful** (F2). DR-4C-sign is **RESOLVED** (code-resolvable: a digitizer label swap, not a
+paper defect — the published positive %-modulation matches the author formula once the upper solid is
+read as the author's "Att Away"/unattCRF). The deliberate sign CONTRAST with Fig-2/3 facilitation is
+captured correctly. *Carryover (C1):* the caption-attribution authority question and the
+`panel_C_digitized.json` label swap are noted in DECISION NEEDED.
+**4E is the residual RED:** %-modulation overflows the paper's 0–100 axis to **~386%** — a two-stimulus
+GEOMETRY CODE_BUG (the protocol co-locates two stimuli at x=0 where Figure4E.m uses FOUR SEPARATED
+stimuli, RF x=90/110, contra x=−90/−110). The author geometry through the *committed, unchanged*
+`simulate` yields ~52% (faithfulness_audit Finding B), matching the digitized ~54%. Left RED.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 4C | ✅ faithful | ⚠️ dispositioned — author suppression sign; published-panel sign is DR-4C-sign (human) |
+| panel 4C | ✅ faithful | ⚠️ dispositioned — author suppression sign; DR-4C-sign RESOLVED (label swap) |
 | panel 4E | ✅ faithful | ❌ %-mod ~386% off-axis (two-stimulus GEOMETRY CODE_BUG, not the window) |
-| **figure** | ✅ **faithful** | ❌ **divergent** (4E geometry RED; 4C pending DR-4C-sign) |
+| **figure** | ✅ **faithful** | ❌ **divergent** (4E geometry RED) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -213,14 +236,13 @@ B), matching the digitized ~54%. Left RED, out of this pass's scope.
 The right *kind* of effect — multiplicative, same-width scaling (attend-in-RF and contralateral share
 FWHM, no sharpening). The author-geometry rerun lands the peak ratio at ~1.17 vs the paper's ~1.2
 (faithfulness_audit), so the mechanism is faithful; the remaining red is the peak-ratio tier check
-against the current digitized reference. **Contract caveat (DECISION NEEDED #2):** the 5C sweep
-contrast is the `audited:false` 0.5 the author `Figure5C.m:19` contradicts (`contrast = 1`) — a
-load-bearing provenance divergence that must be ratified before 5C is certified.
+against the current digitized reference. The 5C sweep contrast is now `1.0` (CODE-021, `Figure5C.m:19`)
+— the prior `audited:false` 0.5 provenance divergence is **resolved** in calibration.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 5C | ✅ faithful | ❌ divergent — peak-ratio tier RED |
-| **figure** | ✅ **faithful** | ❌ **divergent** (peak ratio; contrast provenance OPEN) |
+| **figure** | ✅ **faithful** | ❌ **divergent** (peak ratio) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -235,18 +257,17 @@ load-bearing provenance divergence that must be ratified before 5C is certified.
 <tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
 
-Feature-based attention is spatially global (CODE_BUG fix), so the directional gain reaches the
-recorded neuron: attend-contralateral is both taller (peak 1.0 vs fixation ~0.76) **and narrower
+Feature-based attention is spatially global (A-014, formalizing SQ-006), so the directional gain reaches
+the recorded neuron: attend-contralateral is both taller (peak 1.0 vs fixation ~0.76) **and narrower
 (sharpening present)** — the prior overlapping-curves failure is gone. Magnitude ~1.17–1.31 vs
 digitized ~1.11 keeps the magnitude-ratio tier red (the author `Ashape='cross'` field is not
-implemented; the oval approximation mildly overshoots — do NOT tune it). The spatial-globality
-convention needs a named ledger assumption (**SQ-006**). **Contract caveat (DECISION NEEDED #2):** 6C
-sweep contrast 0.5 vs author `Figure6C.m:21 contrast = 1`.
+implemented; the oval approximation mildly overshoots — do NOT tune it). The 6C sweep contrast is now
+`1.0` (CODE-021, `Figure6C.m:21`) — the prior 0.5 divergence is **resolved** in calibration.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 6C | ✅ faithful | ❌ divergent — sharpening present, magnitude overshoot |
-| **figure** | ✅ **faithful** | ❌ **divergent** (magnitude; contrast provenance OPEN) |
+| **figure** | ✅ **faithful** | ❌ **divergent** (magnitude) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -263,15 +284,15 @@ sweep contrast 0.5 vs author `Figure6C.m:21 contrast = 1`.
 
 Ordering faithful (attend-variable > ignored/fixation > attend-nonpref) but the variable/fixation peak
 ratio is **~2.73 vs the paper's ~1.4** — the same two-stimulus GEOMETRY CODE_BUG as 4E (co-located vs
-four separated). The author four-stimulus geometry through the committed `simulate` lands ~1.41
-(faithfulness_audit Finding D), matching the digitized ~1.4 — faithful once the geometry is corrected.
-Panel C is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". **Contract caveat
-(DECISION NEEDED #2):** 7C sweep contrast 0.5 vs author `Figure7C.m:26 contrast = 1`.
+two separated). The author geometry (var x=93, null x=107, recorded x=100, att-away x=−100) through the
+committed `simulate` lands ~1.41 (faithfulness_audit Finding D), matching the digitized ~1.4. Panel C
+is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". The 7C sweep contrast is now
+`1.0` (CODE-021, `Figure7C.m:26`) — the prior 0.5 divergence is **resolved** in calibration.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
 | panel 7C | ✅ faithful | ❌ divergent — ratio ~2.73 vs ~1.4 (geometry) |
-| **figure** | ✅ **faithful** | ❌ **divergent** (geometry RED; contrast provenance OPEN) |
+| **figure** | ✅ **faithful** | ❌ **divergent** (geometry RED) |
 
 | Tier | Check | Result |
 |------|-------|--------|
@@ -284,56 +305,49 @@ Panel C is the sole deliverable (SQ-003, human-resolved); A/B "not reproduced". 
 ## Potential sources of the issues
 
 The forward model (`model.py`, Eqs. 5–6) is FAITHFUL operator-for-operator to the authors' MATLAB
-(`paper/code/attentionModel/attentionModel.m`) — confirmed by two independent 2026-06-04 audits. Every
-divergence is **protocol / figure / contract-scope**.
+(`paper/code/attentionModel/attentionModel.m`) — confirmed by independent audits and re-confirmed by
+the 2026-06-10 paper-fix verify. Every open divergence is **contract-description / figure-scope**.
 
-1. **CONTRACT — retired suppression knob still LIVE in the stage spec. OPEN (blocks contract).**
-   `implementation/src/rh_model/stages/model_spec.yaml:116` declares
-   `params: ["<protocol>.suppressive_drive_gain"]` — the RETIRED per-panel knob. It contradicts the
-   SQ-005 resolution (no per-panel gain in the author code), the rewritten
-   `test_contract_suppression_consistency.py` (asserts it resolves None everywhere), and
-   `suppression.py` (docstring: retired, not read). See DECISION NEEDED #1.
-   *Source:* `implementation/src/rh_model/stages/model_spec.yaml:116`;
-   `implementation/src/rh_model/stages/suppression.py`; `logs/spec_questions.md` SQ-005.
+1. **CONTRACT (F-A) — stale A-007 baselines in the Fig-3 pseudocode. OPEN, fix-phase edit.**
+   `article_aware/pseudocode/figure_3_protocol.md:16-18` binds the superseded `baseline_* = 0.05 (per
+   A-007)`; the only surviving active 0.05 instruction. CODE-017 (3C 5e-7/5.0; 3F 5e-7/0.0) is binding
+   everywhere else. *Source:* `figure_3_protocol.md:16-18`; `code_refs.yaml` CODE-017; `Figure3C.m:5-6`,
+   `Figure3F.m:5-6`.
 
-2. **CONTRACT — 5C/6C/7C sweep contrast = 0.5 (audited:false) vs author 1.0. OPEN (blocks contract).**
-   `article_aware/spec/calibration.yaml` `figure_{5C,6C,7C}.contrast = 0.5, audited:false` contradicts
-   `Figure5C.m:19 / Figure6C.m:21 / Figure7C.m:26 contrast = 1`. Load-bearing (scales the whole tuning
-   sweep), now resolvable from the same author-code lineage the c_range fix used. See DECISION NEEDED #2.
-   *Source:* `article_aware/spec/calibration.yaml:559/594/629`; `paper/code/attentionModel/Figure{5C,6C,7C}.m`.
+2. **CONTRACT (F-B) — Fig-2/3 pseudocode describes a different experiment + stale [0.01,1] sweep. OPEN (SQ-002).**
+   `figure_2_protocol.md:9,16,22` / `figure_3_protocol.md:12,21,29-30` say "single stimulus at x=0",
+   unattended="constant 1", sweep "[0.01,1]". Author scripts use TWO separated stimuli at x=±100,
+   recorded x=+100, both with a real attention field, sweep [1e-5,1]. Numerically equivalent at the
+   recorded neuron (verified) but a contract-description gap that contradicts `calibration.yaml`/CODE-020.
+   *Source:* `figure_{2,3}_protocol.md`; `Figure2A/2B/3C/3F.m`; `calibration.yaml` figure_*.c_range_*; SQ-002.
 
-3. **CODE_BUG — Fig-4E / Fig-7C two-stimulus geometry (co-located vs four separated). RESIDUAL (RED).**
-   4E/7C co-locate two stimuli at x=0; the author scripts use FOUR SEPARATED stimuli (RF x=90/110,
-   contra x=−90/−110). Co-location lets feature competition crush the nonpreferred response, inflating
-   4E %-mod to ~386% and the 7C var/fix ratio to ~2.73. The author geometry through the *committed,
-   unchanged* `simulate` lands 4E ~52% and 7C ~1.41 (faithfulness_audit Findings B/D) — the faithful
-   mechanism reaches the paper values once the geometry is corrected.
-   *Source:* `paper/code/attentionModel/Figure4E.m`, `Figure7C.m`;
-   `implementation/src/rh_model/protocols.py run_figure_4E / run_figure_7C`; `logs/faithfulness_audit/2026-06-04.md`.
+3. **CONTRACT (F-C) — A-013 rule (3) forbids the per-panel asymmetry CODE-017 mandates. OPEN, fix-phase edit.**
+   `assumptions.yaml:411-413` still says per-panel Fig-3 baselines that differ are forbidden ("use the
+   single A-007 0.05·α"); CODE-017 makes 3C/3F unmodulated (5.0 vs 0.0) legitimately differ. A-007's
+   head was updated; this cross-reference was not. *Source:* `assumptions.yaml:411-413`; `code_refs.yaml`
+   CODE-017.
 
-4. **DECISION-REQUEST — DR-4C-sign (published Fig-4C vs model sign). OPEN (owner=human, expiry 2026-07-15).**
-   The model follows `Figure4C.m:74` (suppression sign, attended below) — the OPPOSITE order from the
-   published Fig-4C panel/caption ("percentage increase", attended above). Honestly logged as an open
-   human decision-request, not silently adopted; ratify before 4C is called reproduced.
-   *Source:* `logs/spec_questions.md`; `figures/figure_4/panel_C.md`; `Figure4C.m:74`.
+4. **GEOMETRY — Fig-4E / Fig-7C two-stimulus geometry. Contract carries author geometry; protocol code RESIDUAL.**
+   Calibration + figure protocols carry the author SEPARATED geometry (4E four stimuli; 7C two
+   in-RF). The author geometry through the *committed, unchanged* `simulate` lands 4E ~52% and 7C ~1.41
+   (faithfulness_audit Findings B/D). RESIDUAL MODEL-SIDE WORK: `protocols.py run_figure_4E /
+   run_figure_7C` still co-locate at x=0 and must be rebuilt to the contract geometry (forward
+   mechanism unchanged). *Source:* `Figure4E.m`, `Figure7C.m`; calibration figure_{4E,7C}.* (CODE-018);
+   `logs/faithfulness_audit/2026-06-04.md`.
 
-5. **CONTRACT_BUG — clipped CRF contrast window (2A/2B/3C/3F/4C/4E). RESOLVED & VERIFIED FAITHFUL.**
-   The sweep/view/digitized-x_range had pinned contrast to `[0.01,1]` (2 decades) while the author
-   scripts use `[1e-5,1]` (4C/4E `[1e-4,0.1]`), clipping the rising limb + contrast-gain left-shift
-   below 0.01. Fixed (no model change) by routing the author cRange (CODE-020) through
-   `protocols._contrast_sweep`, the view `PAPER_PANEL_LIMITS`, and the re-digitized panel x_range (a
-   pure x-axis relabel — overlay ink unchanged). Independently re-verified this pass: c_range values,
-   ledger routing, view xlim, and re-labeled curve points all confirmed correct; the suppression-test
-   rewrite and doc rewrite also confirmed faithful.
-   *Source:* `article_aware/spec/code_refs.yaml` CODE-020; `article_aware/spec/calibration.yaml`
-   `figure_*.c_range_*`; `implementation/src/rh_model/protocols.py`; `article_aware/views.py`;
-   the panel `*_digitized.json`.
+5. **DECISION-REQUEST — DR-4C-sign. RESOLVED code-side (digitizer label swap); caption-authority carryover (C1).**
+   The published positive %-modulation matches `Figure4C.m` once the upper solid is read as the
+   author's "Att Away"/unattCRF; the model follows the code and is correct. The
+   published-caption-vs-model-panel *reading* (A-012, owner=human, expiry 2026-07-15) and the
+   `panel_C_digitized.json` solid-label swap should be ratified by a faithfulness auditor WITH the paper
+   / the human owner, not another code re-run. *Source:* `Figure4C.m:69,74`; `figure_4/panel_C.md`;
+   `assumptions.yaml` A-012.
 
-6. **CODE_BUG — feature attention spatially confined away from the recorded neuron (6C). Fixed earlier.**
-   `run_figure_6C` is now feature-tuned in θ and flat/global in x (C-023), restoring 6C elevation +
-   FWHM sharpening. The same factorization is owed to 7C's attend-nonpref (**SQ-006** — needs a named
-   ledger assumption). A residual magnitude overshoot is a soft tripwire (`Ashape='cross'` not modeled).
-   *Source:* `implementation/src/rh_model/protocols.py run_figure_6C/7C`; Fig-6 caption; SQ-006.
+6. **MAGNITUDE — Fig-5/6 peak-ratio overshoot. Soft, structural, do NOT tune.**
+   5C peak ratio ~1.17 vs ~1.2; 6C ~1.17–1.31 vs digitized ~1.11. Mechanism faithful; the residue is
+   the unimplemented author `Ashape='cross'` attention-field shape (oval approximation). Contrast
+   provenance for 5C/6C/7C is now resolved (CODE-021 `contrast=1`). *Source:* `protocols.py
+   run_figure_{5C,6C}`; Fig-6 caption; `code_refs.yaml` CODE-021.
 
 ---
 
@@ -343,6 +357,7 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
-| 2026-06-04 | **from=fix finalize — BLOCKED on contract.** Window fix + suppression-test/doc rewrites independently VERIFIED FAITHFUL (model unchanged; Fig 2/3 full sigmoids). Paper-fix verify did NOT pass within MAX_PAPERFIX: 2 OPEN model-side contract divergences — retired `suppressive_drive_gain` still LIVE at `stages/model_spec.yaml:116`, and 5C/6C/7C sweep contrast 0.5 (audited:false) vs author `Figure*C.m contrast=1`. Both routed to human; exit `blocked:[model:contract]`, flagged_count 2. 4E/7C geometry + DR-4C-sign remain RED/open. |
-| 2026-06-04 | Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED (author cRange [1e-5,1] / [1e-4,0.1] routed through sweep+view+x_range; model unchanged). 18→5 deterministic reds. |
-| 2026-06-03 | Current-state rewrite: 8 magnitude flags traced to CONTRACT_BUG (per-panel suppression) + 6C CODE_BUG (fixed) + 4E divergence; SQ-005 escalated. |
+| 2026-06-10 | **paper-fix verify — BLOCKED on contract.** F1/F2/F3 doc-vs-contract-drift fix VERIFIED FAITHFUL (model_spec Fig-3 baselines = CODE-017; figure_3.md/figure_4.md rewritten to author code; EQ-1/2/5/6 match attentionModel.m). Verify did NOT pass within MAX_PAPERFIX: 3 stale-contract findings remain DIVERGENT — **F-A** figure_3_protocol.md:16-18 still binds superseded A-007 0.05/0.05; **F-B** Fig-2/3 pseudocode describes a single-stim-x=0/[0.01,1] experiment vs author two-separated-stimulus/[1e-5,1] (SQ-002); **F-C** A-013(3) forbids the CODE-017 3C/3F baseline asymmetry. model.py untouched/faithful. DR-4C-sign RESOLVED (digitizer label swap; caption-authority carryover C1). Exit `blocked:[model:contract]`, flagged_count 3, trajectory toward_paper. |
+| 2026-06-10 | Phase-A contract resolution of four blocked divergences (author-code grounded; model.py untouched): retired `suppressive_drive_gain` removed from stage spec; 5C/6C/7C sweep contrast 0.5→1.0 (CODE-021); 4E/7C author SEPARATED geometry adopted; DR-4C-sign investigated→code-resolvable. Added A-014. |
+| 2026-06-04 | from=fix finalize — BLOCKED on contract. Window fix + suppression-test/doc rewrites VERIFIED FAITHFUL (Fig 2/3 full sigmoids). 2 OPEN model-side contract divergences routed to human. |
+| 2026-06-04 | Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED (author cRange [1e-5,1] / [1e-4,0.1]; model unchanged). 18→5 deterministic reds. |
