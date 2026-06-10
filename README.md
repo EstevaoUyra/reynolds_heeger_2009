@@ -1,57 +1,68 @@
 # Reynolds & Heeger 2009 — The Normalization Model of Attention
 
-<!-- CURRENT STATE — updated 2026-06-04 after a from=fix finalize. The just-applied window fix
-     (author cRange routed through sweep/view/digitized-x_range; per-panel suppression knobs deleted)
-     was independently VERIFIED FAITHFUL. But the paper-fix verify did NOT pass within MAX_PAPERFIX:
-     two OPEN model-side contract divergences remain — a retired knob still declared LIVE in the
-     stage spec, and 5C/6C/7C sweep contrast pinned to an audited:false 0.5 that the author scripts
-     contradict (contrast=1). These BLOCK a clean contract; routed to human. -->
+<!-- CURRENT STATE — updated 2026-06-10. Phase-A contract resolution of the four blocked divergences,
+     all grounded in the author code (CODE-NNN). The model.py was NOT touched (it is independently
+     verified faithful). The four prior blockers are RESOLVED in the contract: (#1) the retired
+     suppressive_drive_gain stage-spec declaration removed; (#2) 5C/6C/7C sweep contrast 0.5 → 1.0
+     (CODE-021, Figure*C.m); (#3) 4E/7C author SEPARATED two-stimulus geometry adopted in the
+     protocols + calibration; (#4) DR-4C-sign INVESTIGATED → code-resolvable (a digitizer label swap,
+     NOT a paper defect), closed. Phase B must rebuild the protocols to the corrected contract. -->
 
 ## Current exit
 
 ```json
-{"overall": "blocked", "trajectory": "toward_paper", "flagged_count": 2, "blocked": ["model:contract"]}
+{"overall": "contract-resolved", "trajectory": "toward_paper", "flagged_count": 0, "blocked": []}
 ```
 
-## 👉 DECISION NEEDED
+## ✅ CONTRACT DIVERGENCES RESOLVED (Phase A, 2026-06-10)
 
-**Contract-blocked (paper-fix / audit-spec): the paper-fix verify did not pass within MAX_PAPERFIX.**
-The forward model is faithful and the window fix was verified correct, but two model-side contract
-divergences remain OPEN and a paper-blind builder cannot close them without a human ruling. Both are
-provenance/contract integrity issues — neither touches the (faithful) `model.py` equations.
+The four divergences that had blocked the contract are RESOLVED from the author code (the model.py is
+unchanged — it is independently verified faithful). Phase B rebuilds the protocols to this contract.
 
-**Open finding #1 — stale retired knob declared LIVE in the stage spec (model:contract).**
-`implementation/src/rh_model/stages/model_spec.yaml:116` still lists the suppression stage's
-`params: ["<protocol>.suppressive_drive_gain"]  # impl ledger (SQ-001, 1D scale)`. That is the
-RETIRED per-panel knob (SQ-001/SQ-005, A-013): no per-panel suppression gain exists in the author
-code (`R = E./(I+sigma)+baselineUnmod`, attentionModel.m:175), `test_contract_suppression_consistency.py`
-asserts it resolves `None` on every protocol, and `suppression.py`'s docstring says it is retired
-and not read. A reader of the stage contract is told the stage consumes a gain that no longer exists
-— same stale-residue antipattern the README/docstring fix targeted, left in the stage spec.
-→ **Fix when ratified:** drop `<protocol>.suppressive_drive_gain` from line 116; reference the global
-`model.suppressive_field_size` / `model.suppressive_tuning_width` (the single space×feature pool).
+**Finding #1 — RESOLVED. Stale retired `suppressive_drive_gain` removed from the stage spec.**
+`implementation/src/rh_model/stages/model_spec.yaml` no longer declares the suppression stage's
+retired per-panel `<protocol>.suppressive_drive_gain` (SQ-001/SQ-005, A-013) — it now references only
+the global `model.suppressive_field_size` (CODE-010) / `model.suppressive_tuning_width` (CODE-011), the
+single space×feature pool. The author code has no per-panel gain (`R = E./(I+sigma)+baselineUnmod`,
+attentionModel.m:175, CODE-001). Two sibling dead declarations (`figure_4C.suppressive_tuning_width`,
+`figure_4C.sigma` — the retired SQ-004 overrides, absent from both ledgers) were removed for the same
+contract-integrity reason. `test_contract_suppression_consistency.py` still passes (4/4).
 
-**Open finding #2 — 5C/6C/7C sweep contrast = 0.5 (audited:false) contradicts the author code (model:contract).**
-`article_aware/spec/calibration.yaml` `figure_5C.contrast` / `figure_6C.contrast` / `figure_7C.contrast`
-are all `0.5`, `audited: false`, noted "fixed sweep contrast (0.5) is an assumption, not a verbatim
-paper value" (lines 559/594/629). But `Figure5C.m:19`, `Figure6C.m:21`, `Figure7C.m:26` all set
-`contrast = 1;`. These are load-bearing — they scale the stimulus drive for the entire tuning sweep —
-and are now resolvable from the SAME author-code lineage the just-applied c_range fix relied on. The
-contract uses 0.5 where the author uses 1.0. (Also `Figure5C.m:20 stim = contrast*stim1*contrast + stim2`
-scales stim1 by contrast², a structural difference only if 0.5 is kept.) Pre-existing contract bug,
-surfaced by the acquired ground truth, not introduced this pass.
-→ **Fix when ratified:** set 5C/6C/7C `contrast = 1.0`, source CODE-018 / lineage `Figure5C.m:19` /
-`Figure6C.m:21` / `Figure7C.m:26`, `audited: true` with verbatim quote — OR, if 0.5 is a deliberate
-display choice, state the author-code 1.0 contradiction explicitly (code-alone-honesty rule) and keep
-it a named assumption rather than an unexplained `audited:false`.
+**Finding #2 — RESOLVED. 5C/6C/7C sweep contrast 0.5 → 1.0 (CODE-021).**
+`figure_{5C,6C,7C}.contrast` are now `1.0`, `audited: true`, source **CODE-021** (`Figure5C.m:19`,
+`Figure6C.m:21`, `Figure7C.m:26` all `contrast = 1;`). The author stimulus-construction structure is
+transcribed: 5C/6C `stim = contrast²·stim_RF + stim_contra` (RF scaled by contrast², contra by 1 —
+inert at contrast=1); 7C `pair = contrast·(stim_var + stim_null)` (linear). At the author value both
+reduce to the unit-height sums; the asymmetric forms are recorded so Phase B never reads paper/code.
 
-**Where to look** — `logs/spec_audit/sq005_correction_audit_2026-06-04.md` (Phase-A contract audit,
-VERDICT FAITHFUL for the mechanism); `logs/faithfulness_audit/2026-06-04.md` (independent re-render:
-model faithful, all divergences figure/contract-scope, author-geometry reruns 4E 386%→52%, 7C 2.73→1.41);
-the spec questions in `logs/spec_questions.md` (**SQ-007** GAP 1/2/3, **SQ-006** 7C factorization,
-**SQ-005** human_resolution). The 4E/7C two-stimulus GEOMETRY divergence (still RED, separate from the
-two contract findings above) and **DR-4C-sign** (the published-Fig-4C-vs-model sign decision-request,
-owner=human, expiry 2026-07-15) also await human ratification.
+**Finding #3 — RESOLVED. 4E/7C author SEPARATED two-stimulus geometry adopted.**
+The figure protocols + calibration now carry the author geometry: **4E** four separated stimuli
+(RF x=90/110, contra x=-90/-110, recorded x=100, cRange [1e-4,0.1], all contrasts covary) — author
+geometry yields %-mod ~52% vs the co-located ~386% (faithfulness_audit Finding B); **7C** two SEPARATED
+in-RF stimuli (var x=93, null x=107, recorded x=100, att-away x=-100) — yields var/fix ratio ~1.41 vs
+the co-located ~2.73 (Finding D). 5C/6C geometry (x=±100) also transcribed. New calibration geometry
+keys are all `CODE-018`-sourced with verbatim quotes.
+
+**Finding #4 — RESOLVED (code-resolvable; DR-4C-sign CLOSED, no human ruling needed).**
+DR-4C-sign was a PHANTOM contradiction — a **digitizer label swap**, not a paper defect. The author
+legend (`Figure4C.m:69`) is `'Att Away','Att RF'`; the dashed modulation
+`100·(unattCRF-attCRF)/unattCRF` (line 74) is drawn POSITIVE in the published panel (~36% peak). For
+that to be positive, **Att-Away (unattCRF) is the UPPER solid and Att-RF (attCRF, attend-null-in-RF)
+the LOWER** — i.e. attending the null in the RF SUPPRESSES the recorded preferred neuron (C-021), and
+the published panel AGREES with `Figure4C.m`. Recomputing the author dashed formula on the digitized
+curves with the corrected mapping reproduces the digitized % modulation POINTWISE (~29–30% mid-range,
+declining). The only error was the digitizer's (it labeled the upper solid "attended" when it is the
+author's "Att Away"/unattCRF). The model already follows the author code and is correct. A-012's
+`paper_issue` is updated to RESOLVED; the `panel_C_digitized.json` solid-label swap is documented for
+tier comparisons. (The empirical Fig-4B caption's "percentage increase" describes the
+Reynolds/Martinez-Trujillo DATA panel, not the model panel C.)
+
+**Where to look** — author scripts `paper/code/attentionModel/Figure{4C,4E,5C,6C,7C}.m`;
+`logs/faithfulness_audit/2026-06-04.md` (author-geometry reruns 4E 386%→52%, 7C 2.73→1.41);
+`logs/spec_questions.md` (SQ-005 human_resolution, SQ-006 now formalized as **A-014**
+feature-attention-spatially-global). NOTE for Phase B: the prior `simulate` protocols co-located the
+4E/7C stimuli at x=0; rebuilding to the separated geometry above is the residual model-side work (the
+forward mechanism is unchanged and lands the paper values once the geometry is corrected).
 
 ---
 
@@ -287,35 +298,38 @@ The forward model (`model.py`, Eqs. 5–6) is FAITHFUL operator-for-operator to 
 (`paper/code/attentionModel/attentionModel.m`) — confirmed by two independent 2026-06-04 audits. Every
 divergence is **protocol / figure / contract-scope**.
 
-1. **CONTRACT — retired suppression knob still LIVE in the stage spec. OPEN (blocks contract).**
-   `implementation/src/rh_model/stages/model_spec.yaml:116` declares
-   `params: ["<protocol>.suppressive_drive_gain"]` — the RETIRED per-panel knob. It contradicts the
-   SQ-005 resolution (no per-panel gain in the author code), the rewritten
-   `test_contract_suppression_consistency.py` (asserts it resolves None everywhere), and
-   `suppression.py` (docstring: retired, not read). See DECISION NEEDED #1.
-   *Source:* `implementation/src/rh_model/stages/model_spec.yaml:116`;
-   `implementation/src/rh_model/stages/suppression.py`; `logs/spec_questions.md` SQ-005.
+1. **CONTRACT — retired suppression knob in the stage spec. RESOLVED (2026-06-10).**
+   `implementation/src/rh_model/stages/model_spec.yaml` no longer declares the retired per-panel
+   `<protocol>.suppressive_drive_gain` (nor the dead 4C `suppressive_tuning_width`/`sigma`); it
+   references the global `model.suppressive_field_size` (CODE-010) / `model.suppressive_tuning_width`
+   (CODE-011). Grounds: author code `R = E./(I+sigma)+baselineUnmod` (attentionModel.m:175, CODE-001).
+   `test_contract_suppression_consistency.py` passes (4/4).
+   *Source:* `implementation/src/rh_model/stages/model_spec.yaml`; `code_refs.yaml` CODE-001.
 
-2. **CONTRACT — 5C/6C/7C sweep contrast = 0.5 (audited:false) vs author 1.0. OPEN (blocks contract).**
-   `article_aware/spec/calibration.yaml` `figure_{5C,6C,7C}.contrast = 0.5, audited:false` contradicts
-   `Figure5C.m:19 / Figure6C.m:21 / Figure7C.m:26 contrast = 1`. Load-bearing (scales the whole tuning
-   sweep), now resolvable from the same author-code lineage the c_range fix used. See DECISION NEEDED #2.
-   *Source:* `article_aware/spec/calibration.yaml:559/594/629`; `paper/code/attentionModel/Figure{5C,6C,7C}.m`.
+2. **CONTRACT — 5C/6C/7C sweep contrast. RESOLVED (2026-06-10): 0.5 → 1.0 (CODE-021).**
+   `figure_{5C,6C,7C}.contrast = 1.0, audited:true, source CODE-021` (`Figure5C.m:19 / Figure6C.m:21 /
+   Figure7C.m:26 contrast = 1`). Author stimulus-construction structure transcribed (5C/6C contrast²
+   on the RF stimulus; 7C linear). Retires the prior unfounded 0.5.
+   *Source:* `article_aware/spec/calibration.yaml` figure_{5C,6C,7C}.contrast; `code_refs.yaml` CODE-021.
 
-3. **CODE_BUG — Fig-4E / Fig-7C two-stimulus geometry (co-located vs four separated). RESIDUAL (RED).**
-   4E/7C co-locate two stimuli at x=0; the author scripts use FOUR SEPARATED stimuli (RF x=90/110,
-   contra x=−90/−110). Co-location lets feature competition crush the nonpreferred response, inflating
-   4E %-mod to ~386% and the 7C var/fix ratio to ~2.73. The author geometry through the *committed,
-   unchanged* `simulate` lands 4E ~52% and 7C ~1.41 (faithfulness_audit Findings B/D) — the faithful
-   mechanism reaches the paper values once the geometry is corrected.
-   *Source:* `paper/code/attentionModel/Figure4E.m`, `Figure7C.m`;
-   `implementation/src/rh_model/protocols.py run_figure_4E / run_figure_7C`; `logs/faithfulness_audit/2026-06-04.md`.
+3. **GEOMETRY — Fig-4E / Fig-7C two-stimulus geometry. RESOLVED in the contract (2026-06-10).**
+   The figure protocols + calibration now carry the author SEPARATED geometry (4E four stimuli
+   x=90/110/−90/−110, recorded x=100; 7C var x=93 / null x=107, recorded x=100, att-away x=−100). The
+   author geometry through the *committed, unchanged* `simulate` lands 4E ~52% and 7C ~1.41
+   (faithfulness_audit Findings B/D). RESIDUAL MODEL-SIDE WORK FOR PHASE B: `protocols.py
+   run_figure_4E / run_figure_7C` still co-locate at x=0 and must be rebuilt to this contract geometry
+   (the forward mechanism is unchanged).
+   *Source:* `paper/code/attentionModel/Figure4E.m`, `Figure7C.m`; calibration figure_{4E,7C}.* geometry
+   keys (CODE-018); `pseudocode/figure_{4,7}_protocol.md`; `logs/faithfulness_audit/2026-06-04.md`.
 
-4. **DECISION-REQUEST — DR-4C-sign (published Fig-4C vs model sign). OPEN (owner=human, expiry 2026-07-15).**
-   The model follows `Figure4C.m:74` (suppression sign, attended below) — the OPPOSITE order from the
-   published Fig-4C panel/caption ("percentage increase", attended above). Honestly logged as an open
-   human decision-request, not silently adopted; ratify before 4C is called reproduced.
-   *Source:* `logs/spec_questions.md`; `figures/figure_4/panel_C.md`; `Figure4C.m:74`.
+4. **DECISION-REQUEST — DR-4C-sign. RESOLVED (2026-06-10): code-resolvable, CLOSED.**
+   Investigated against `Figure4C.m` + the published panel: NO genuine paper/code contradiction — the
+   apparent conflict was a DIGITIZER label swap. The published dashed % modulation is positive and
+   matches the author `100·(unattCRF-attCRF)/unattCRF` pointwise once the upper solid is read as the
+   author's "Att Away"/unattCRF (not "attended"). Attend-null-in-RF SUPPRESSES (C-021); model follows
+   the code and is correct. A-012 `paper_issue` → RESOLVED; no human ruling needed.
+   *Source:* `paper/code/attentionModel/Figure4C.m:69,74`; `figures/figure_4/panel_C.md`;
+   `assumptions.yaml` A-012.
 
 5. **CONTRACT_BUG — clipped CRF contrast window (2A/2B/3C/3F/4C/4E). RESOLVED & VERIFIED FAITHFUL.**
    The sweep/view/digitized-x_range had pinned contrast to `[0.01,1]` (2 decades) while the author
@@ -343,6 +357,7 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-10 | **Phase-A contract resolution of the four blocked divergences (author-code grounded; model.py untouched).** #1 retired `suppressive_drive_gain` (+ dead 4C `suppressive_tuning_width`/`sigma`) removed from `stages/model_spec.yaml`; #2 5C/6C/7C sweep contrast 0.5→1.0 (CODE-021) + author stimulus-construction structure transcribed; #3 4E/7C author SEPARATED two-stimulus geometry adopted in protocols + calibration (CODE-018 geometry keys); #4 DR-4C-sign INVESTIGATED → code-resolvable (digitizer label swap, NOT a paper defect) → CLOSED. Added A-014 (feature-attention-spatially-global, formalizes SQ-006). check_citations OK. Exit `contract-resolved`. |
 | 2026-06-04 | **from=fix finalize — BLOCKED on contract.** Window fix + suppression-test/doc rewrites independently VERIFIED FAITHFUL (model unchanged; Fig 2/3 full sigmoids). Paper-fix verify did NOT pass within MAX_PAPERFIX: 2 OPEN model-side contract divergences — retired `suppressive_drive_gain` still LIVE at `stages/model_spec.yaml:116`, and 5C/6C/7C sweep contrast 0.5 (audited:false) vs author `Figure*C.m contrast=1`. Both routed to human; exit `blocked:[model:contract]`, flagged_count 2. 4E/7C geometry + DR-4C-sign remain RED/open. |
 | 2026-06-04 | Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED (author cRange [1e-5,1] / [1e-4,0.1] routed through sweep+view+x_range; model unchanged). 18→5 deterministic reds. |
 | 2026-06-03 | Current-state rewrite: 8 magnitude flags traced to CONTRACT_BUG (per-panel suppression) + 6C CODE_BUG (fixed) + 4E divergence; SQ-005 escalated. |

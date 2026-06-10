@@ -281,3 +281,51 @@
     left-shift" figure-scope CONTRACT_BUG (audit 2026-06-04): the forward model is unchanged;
     only the per-panel sweep window (protocols.py) and the matching view xlim + digitized
     x_range were wrong (guessed [0.01,1] / [0.01,1]). 4C already swept [1e-4,0.1] (CODE-018).
+
+# ===========================================================================
+# Per-figure TUNING-SWEEP fixed stimulus contrast (Figure5C/6C/7C `contrast`)
+# ===========================================================================
+
+- id: CODE-021
+  param: tuning-sweep fixed stimulus contrast (Figure5C/6C/7C `contrast = 1`)
+  source: "paper/code/Figure5C.m:18-20; Figure6C.m:20-22; Figure7C.m:25-38"
+  version: "https://snl.salk.edu/~reynolds/Normalization_Model_of_Attention/attentionModel.zip (2009)"
+  text: |
+    % Figure5C.m:18-20
+    % Set contrast to 1
+    contrast = 1;
+    stim = contrast * stim1 * contrast + stim2;
+    % Figure6C.m:20-22
+    % Set contrast to 1
+    contrast = 1;
+    stim = contrast * stim1 * contrast + stim2;
+    % Figure7C.m:25-38
+    % Set contrast to 1
+    contrast = 1;
+    ...
+    stim1 = contrast * makeGaussian(theta,stimOrientation1,1,1) * makeGaussian(x,stimCenter1,stimWidth,1);
+    stim2 = contrast * makeGaussian(theta,stimOrientation2,1,1) * makeGaussian(x,stimCenter2,stimWidth,1);
+    pair = stim1 + stim2;
+  code_alone: true   # the paper Figure 5/6/7 captions state no fixed sweep contrast; the panels are tuning curves over theta
+  notes: |
+    THE TUNING-SWEEP FIXED STIMULUS CONTRAST, CODE-ALONE = 1.0 (the prior contract used an
+    UNFOUNDED 0.5). Figures 5C/6C/7C are orientation/direction TUNING sweeps (theta varied at fixed
+    contrast), so a single fixed stimulus contrast scales the whole curve. The paper gives no
+    numeric value for it; all three author scripts set `contrast = 1`. This retires the spec's
+    figure_{5C,6C,7C}.contrast = 0.5 (audited:false) assumption.
+
+    STIMULUS-CONSTRUCTION STRUCTURE (also code-alone), two distinct forms:
+      - Figure5C.m / Figure6C.m:  stim = contrast*stim1*contrast + stim2  ->  contrast^2 * stim1 + stim2.
+        The ATTENDED/RF stimulus (stim1 at +100) is scaled by contrast^2, the contralateral
+        stimulus (stim2 at -100) is scaled by 1 (NOT by contrast). At contrast=1 this is the
+        identity stim1+stim2 -- so the contrast^2 scaling is INERT at the author value and only
+        matters if a non-1 contrast were used. Both stim1, stim2 are unit-height
+        makeGaussian(...,1,1) outer products (theta-impulse sigma=1 x spatial sigma=stimWidth=10).
+      - Figure7C.m:  each of the two in-RF stimuli is scaled by `contrast` linearly
+        (stim1=contrast*G, stim2=contrast*G), pair = stim1+stim2; the attend-away/alone
+        conditions reuse the same per-stimulus contrast. At contrast=1 this is just the
+        unit-height pair. (7C has no contralateral stimulus; att-away is a spatial field at x=-100.)
+    Phase B must construct the 5C/6C tuning stimulus as contrast^2 * stim_RF + stim_contra and the
+    7C stimulus as contrast * (stim_var + stim_null), with contrast = 1.0 (CODE-021). At the author
+    value both reduce to the unit-height sums, but the asymmetric (5C/6C contrast^2-on-RF-only)
+    structure is the faithful construction and is transcribed here so Phase B never reads paper/code.

@@ -63,9 +63,13 @@ stages:
       - { name: s_x, type: "ndarray (n_x,)", units: "1/spatial (∫=1 in x)" }
       - { name: s_theta, type: "ndarray (n_th,)", units: "1/deg (∫=1 in θ)" }
     params:
-      - model.suppressive_field_size          # paper-derived ledger (C-010)
-      - model.suppressive_tuning_width        # paper-derived ledger (C-011)
-      - figure_4C.suppressive_tuning_width    # impl ledger (SQ-004, per-protocol)
+      # ONE suppressive kernel for every figure. The retired per-protocol
+      # figure_4C.suppressive_tuning_width (SQ-004) does NOT exist in either ledger
+      # (deleted on the SQ-004 resolution, 2026-06-03: 4C uses the CITED 180→360
+      # suppressive tuning, no narrow override) — removed here so the contract no
+      # longer declares a knob the faithful model does not consume.
+      - model.suppressive_field_size          # paper-derived ledger (C-010, CODE-010)
+      - model.suppressive_tuning_width        # paper-derived ledger (C-011→CODE-011=360)
     pure: true
 
   - name: stimulus_drive
@@ -113,7 +117,15 @@ stages:
     produces:
       - { name: S, type: "ndarray (n_th, n_x)", units: "arbitrary drive (≥ 0)" }
     params:
-      - "<protocol>.suppressive_drive_gain"   # impl ledger (SQ-001, 1D scale)
+      # NO per-panel suppression gain. The faithful suppression is ONE space×feature
+      # pool — the global suppressive_field_size (CODE-010) / suppressive_tuning_width
+      # (CODE-011) consumed by the suppressive_kernel stage above. The retired
+      # <protocol>.suppressive_drive_gain (SQ-001) does NOT exist in the author code
+      # (attentionModel.m:175 `R = E./(I+sigma)+baselineUnmod`, CODE-001; no gain) and
+      # is asserted None on every protocol by test_contract_suppression_consistency.py
+      # (SQ-005/A-013). This stage consumes only the kernel (s_x,s_θ) and A·E.
+      - model.suppressive_field_size          # paper-derived ledger (C-010, CODE-010)
+      - model.suppressive_tuning_width        # paper-derived ledger (C-011→CODE-011=360)
     pure: true
 
   - name: normalization
@@ -127,9 +139,12 @@ stages:
     produces:
       - { name: R, type: "ndarray (n_th, n_x)", units: "arbitrary response (≥ 0)" }
     params:
-      - model.sigma                # paper/spec ledger (A-001)
+      # σ is GLOBAL (model.sigma = 1e-6, CODE-014) — no per-panel σ. The retired
+      # figure_4C.sigma override (SQ-001/SQ-004) does NOT exist in either ledger
+      # (deleted on the SQ-004 resolution): saturation comes from the pooled S, not
+      # from σ (CODE-014), so 4C needs no σ override. Removed from the contract.
+      - model.sigma                # paper/spec ledger (A-001→CODE-014=1e-6)
       - model.threshold_T          # paper/spec ledger (A-003)
-      - figure_4C.sigma            # impl ledger (SQ-001, per-protocol override)
     pure: true
     config_surface:
       key: "model.normalization_variant"          # impl ledger / RH_NORMALIZATION_VARIANT

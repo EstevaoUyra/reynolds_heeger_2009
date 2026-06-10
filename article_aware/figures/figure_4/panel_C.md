@@ -30,12 +30,16 @@ Preferred-stimulus contrast swept.
   (suppression sign) is **positive**, peaks ~38% at low contrast and **declines**
   toward high contrast (matching the digitized panel_C %-modulation, ~36%),
   staying within [0, 100].
-- **PAPER/CODE INCONSISTENCY (DR-4C-sign, A-012):** the *published* Figure 4
-  panel C DRAWS the attend-nonpref-in-RF curve ABOVE attend-away and labels the
-  dashed curve a "percentage INCREASE" (caption B/C, C-015) — i.e. facilitation —
-  the OPPOSITE curve order/sign to the authors' released Figure4C.m and to C-021.
-  We follow the released CODE + C-021 (suppression). This is a documented paper
-  defect, owned by human decision-request DR-4C-sign, not a model fault. The
-  digitized `panel_C_digitized.json` traced the UPPER solid as "attended"
-  (published-panel convention), SWAPPED relative to this code convention — tier
-  comparisons account for the swap.
+- **DR-4C-sign RESOLVED (code-resolvable, 2026-06-10; A-012) — NO genuine
+  paper/code contradiction.** The apparent inconsistency was a DIGITIZER LABEL
+  SWAP, not a paper defect. The author legend (Figure4C.m:69) is
+  `'Att Away','Att RF'`, and the dashed modulation `100·(unattCRF-attCRF)/unattCRF`
+  (line 74) is drawn POSITIVE in the published panel (~36% peak). For that to be
+  positive, Att-Away (unattCRF) is the UPPER solid and Att-RF (attCRF, attend
+  null-in-RF) is the LOWER — i.e. attending the null in the RF SUPPRESSES the
+  recorded preferred neuron (C-021), and the published panel AGREES with the
+  code. Recomputing the author dashed formula on the digitized curves with the
+  corrected mapping reproduces the digitized % modulation pointwise. The model
+  follows Figure4C.m and is correct. The digitized `panel_C_digitized.json`
+  mislabeled the UPPER solid "attended" (it is the author's Att-Away/unattCRF);
+  tier comparisons account for that swap.

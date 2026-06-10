@@ -527,6 +527,54 @@ figure_4E.c_range_hi:
   audited: true
   quote: "Figure4E.m:7  cRange = [1e-4 0.1];"
   note: "Figure 4E contrast-sweep ceiling (author Figure4E.m cRange)."
+# --- Figure 4E four-stimulus geometry (authors' Figure4E.m, CODE-018) -------
+# IDENTICAL four-separated-stimulus layout to 4C: preferred (theta=0) and null
+# (theta=180) in the RF (x=90/110) and contralateral (x=-90/-110), recorded
+# neuron RF at x=100. UNLIKE 4C, all four contrasts COVARY (no fixed null) — the
+# "yoked contrast experiment". This RESOLVES the 4E %-mod ~386% off-axis bug (the
+# prior two-co-located-stimuli-at-x=0 geometry): author geometry yields ~52%.
+figure_4E.rf_center:
+  value: 100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:25  RF_center = round(mean([stimCenter1, stimCenter2]));  % stimCenter1=90, stimCenter2=110"
+  note: "Recorded-neuron RF centre = midpoint of the two RF stimuli (90,110) = 100; recorded at (theta=0, x=100)."
+figure_4E.stim_pref_rf_x:
+  value: 90.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:14  stimCenter1 = 90;  (stimOrientation1 = 0, preferred, in RF; attend-pref spatial centre Ax=stimCenter1)"
+  note: "Preferred (theta=0) stimulus in the RF; the attend-preferred spatial centre (Ax=90)."
+figure_4E.stim_null_rf_x:
+  value: 110.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:16  stimCenter2 = 110;  (stimOrientation2 = 180, null, in RF; attend-nonpref spatial centre Ax=stimCenter2)"
+  note: "Null/nonpreferred (theta=180) stimulus in the RF; the attend-nonpreferred spatial centre (Ax=110)."
+figure_4E.stim_pref_contra_x:
+  value: -90.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:18  stimCenter3 = -90;  (stimOrientation3 = 0, preferred, contralateral)"
+  note: "Preferred stimulus in the opposite hemifield."
+figure_4E.stim_null_contra_x:
+  value: -110.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:20  stimCenter4 = -110;  (stimOrientation4 = 180, null, contralateral)"
+  note: "Null stimulus in the opposite hemifield."
+figure_4E.theta_nonpref:
+  value: 180.0
+  units: "degrees (motion direction)"
+  source: CODE-018
+  audited: true
+  quote: "Figure4E.m:17/21  stimOrientation2 = 180; stimOrientation4 = 180;  (also Atheta=stimOrientation2 for attend-nonpref)"
+  note: "Null-stimulus motion direction and the attend-nonpreferred feature centre (Atheta=180); attend-preferred Atheta=0."
 
 figure_5C.stimulus_size:
   value: 10.0
@@ -557,11 +605,35 @@ figure_5C.tuning_width:
   quote: "V4 experiments (oriented gratings): orientation tuning width 30°, suppressive field tuning width 180°."
   note: "Figure 5C feature tuning width."
 figure_5C.contrast:
-  value: 0.5
+  value: 1.0
   units: "contrast (c in [0,1])"
-  source: C-016
-  audited: false  # downgraded 2026-06-03: fixed sweep contrast (0.5) is an assumption, not a verbatim paper value
-  note: "Single stimulus contrast for the Figure 5C orientation-tuning sweep."
+  source: CODE-021
+  audited: true
+  quote: "Figure5C.m:18-20  % Set contrast to 1 / contrast = 1; / stim = contrast * stim1 * contrast + stim2;"
+  note: >-
+    Fixed stimulus contrast for the Figure 5C orientation-tuning sweep = 1.0, code-alone
+    (CODE-021); the paper caption states no sweep contrast (5C is a tuning curve over theta).
+    RETIRED the prior 0.5 (audited:false assumption). STRUCTURE: stim = contrast^2 * stim1(RF,+100)
+    + stim2(contra,-100) — the RF stimulus is scaled by contrast^2, the contralateral by 1; at
+    contrast=1 this reduces to stim1+stim2. Phase B must build the asymmetric construction.
+# --- Figure 5C two-stimulus geometry (authors' Figure5C.m, CODE-018) --------
+# Two separated stimuli, both theta=0; the recorded tuning curve is the column at
+# the RF stimulus position x=+100. stimWidth=AxWidth=10. Attend-RF (Ax=+100) vs
+# attend-away (Ax=-100), orientation-flat field.
+figure_5C.stim_rf_x:
+  value: 100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure5C.m:11  stimCenter1 = 100;  (stimOrientation1 = 0; attend-RF Ax=stimCenter1; recorded i=find(x==stimCenter1))"
+  note: "RF stimulus position; the attend-RF spatial centre and the recorded-column position (x=+100)."
+figure_5C.stim_contra_x:
+  value: -100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure5C.m:14  stimCenter2 = -100;  (stimOrientation2 = 0; attend-away Ax=stimCenter2)"
+  note: "Contralateral stimulus position; the attend-away spatial centre (x=-100)."
 
 figure_6C.stimulus_size:
   value: 10.0
@@ -592,11 +664,42 @@ figure_6C.tuning_width:
   quote: "Table 1 (Per-Figure Parameters), row | 6C | 10 | 30 | 60* | 2 | – |; constants line: ... [code: Figure6C.m:5 AthetaWidth = 60]"
   note: "Figure 6C ATTENTION-field feature tuning width (model_spec figure_6C; confirmed Figure6C.m AthetaWidth=60, CODE-018). Figure6C.m also sets Ashape='cross' (separable spatial×feature gain), the C-017 mechanism (CODE-018)."
 figure_6C.contrast:
-  value: 0.5
+  value: 1.0
   units: "contrast (c in [0,1])"
-  source: C-017
-  audited: false  # downgraded 2026-06-03: fixed sweep contrast (0.5) is an assumption, not a verbatim paper value
-  note: "Stimulus contrast for the Figure 6C direction-tuning sweep (both stimuli)."
+  source: CODE-021
+  audited: true
+  quote: "Figure6C.m:20-22  % Set contrast to 1 / contrast = 1; / stim = contrast * stim1 * contrast + stim2;"
+  note: >-
+    Fixed stimulus contrast for the Figure 6C direction-tuning sweep = 1.0, code-alone
+    (CODE-021); the paper caption states no sweep contrast (6C is a tuning curve over theta).
+    RETIRED the prior 0.5 (audited:false assumption). STRUCTURE identical to 5C:
+    stim = contrast^2 * stim1(RF,+100) + stim2(contra,-100); at contrast=1 reduces to stim1+stim2.
+# --- Figure 6C two-stimulus geometry (authors' Figure6C.m, CODE-018) --------
+# Two separated stimuli, both theta=0; recorded tuning = column at the RF stimulus
+# x=+100. stimWidth=10, AxWidth=30. Attend-fixation (Ax=0, flat theta) vs
+# attend-opposite (Ashape='cross', Ax=-100, Atheta=0, AthetaWidth=60). Feature
+# gain spatially global (A-014) so it reaches the recorded neuron at x=+100.
+figure_6C.stim_rf_x:
+  value: 100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure6C.m:13  stimCenter1 = 100;  (stimOrientation1 = 0; recorded i=find(x==stimCenter1))"
+  note: "RF stimulus position and the recorded-column position (x=+100)."
+figure_6C.stim_contra_x:
+  value: -100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure6C.m:15  stimCenter2 = -100;  (stimOrientation2 = 0; attend-opposite Ax=stimCenter2, Atheta=stimOrientation2=0)"
+  note: "Contralateral stimulus position; the attend-opposite spatial centre and its feature centre theta=0 (x=-100)."
+figure_6C.attend_fixation_x:
+  value: 0.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure6C.m:25  R1 = attentionModel(...,'Ax',0,'AxWidth',AxWidth);  (attend-fixation, flat theta)"
+  note: "Attend-fixation spatial centre (x=0); orientation-flat baseline field."
 
 figure_7C.stimulus_size:
   value: 5.0
@@ -627,8 +730,54 @@ figure_7C.tuning_width:
   quote: "Table 1 (Per-Figure Parameters), row | 7C | 5 | 5 | 45* | 5 | – |; constants line: ... [code: Figure7C.m:5 AthetaWidth = 45]"
   note: "Figure 7C ATTENTION-field feature tuning width (model_spec figure_7C; confirmed Figure7C.m AthetaWidth=45, CODE-018)."
 figure_7C.contrast:
-  value: 0.5
+  value: 1.0
   units: "contrast (c in [0,1])"
-  source: C-018
-  audited: false  # downgraded 2026-06-03: fixed sweep contrast (0.5) is an assumption, not a verbatim paper value
-  note: "Stimulus contrast for the Figure 7C direction-tuning sweep (both stimuli)."
+  source: CODE-021
+  audited: true
+  quote: "Figure7C.m:25-38  % Set contrast to 1 / contrast = 1; ... stim1 = contrast * makeGaussian(...); stim2 = contrast * makeGaussian(...); pair = stim1 + stim2;"
+  note: >-
+    Fixed stimulus contrast for the Figure 7C direction-tuning sweep = 1.0, code-alone
+    (CODE-021); the paper caption states no sweep contrast (7C is a tuning curve over theta).
+    RETIRED the prior 0.5 (audited:false assumption). STRUCTURE (differs from 5C/6C): each in-RF
+    stimulus is scaled LINEARLY by contrast — stim1 = contrast*G(var,+93), stim2 = contrast*G(null,+107),
+    pair = stim1 + stim2; at contrast=1 the unit-height pair. No contralateral stimulus.
+# --- Figure 7C two-SEPARATED-stimulus geometry (authors' Figure7C.m, CODE-018) ---
+# The two in-RF stimuli are at SEPARATED x positions (93, 107), NOT co-located at
+# x=0; recorded at (theta=0, x=100). Co-locating inflates var/fix ratio to ~2.73;
+# the author separated geometry yields ~1.41 (digitized ~1.4, faithfulness_audit
+# Finding D). stimWidth=AxWidth=5, AthetaWidth=45. Att-away spatial field at x=-100.
+figure_7C.stim_var_x:
+  value: 93.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure7C.m:13  stimCenter1 = 93;  (variable-direction stimulus; attend-variable Ax=stimCenter1)"
+  note: "Variable-direction stimulus position; the attend-variable spatial centre (x=93)."
+figure_7C.stim_null_x:
+  value: 107.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure7C.m:14  stimCenter2 = 107;  (null/nonpreferred theta=180; attend-nonpref Ax=stimCenter2)"
+  note: "Null/nonpreferred (theta=180) stimulus position; the attend-nonpreferred spatial centre (x=107)."
+figure_7C.rf_center:
+  value: 100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure7C.m:16  RF_center = round(mean([stimCenter1,stimCenter2]));  (recorded i=find(x==RF_center), j=find(theta==0))"
+  note: "Recorded-neuron RF centre = midpoint of (93,107) = 100; recorded at (theta=0, x=100)."
+figure_7C.att_away_x:
+  value: -100.0
+  units: "spatial position (x grid units)"
+  source: CODE-018
+  audited: true
+  quote: "Figure7C.m:15  att_away_loc = -100;  (attend-fixation spatial field; Atheta=NaN flat)"
+  note: "Attend-fixation/away spatial centre (x=-100); feature-flat (Atheta=NaN). 7C has no contralateral stimulus."
+figure_7C.theta_nonpref:
+  value: 180.0
+  units: "degrees (motion direction)"
+  source: CODE-018
+  audited: true
+  quote: "Figure7C.m:35  stimOrientation2 = 180;  (null direction; attend-nonpref Atheta=stimOrientation2)"
+  note: "Null-stimulus motion direction and the attend-nonpreferred feature centre (Atheta=180)."

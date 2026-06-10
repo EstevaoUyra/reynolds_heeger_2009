@@ -17,15 +17,20 @@ attended and how stimulus contrasts are configured.
   - 4C: contrast of the preferred stimulus c_pref varied; the null contrast
     fixed at 0.01. Two attention conditions, BOTH attending the NULL stimulus:
     attend null-in-RF vs attend null contralateral (opposite hemifield).
-  - 4E: two stimuli colocated in RF, contrasts covary (c_pref = c_nonpref = c).
-    Two attention conditions: attend preferred vs attend nonpreferred.
+  - 4E: **FOUR separated stimuli** (authors' Figure4E.m, CODE-018) — the SAME
+    four-stimulus layout as 4C (RF pair at x=90 θ=0 / x=110 θ=180; contralateral
+    pair at x=-90 θ=0 / x=-110 θ=180), recorded neuron RF at x=100. ALL FOUR
+    contrasts covary together (`stim = c·(stim1+stim2+stim3+stim4)`; the null is
+    NOT held fixed here, unlike 4C). Two attention conditions: attend preferred
+    (Ax=90, Atheta=0) vs attend nonpreferred (Ax=110, Atheta=180).
 - Parameters: stimulus_size = 5, attention_field_size = 5, tuning_width
   (AthetaWidth) = 20°, γ (Apeak) = 5.
 
 ## Sweep
 - 4C: c_pref logarithmically across **[1e-4, 0.1]** with 8 points (Figure4C.m
   cRange); null contrast fixed = 0.01.
-- 4E: c logarithmically across [0.01, 1] with 8 points (covaried).
+- 4E: c logarithmically across **[1e-4, 0.1]** with 8 points (Figure4E.m cRange,
+  CODE-020); all four stimulus contrasts covaried.
 
 ## Procedure (4C)
 
@@ -42,13 +47,26 @@ attended and how stimulus contrasts are configured.
 > **suppression magnitude** `100·(unattended-attended)/unattended` — positive,
 > peaking ~36% at low contrast and declining toward saturation.
 >
-> **PAPER/CODE SIGN INCONSISTENCY (DR-4C-sign, A-012).** The *published* Figure 4
-> panel C draws the attend-nonpref-in-RF curve ABOVE attend-away and labels the
-> dashed curve a "percentage INCREASE" (caption B/C). We follow the released
-> CODE + C-021 (suppression). This is a documented paper defect, not a model
-> fault; the human decision-request DR-4C-sign owns the convention call. The
-> digitized panel_C JSON labels the UPPER solid "attended" (the published-panel
-> convention), which is SWAPPED relative to this code convention.
+> **DR-4C-sign — RESOLVED (code-resolvable, 2026-06-10). NO genuine paper/code
+> contradiction.** The apparent contradiction was a DIGITIZER LABEL SWAP, not a
+> paper defect. The author legend (Figure4C.m:69) is `'Att Away','Att RF'`:
+> `unattCRF` = Att-Away (Ax=-110, contralateral), `attCRF` = Att-RF (Ax=110,
+> attend null-in-RF). The dashed modulation is `100·(unattCRF-attCRF)/unattCRF`
+> (Figure4C.m:74) and the published panel draws it POSITIVE (~36% peak,
+> declining). For that to be positive, **Att-Away (unattCRF) must be the UPPER
+> solid and Att-RF (attCRF) the LOWER** — i.e. attending the null in the RF
+> SUPPRESSES the recorded preferred neuron. The published panel's upper solid is
+> therefore the *contralateral/unattended* condition, NOT "attended". The
+> digitizer mislabeled the upper solid "attended"; recomputing the author dashed
+> formula with the CORRECTED mapping (upper=unattCRF, lower=attCRF) reproduces
+> the digitized % modulation pointwise (~29–30% mid-range, declining), confirming
+> the published panel and Figure4C.m AGREE. The model already follows the author
+> code, so it is correct. (The empirical Fig-4B caption's "percentage increase"
+> describes the Reynolds/Martinez-Trujillo data panel; the author MODEL panel C
+> code is the authoritative spec source for the model and is internally
+> consistent.) `panel_C_digitized.json`'s solid labels remain on the published
+> convention and are SWAPPED relative to the author legend — tier comparisons
+> account for the swap.
 
 For each (c_pref, attention_condition):
 1. Construct E(x, θ) from the four stimuli above (preferred θ = 0 at contrast
@@ -61,19 +79,35 @@ For each (c_pref, attention_condition):
 4. Record R(x = 100, θ = 0) — the recorded preferred neuron at the RF centre.
 
 ## Procedure (4E)
+
+> **AUTHORS' Figure4E.m (CODE-018) — the authoritative 4E contract.** FOUR
+> SEPARATED stimuli, NOT two co-located at x=0. Co-locating two stimuli at x=0
+> lets feature competition crush the nonpreferred response and inflates the
+> %-modulation to ~386%; the author's four-separated geometry through the
+> committed `simulate` yields ~52%, matching the digitized ~54%
+> (faithfulness_audit Finding B). All four contrasts covary (the "yoked
+> contrast experiment").
+
 For each (c, attention_condition):
-1. Construct E(x, θ) with both stimuli at contrast c.
-2. Construct A(x, θ): Gaussian centered at x = 0; feature-selective for
-   θ = 0 ("attend preferred") OR θ = 180° ("attend nonpreferred"), σ_θ =
-   tuning_width.
-3. Compute S, R as above; record R(x = 0, θ = 0).
+1. Construct E(x, θ) from the FOUR stimuli, ALL at contrast c (covaried):
+   preferred θ=0 at x=90 and x=-90; nonpreferred θ=180° at x=110 and x=-110.
+   (`stim = c·(stim1 + stim2 + stim3 + stim4)`.)
+2. Construct A(x, θ): an OVAL field — spatial Gaussian (σ_x = attention_field_size
+   = 5) centred on the attended in-RF stimulus, times a feature Gaussian
+   (σ_θ = tuning_width = 20°):
+   - "Attend preferred": spatial centre x = 90, feature centre θ = 0.
+   - "Attend nonpreferred": spatial centre x = 110, feature centre θ = 180°.
+3. Compute S, R per EQ-6, EQ-5; record R(x = 100, θ = 0) — the recorded
+   preferred neuron at the RF centre (= round(mean(90,110))).
 
 ## Outputs
 - 4C: attended_CRF[c_pref] (= attend null-in-RF), unattended_CRF[c_pref]
   (= attend null contralateral), percent_modulation[c_pref]
   (= 100·(unattended-attended)/unattended, the suppression sign).
-- 4E: attend_pref_CRF[c], attend_nonpref_CRF[c], ratio[c] =
-  attend_pref / attend_nonpref.
+- 4E: attend_pref_CRF[c], attend_nonpref_CRF[c],
+  ratio[c] (= attend_pref / attend_nonpref, the response-gain ratio),
+  percent_modulation[c] (= 100·(attend_pref - attend_nonpref)/attend_nonpref,
+  the author Figure4E.m:71 form — the curve the panel actually plots).
 
 ## Expected behavior (citations)
 - C-015, C-021, CODE-018 / 4C: attending the **nonpreferred (null) stimulus in
@@ -84,10 +118,16 @@ For each (c, attention_condition):
   largest (~36%) at low contrast and **declining** toward high contrast.
   Verified: the author Figure4C.m configuration through rh_model.simulate gives a
   %-mod peak ~38%, matching the digitized panel_C %-modulation (~36%).
-  **PAPER/CODE inconsistency (DR-4C-sign):** the published panel draws this the
-  opposite way (attended above, "percentage increase"); we follow the released
-  code + C-021. The digitized JSON's solid-curve labels (attended = upper) are
-  swapped relative to this convention.
+  **DR-4C-sign RESOLVED (code-resolvable):** no genuine paper/code contradiction —
+  the published dashed % modulation is positive (~36%) and matches the author
+  `100·(unattCRF-attCRF)/unattCRF` once the digitizer's solid-curve label swap is
+  corrected (the published UPPER solid is the author's "Att Away"/unattCRF, the
+  LOWER is "Att RF"/attCRF). The model follows the author code and is correct.
 - C-015, C-021 / 4E: attending preferred yields larger response than
   attending nonpreferred across the full contrast range; the difference is
-  approximately a multiplicative scaling (response gain).
+  approximately a multiplicative scaling (response gain). With the author's
+  FOUR-separated geometry (CODE-018), the %-modulation
+  `100·(attend_pref-attend_nonpref)/attend_nonpref` peaks ~52% (matching the
+  digitized ~54%, faithfulness_audit Finding B) and stays within the paper's
+  0–100 axis — NOT the ~386% that the prior two-co-located-stimulus geometry
+  produced.

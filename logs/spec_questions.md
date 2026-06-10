@@ -134,7 +134,12 @@ human_resolution: |
 ## SQ-006 — feature-based attention is spatially GLOBAL (Fig 6C / 7C attend-opposite); needs a named ledger assumption
 date: 2026-06-03
 spec_ref: simulation_protocols.figure_6C; pseudocode/figure_6_protocol.md (Procedure 6C step 2); pipeline.build_attention_field; constants C-017, C-021, C-023
-status: RESOLVED-IN-BUILD (Phase B), pending Phase-A formalization of the assumption entry.
+status: RESOLVED (2026-06-10) — FORMALIZED as assumption A-014 (feature_attention_is_spatially_global)
+  in article_aware/spec/assumptions.yaml (escalation option (a)). The figure_6/7 protocols + model_spec
+  figure_6C/7C now cite A-014; the feature-selective conditions are theta-selective and FLAT in x at the
+  recorded RF, spatial-attention-away is the attend-fixation baseline. Grounded in C-023 + Figure6C.m
+  (spatial attention to x=-100 yet affects recorded x=+100, CODE-018). (Was: RESOLVED-IN-BUILD pending
+  Phase-A formalization.)
 question: |
   The 2026-06-03 CODE_BUG finding (test_figure_6C_code_bug.py, MUST-PASS) showed run_figure_6C
   built the attend-opposite-stimulus condition as a SPATIAL Gaussian centered at x_opposite=-50
@@ -276,3 +281,34 @@ escalation_options_for_phaseA: |
   GAP 3: reclassify the Fig-4E %-mod and Fig-7C ratio claims from tier="hard" to soft/xfail
     tripwires (they ARE genuine magnitude divergences of the faithful 2-stimulus mechanism, as their
     own paper_issue notes), or supply a verified faithful target the mechanism can hit.
+
+## DR-4C-sign — published Fig-4C curve order / modulation sign vs the model
+date: 2026-06-04 (opened); 2026-06-10 (resolved)
+spec_ref: assumptions A-012 (paper_issue); figures/figure_4/panel_C.md; pseudocode/figure_4_protocol.md (Procedure 4C); paper/code/Figure4C.m
+owner: human (faithfulness lead); expiry 2026-07-15
+status: RESOLVED (2026-06-10) — CODE-RESOLVABLE; closed, no human ruling needed.
+question: |
+  Was the published Figure 4C panel (which appears to draw the attended curve ABOVE attend-away and
+  whose caption B/C says "percentage INCREASE") a GENUINE paper-vs-code discrepancy against the
+  authors' released Figure4C.m (which computes 100*(unattCRF-attCRF)/unattCRF and, per C-021, makes
+  attend-null-in-RF a SUPPRESSION, attended below)? Or is the published panel reproducible from the
+  author code (code-resolvable)?
+resolution: |
+  CODE-RESOLVABLE. NO genuine paper/code contradiction — the apparent conflict was a DIGITIZER LABEL
+  SWAP, not a defect in either authors' artifact. Decisive evidence (Figure4C.m + panel_C_digitized.json):
+    1. Figure4C.m legend (line 69) is 'Att Away','Att RF': unattCRF=Att-Away (Ax=-110, contralateral),
+       attCRF=Att-RF (Ax=110, attend-null-in-RF). Dashed modulation = 100*(unattCRF-attCRF)/unattCRF
+       (line 74), drawn POSITIVE (~36% peak, declining) in the published panel.
+    2. For that dashed to be positive, unattCRF (Att-Away) must be the UPPER solid and attCRF (Att-RF)
+       the LOWER — i.e. attending the null in the RF SUPPRESSES the recorded preferred neuron (C-021).
+       So the published UPPER solid is the CONTRALATERAL/unattended condition, NOT "attended".
+    3. Recomputing 100*(upper-lower)/upper on the DIGITIZED curves reproduces the digitized percent-
+       modulation POINTWISE (~29-30% mid-range, declining toward high contrast), confirming
+       published-panel == Figure4C.m. (Verified numerically against panel_C_digitized.json.)
+  The only error was the digitizer's: panel_C_digitized.json labeled the UPPER solid "attended" (it is
+  the author's Att-Away/unattCRF). The model already follows Figure4C.m and is correct. The empirical
+  Fig-4B caption's "percentage increase" describes the Reynolds/Martinez-Trujillo DATA panel, not the
+  model panel C; the author MODEL code is the authoritative spec source and is internally consistent.
+  ACTIONS: A-012 paper_issue → status RESOLVED (digitizer-label-swap, not a paper defect); README
+  DECISION-NEEDED #4 closed; panel_C.md / figure_4_protocol.md framing updated; the digitized JSON
+  solid-label swap remains documented so downstream tier comparisons account for it.
