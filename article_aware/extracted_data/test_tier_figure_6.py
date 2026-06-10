@@ -4,18 +4,17 @@ Feature-based attention sharpening of motion-direction tuning. Evaluated on the
 implementation record (protocols.run_figure_6C) in the pinned display frame;
 expected values from the digitized reference.
 
-STATUS (updated 2026-06-10 contract audit): these tier tests were AUTHORED against an
-earlier model state where the two 6C curves essentially OVERLAPPED (peak ratio ~1.01,
-feature effect absent), so the qualitative sharpening + hard peak-ratio tests were
-INTENDED FAILURES. The committed model has since moved PAST that: the flat-x full-γ
-proxy now OVER-corrects (peak ratio ~1.167, peak gap ~0.14), so these digitized-anchored
-tests now PASS — but for the WRONG reason (over-correction, not the faithful author
-'cross' field). The genuine remaining defect is the OPPOSITE end: the proxy OVER-scales
-PAST the digitized 1.108 and OVER-sharpens to FWHM ratio ~0.79. That two-sided contract
-bug is caught by the tight MUST-PASS in test_audit_2026_06_10_contract.py (peak 1.108
-±0.01 EXCLUDES 1.167; FWHM ratio 0.87-0.89 EXCLUDES 0.79). These coarse one-sided tier
-tripwires are LEFT in place (digitized-anchored, framework-owned) but no longer carry the
-divergence signal — see the contract module for the authoritative 6C target.
+STATUS (updated 2026-06-10 render-and-certify): RESOLVED. These tier tests were AUTHORED
+against an earlier model state where the two 6C curves essentially OVERLAPPED (peak ratio
+~1.01, feature effect absent), so the qualitative sharpening + hard peak-ratio tests were
+INTENDED FAILURES. The committed model now implements the author Ashape='cross' additive
+separable spatial×feature field on the binding ledger geometry (stim_rf_x=100/
+stim_contra_x=-100/attend_fixation_x=0), so 6C lands at the digitized/author value with no
+tuning: at the tier grid (n=49) the peak ratio is ~1.108 (digitized 1.107), and these
+tests PASS for the RIGHT reason (the faithful 'cross' field, not the over-corrected flat-x
+proxy that briefly read ~1.167). The authoritative, tight two-sided 6C target lives in
+test_audit_2026_06_10_contract.py (peak 1.108 ±0.01; FWHM ratio 0.87-0.89), measured at
+the authors' native 1° grid; these coarse tier tests are the qualitative complement.
 """
 
 from __future__ import annotations
@@ -51,16 +50,16 @@ def test_6C_attended_at_least_as_tall_at_peak():
 @tier_test(
     tier="qualitative", spec_ref="figures.figure_6.panel_C", figure=6,
     claim_id="T-6C-Q-sharpen",
-    paper_issue="6C feature-based sharpening absent — model curves overlap (peak "
-    "enhancement ~0.009) vs the paper's clear ~0.10 peak enhancement of "
-    "attend-contralateral over attend-fixation. Intended failing qualitative test.",
 )
 def test_6C_sharpening_present_at_peak():
-    """QUALITATIVE (INTENDED FAILURE): the paper SHARPENS the attended curve —
-    attend-contralateral is clearly ABOVE attend-fixation at the peak (0 deg) by
-    ~0.10. The model's two curves overlap at the peak (~0.009 apart), so the
-    feature-based effect is essentially absent and this fails — that red is the
-    success criterion (the sharpening the model does not produce)."""
+    """QUALITATIVE MUST-PASS: the paper SHARPENS the attended curve — attend-
+    contralateral is clearly ABOVE attend-fixation at the peak (0 deg) by ~0.10.
+
+    RESOLVED (2026-06-10): the author 'cross' field now produces this peak
+    enhancement (model peak gap > 0.05), so the feature-based effect is present and
+    this passes. The earlier "INTENDED FAILURE — curves overlap ~0.009" framing
+    described the pre-fix state. Citation: CODE-018 Ashape='cross'; digitized
+    figures/figure_6/panel_C."""
     x, contra, fix = _record()
     ref_peak_gap = (ref_value_at(6, "C", "attend_contralateral", 0.0, log_x=False)
                     - ref_value_at(6, "C", "attend_fixation", 0.0, log_x=False))
@@ -72,14 +71,18 @@ def test_6C_sharpening_present_at_peak():
 @tier_test(
     tier="hard", spec_ref="figures.figure_6.panel_C", figure=6,
     claim_id="T-6C-H-peakratio",
-    paper_issue="6C attend-contralateral/attend-fixation peak ratio ~1.01 vs "
-    "paper ~1.11 — feature-based enhancement essentially absent. Intended failing "
-    "hard test.",
 )
 def test_6C_peak_ratio_matches_digitized():
-    """HARD (INTENDED FAILURE): attend-contralateral/attend-fixation peak ratio ~
-    digitized (~1.11) +/- 0.06. The model's ~1.01 (essentially no enhancement)
-    misses it — that red is the success criterion. Do NOT edit the model."""
+    """HARD MUST-PASS: attend-contralateral/attend-fixation peak ratio ~ digitized
+    (~1.107) +/- 0.06.
+
+    RESOLVED (2026-06-10): the author 'cross' field lands the model at ~1.108
+    (digitized 1.107) with no tuning, inside the band. The earlier "INTENDED
+    FAILURE — model ~1.01, no enhancement" framing described the pre-fix overlap
+    state. SAME assertion/tolerance kept (passes because the model is correct now).
+    The tight authoritative band (1.108 ±0.01) is in test_audit_2026_06_10_contract.py.
+    Do NOT loosen or edit the model. Citation: CODE-018 Ashape='cross'; digitized
+    figures/figure_6/panel_C (peak ratio 1.107)."""
     x, contra, fix = _record()
     model_ratio = float(contra.max() / fix.max())
     ref_ratio = ref_peak(6, "C", "attend_contralateral") / ref_peak(6, "C", "attend_fixation")

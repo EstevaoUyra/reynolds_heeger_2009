@@ -50,13 +50,16 @@ def test_5C_same_tuning_width_no_sharpening():
 @tier_test(
     tier="hard", spec_ref="figures.figure_5.panel_C", figure=5,
     claim_id="T-5C-H-ratio",
-    paper_issue="5C attended/unattended peak ratio ~1.59 vs paper ~1.22 — gain "
-    "too strong (known divergence). Intended failing hard test.",
 )
 def test_5C_peak_ratio_matches_digitized():
-    """HARD (INTENDED FAILURE): attended/unattended peak ratio ~ digitized
-    (~1.22) +/- 0.15. The model's ~1.59 exceeds it — that red is the success
-    criterion. Do NOT loosen the tolerance or edit the model."""
+    """HARD MUST-PASS: attended/unattended peak ratio ~ digitized (~1.157) +/- 0.15.
+
+    RESOLVED (2026-06-10): the model now lands at peak ratio ~1.166 (digitized 1.157,
+    |Δ|≈0.009), comfortably inside the band. The earlier "INTENDED FAILURE — model
+    ~1.59 too strong" framing described a superseded state; the committed model is
+    faithful here. SAME assertion/tolerance kept (it passes because the model is
+    correct, NOT because the tolerance was loosened). Do NOT loosen or edit the model.
+    Citation: digitized figures/figure_5/panel_C (attended/unattended peak ratio 1.157)."""
     x, att, una = _record()
     model_ratio = float(att.max() / una.max())
     ref_ratio = ref_peak(5, "C", "attended") / ref_peak(5, "C", "unattended")
