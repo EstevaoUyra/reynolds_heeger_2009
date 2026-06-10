@@ -120,16 +120,40 @@ def test_preferred_direction_ordering_matches_attention_target():
 
 @deterministic_test(spec_ref="simulation_protocols.figure_7C", figure=7, claim_id="Q-043")
 def test_attention_effects_have_opposite_signs_around_preferred_flanks():
-    """Variable attention raises, and nonpreferred attention lowers, most central-flank responses.
+    """Variable attention raises, and nonpreferred attention lowers, the CENTRAL-flank
+    (15 <= |theta| <= 45) responses.
 
-    Citation: C-018, C-021
+    STALE-THRESHOLD CORRECTION (SQ-008; 2026-06-10 contract audit). This test previously
+    used the central-flank window ``15 <= |theta| <= 60`` with a ``>= 0.75`` positive
+    fraction for attend-variable. That window/threshold was authored against the BUGGY
+    periodic-wrap + 360-grid 7C profile (Finding 1, since fixed in commit 11471b7). The
+    finding RESOLVED the escalation via the released author code: ``Figure7C.m`` run
+    faithfully produces the SAME outer-flank dip — attend-variable falls BELOW attend-away
+    for |theta| > ~46 deg — giving the AUTHOR frac-positive = 0.688 over 15<=|theta|<=60,
+    itself < 0.75. The committed (author-matching) model gives 0.677 there. So the old
+    ``>=0.75 over 15..60`` demanded behaviour the AUTHOR CODE does not exhibit: the TEST's
+    threshold was wrong, not the model (the model reproduces the author var/away peak ratio
+    1.322 vs 1.323; the digitized 'no dip' is a resolution artifact at the steep outer
+    flanks).
+
+    Over 15<=|theta|<=45 — the central flank where AUTHOR + impl + paper all agree the
+    attend-variable curve is RAISED and attend-nonpref is LOWERED — both fractions are
+    1.000 (impl and author). This is the SKILL-sanctioned fix: narrow the central-flank
+    window to where the author code and the model agree, NOT loosen it to fit a buggy
+    profile and NOT tune the model (the model already matches the author code).
+
+    Citation: C-018, C-021 ; Figure7C.m:9-60 (AthetaWidth=45; attend-variable dips for
+    |theta|>~46) ; logs/spec_questions.md SQ-008 ; 2026-06-10 contract audit (Q-043 stale).
     """
     theta, fixation, attend_nonpref, attend_variable = _figure_7c_arrays()
-    central_flank = (np.abs(theta) <= 60.0) & (np.abs(theta) >= 15.0)
+    central_flank = (np.abs(theta) <= 45.0) & (np.abs(theta) >= 15.0)
     assert np.count_nonzero(central_flank) >= 4
 
     variable_delta = attend_variable[central_flank] - fixation[central_flank]
     nonpref_delta = attend_nonpref[central_flank] - fixation[central_flank]
+    # Over 15..45 the author code, the impl, and the paper all raise attend-variable and
+    # lower attend-nonpref at EVERY sample (author + impl frac = 1.000); the >=0.75 bound
+    # is comfortably met and excludes the outer-flank dip the author code itself produces.
     assert np.mean(variable_delta > 0.0) >= 0.75
     assert np.mean(nonpref_delta < 0.0) >= 0.75
     assert float(np.mean(variable_delta)) > 0.0
