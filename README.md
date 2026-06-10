@@ -6,14 +6,16 @@
      INDEPENDENTLY VERIFIED FAITHFUL (model.py untouched this pass): 6C author `Ashape='cross'` field
      (peak ratio 1.109, FWHM ratio 0.887, byte-identical to a standalone author-code reproduction);
      7C var/fixation peak ratio 1.3215 (digitized 1.325); 4E %-mod 52% (separated author geometry);
-     5C peak ratio 1.166 (digitized 1.157). Exit = reproduced/faithful for the figures the model
-     reproduces; the only residual divergence is the Fig-1 R-asymmetry tripwire (faithful-by-design,
-     stays RED). -->
+     5C peak ratio 1.166 (digitized 1.157). Exit = reproduced/faithful. The former Fig-1 R-asymmetry
+     "≥1.10 tripwire" was an UNGROUNDED contract over-claim: an independent numpy port of the authors'
+     CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful R-asymmetry is
+     ~1.01, not ≥1.10. The contract was corrected to the author ground truth and the test is now a
+     faithful MUST-PASS; flagged_count is 0. -->
 
 ## Current exit
 
 ```json
-{"overall": "reproduced", "trajectory": "toward_paper", "flagged_count": 1, "figures_rerendered": 7, "blocked": []}
+{"overall": "reproduced", "trajectory": "toward_paper", "flagged_count": 0, "figures_rerendered": 7, "blocked": []}
 ```
 
 ## Status
@@ -35,11 +37,13 @@ committed display copies `figures_reproduced/figure_*.png` that the README shows
   **1.109** (digitized 1.108, author 1.109), FWHM ratio **0.887**; 3 MUST-PASS contract tests green.
 - **Fig 7C** — FAITHFUL: var/fixation peak ratio **1.3215** (digitized 1.325) on the author separated
   geometry; hard test passes.
-- **Fig 1** — the authors' activity-map render; faithful topology + attended-stimulus enhancement.
-  One residual divergence (NOT a defect): the R-asymmetry tripwire (R_right ≥ 1.10·R_left) stays RED
-  by design because the faithful equations give ≈1.013 (the γ gain nearly cancels between numerator
-  and the locally-pooled denominator) — flips green only if a future model genuinely produces a
-  stronger R asymmetry, never a fit target. This is the single flagged item.
+- **Fig 1** — FAITHFUL: the authors' activity-map render; faithful topology + attended-stimulus
+  enhancement, all must-pass. The former R-asymmetry "≥1.10 tripwire" was an UNGROUNDED contract
+  over-claim and has been CORRECTED to the author ground truth (SQ-010): an independent numpy port of
+  the authors' CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful
+  R-asymmetry is ~1.01 (the γ gain nearly cancels between numerator and the locally-pooled denominator;
+  the genuine ≈1.98× asymmetry lives in S). The test is now a faithful MUST-PASS asserting
+  1.005 < R_right/R_left < 1.05 (excludes both the refuted ≥1.10 and a no-attention 1.0). No flagged items.
 
 **Not-reproduced placeholder panels** (explicit, not model output): Fig 3 B/E (empirical) & A/D
 (config); Fig 7 A/B; the empirical/config sub-panels across figures.
@@ -113,8 +117,9 @@ A figure is **green only if deterministic all-pass AND fresh VLM pass**.
 
 The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two bands)
 × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive drive →
-an output that **enhances the attended band relative to the left**. 10/10 must-pass; the R-asymmetry
-tripwire correctly xfails. The faithful single-mechanism suppression is validated here (the authors'
+an output that **enhances the attended band relative to the left**. 11/11 must-pass — including the
+corrected R-asymmetry check (now a faithful MUST-PASS at the author-code value R_right/R_left ≈ 1.01,
+SQ-010, replacing the refuted ≥1.10 over-claim). The faithful single-mechanism suppression is validated here (the authors'
 own render reproduces exactly).
 
 | | Digitization audit | Final figure (impl vs paper) |
@@ -316,9 +321,10 @@ human-resolved); A/B "not reproduced". The 7C sweep contrast is `1.0` (CODE-021,
 The forward model (`model.py`, Eqs. 5–6) is FAITHFUL operator-for-operator to the authors' MATLAB
 (`paper/code/attentionModel/attentionModel.m`) — confirmed by independent audits and re-confirmed by
 the 2026-06-10 paper-fix verify (the 6C 'cross' field was independently reproduced from author MATLAB,
-byte-identical to the impl). model.py was **untouched this render-and-certify pass**. The remaining
-divergence is the single faithful-by-design Fig-1 R-asymmetry tripwire; the rest are contract-description
-residue.
+byte-identical to the impl). model.py was **untouched this pass**. There are no remaining figure
+divergences: the former Fig-1 R-asymmetry "≥1.10 tripwire" was an UNGROUNDED contract over-claim,
+corrected to the author ground truth (R_right/R_left ≈ 1.01, SQ-010) and now a faithful MUST-PASS.
+The rest are contract-description residue.
 
 0. **FIGURE (F1) — RESOLVED. The Figure 6 render is now FRESH.** All 7 figures were re-rendered with
    matplotlib 3.10.9 (`PYTHONPATH=implementation/src python -m rh_model.views`) and propagated to
@@ -385,6 +391,7 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-10 | **Fig-1 R-asymmetry contract over-claim CORRECTED → faithful exit (flagged_count 1→0).** The strict-xfail `≥1.10` R-asymmetry tripwire was an UNGROUNDED contract over-claim; an independent numpy port of the authors' CODE-019 Figure-1 call gives R_right/R_left = 1.0128 (model 1.0098), so the faithful value is ~1.01, not ≥1.10 (γ gain cancels between numerator and the locally-pooled denominator; the real ≈1.98× asymmetry lives in S). Replaced the tripwire with a faithful MUST-PASS asserting `1.005 < R_right/R_left < 1.05` (excludes both ≥1.10 and a no-attention 1.0); corrected figure_1.md relation #6; recorded SQ-010. model.py and all calibration magnitudes UNTOUCHED. Suite 159 pass / 2 skip / 7 xfail / 21 xpass; check_citations OK. Exit `reproduced`, flagged_count **0**. |
 | 2026-06-10 | **render-and-certify — figures re-rendered, faithful exit.** All 7 figure PNGs regenerated with matplotlib 3.10.9 (`python -m rh_model.views`) and propagated to the committed `figures_reproduced/figure_*.png`; the prior "BLOCKED on stale Figure 6 render" exit is SUPERSEDED. model.py untouched. Confirmed faithful: 6C peak ratio 1.109 / FWHM 0.887, 7C var/fix 1.3215, 4E %-mod 52%, 5C peak ratio 1.166. Triaged the 21 xpasses — ALL are soft-tier tests auto-marked non-strict-xfail by conftest (WORKFLOW §3b); left as-is (none are hard intended-failure tripwires). Refreshed stale "INTENDED FAILURE" docstrings on the now-passing hard tier tripwires (5C/6C/7C peak-ratio, 6C sharpening) to state the resolution; assertions/tolerances unchanged. Exit `reproduced`, flagged_count 1 (Fig-1 R-asymmetry faithful-by-design tripwire). |
 | 2026-06-10 | **paper-fix verify — 6C model VERIFIED FAITHFUL, BLOCKED on stale render.** Commit `862f4d7` 'cross' field reproduced from scratch from author MATLAB, byte-identical to impl (peak 1.1088 / FWHM 0.8873; reduces to model_spec CROSS closed form, max\|Δ\|=3.6e-15; 'oval' path untouched, Figs 2/3/4/5/7 unaffected); 3 MUST-PASS contract tests GREEN; SQ-006/SQ-009 RESOLVED. Verify did NOT pass within MAX_PAPERFIX: F1 — the committed Figure 6 PNGs predate the fix (render OLD peak ratio ~1.17 vs corrected 1.109) and cannot be regenerated here (matplotlib absent). Exit `blocked:[model:contract]`, flagged_count 1, trajectory toward_paper. README refreshed: exit/DECISION/Fig-6 tables now flag the stale render; FAITHFUL header scoped to model+numeric. |
 | 2026-06-10 | **Phase-A resolve — 6C CONTRACT_BUG RESOLVED (lineage rung 1, author code).** `build_attention_field` now implements the author `Ashape='cross'` additive separable spatial×feature field (`attentionModel.m:146-162`; default 'oval' path byte-identical, no other panel affected); `run_figure_6C` routed through the binding ledger geometry (RF/recorded column stim_rf_x=100, contra/attend-opposite stim_contra_x=-100, attend-fixation attend_fixation_x=0) instead of the invented -50/50 flat-x full-γ proxy. Peak ratio 1.167→**1.109** (digitized 1.108), FWHM ratio 0.79→**0.887** (band [0.87,0.89]) — no tuning. 3 MUST-PASS contract tests GREEN; soft 'cross' mechanism tripwire XPASS. 6C test FWHM measured at the authors' native 1° sweep grid (measurement-fidelity, not a model knob). 19 matplotlib-render test failures are a missing-dep environment issue, unrelated. |

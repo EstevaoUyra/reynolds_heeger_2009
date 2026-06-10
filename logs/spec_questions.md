@@ -470,3 +470,34 @@ chosen_assumption: |
   (test_audit_2026_06_10.py::test_6C_feature_attention_field_is_author_cross) stay RED until Phase B
   builds the 'cross' shape + ledger geometry. That is the expected state of a correctly-specified-but-
   not-yet-built fix, not a STUCK/blocked contract.
+
+## SQ-010 — Figure-1 R-asymmetry contract over-claim (≥1.10) corrected to author ground truth
+date: 2026-06-10
+spec_ref: simulation_protocols.figure_1 ; article_aware/figures/figure_1.md relation #6 / panel-R caption
+status: RESOLVED — contract over-claim corrected to the author-code value (not a model change, not a test loosening)
+question: |
+  The Figure-1 contract (figure_1.md "Right brighter than left", and the strict-xfail tripwire
+  test_population_response_right_noticeably_brighter_TRIPWIRE) asserted R_right/R_left ≥ 1.10 for the
+  attended (right) stripe. Is that ≥1.10 R-asymmetry grounded in the authors' code, or is it an
+  over-claim? (prior paper_issue tag: Fig1-R-asymmetry-overstated-vs-CODE-019.)
+resolution_2026-06-10: |
+  RESOLVED as a CONTRACT OVER-CLAIM corrected to author ground truth. An independent numpy port of the
+  authors' CODE-019 Figure-1 condition (attentionModel.m Test/debug `R1`: two equal ±100 gratings on
+  x=[-200:200], θ=[-180:180]; attend RIGHT, Ax=100, AxWidth=30, Apeak=2, Abase=1, IxWidth=20,
+  IthetaWidth=360, σ=1e-6; R = E/(I+σ)) gives R_right/R_left = 1.0128 at the θ=0 row (S_right/S_left =
+  1.976 in the SAME port). Our certified forward model gives R_right/R_left = 1.0098 and S_right/S_left
+  ≈ 1.98 — agreeing with the port. The faithful R-asymmetry is therefore ~1.01, NOT ≥1.10: at high
+  contrast attention scales the numerator A·E and the pooled denominator I (which also pools A·E) nearly
+  proportionally, so the response-gain modulation almost cancels in R — the paper's own contrast
+  dependence. The genuine attention asymmetry lives in S (≈1.98×, already the Q-005 / Q-009 must-passes).
+  ACTIONS (article_aware + contract only; the forward model and all calibration magnitudes UNCHANGED —
+  the model already produced the faithful value):
+    1. Replaced the strict-xfail ≥1.10 tripwire (Q-008b) with a faithful MUST-PASS
+       test_population_response_right_R_asymmetry_matches_author_code asserting
+       1.005 < R_right/R_left < 1.05 (peak and point), grounded in the ported author value 1.0128 ± port
+       tolerance — a band that EXCLUDES both the refuted ≥1.10 over-claim AND a no-attention 1.0.
+    2. Corrected figure_1.md relation #6 / panel-R text from "right stripe is brighter" / ≥1.10 to the
+       faithful "right SLIGHTLY brighter (~1.01)", citing the ported author value.
+    3. CODE019_R_RIGHT_OVER_LEFT updated 1.013 -> 1.0128 (the ported θ=0 value).
+  This is a Phase-A contract correction grounded in the author code (CODE-019), NOT a test loosening and
+  NOT a model change. The prior paper_issue Fig1-R-asymmetry-overstated-vs-CODE-019 is RESOLVED.

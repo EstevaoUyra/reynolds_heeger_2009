@@ -3,6 +3,44 @@
 Newest first. The README "Changelog" table carries the one-line summaries; this file carries the
 full detail.
 
+## 2026-06-10 — Fig-1 R-asymmetry contract over-claim CORRECTED → faithful exit (flagged_count 1→0)
+
+**Summary line (mirrored in README):** the strict-xfail `test_population_response_right_noticeably_brighter_TRIPWIRE`
+expected R_right/R_left ≥ 1.10, an UNGROUNDED contract over-claim. Corrected to the author ground truth
+and finalized; flagged_count 1→0; exit `reproduced`.
+
+**Exit:** `{"overall":"reproduced","trajectory":"toward_paper","flagged_count":0,"figures_rerendered":7,"blocked":[]}`.
+
+**The over-claim, and the author grounding (CODE-019).** figure_1.md relation #6 / the panel-R caption
+("noticeably brighter") and the tripwire asserted R_right ≥ 1.10·R_left for the attended (right) stripe.
+An independent numpy port of the authors' CODE-019 Figure-1 call (attentionModel.m Test/debug `R1`:
+two equal ±100 gratings on x=[-200:200], θ=[-180:180]; attend RIGHT, Ax=100, AxWidth=30, Apeak=2,
+Abase=1, IxWidth=20, IthetaWidth=360, σ=1e-6; R=E/(I+σ)) gives **R_right/R_left = 1.0128** at θ=0
+(S_right/S_left = 1.976 in the SAME port). The certified forward model gives **R_right/R_left = 1.0098**
+and S_right/S_left ≈ 1.98 — agreeing with the port. The faithful R-asymmetry is ~1.01, NOT ≥1.10: at
+high contrast attention scales the numerator A·E and the pooled denominator I (which also pools A·E)
+nearly proportionally, so the response-gain modulation almost cancels in R (the paper's own contrast
+dependence). The genuine attention asymmetry lives in S (≈1.98×, the Q-005 / Q-009 must-passes).
+
+**Changes (article_aware + contract only; model.py and ALL calibration magnitudes UNTOUCHED):**
+- `test_figure_1.py` — replaced the strict-xfail ≥1.10 tripwire (Q-008b) with a faithful MUST-PASS
+  `test_population_response_right_R_asymmetry_matches_author_code` asserting `1.005 < R_right/R_left < 1.05`
+  (peak and point), grounded in the ported author value 1.0128 ± port tolerance — a band that EXCLUDES
+  both the refuted ≥1.10 over-claim AND a no-attention 1.0. Updated `CODE019_R_RIGHT_OVER_LEFT`
+  1.013→1.0128; removed the now-unused `pytest` import; refreshed the Q-008a / Q-009 docstrings.
+- `figure_1.md` — relation #6 / panel-R text corrected from "right stripe is brighter" / ≥1.10 to
+  "right SLIGHTLY brighter (~1.01)", citing the ported author value and SQ-010.
+- `logs/spec_questions.md` — added **SQ-010** RESOLVED (the prior paper_issue
+  `Fig1-R-asymmetry-overstated-vs-CODE-019` is resolved as a contract over-claim corrected to author
+  ground truth). NOTE: a distinct, earlier **SQ-009** (Fig-6C 'cross', already CLOSED) exists — this is
+  numbered SQ-010 to avoid collision.
+- README — exit JSON flagged_count 1→0; Fig-1 row/section/closing-summary now FAITHFUL; changelog line.
+
+**Verification:** full suite **159 passed, 2 skipped, 7 xfailed, 21 xpassed** (exit 0); the corrected
+Fig-1 test passes as MUST-PASS. `check_citations` OK (27 models, every tag resolves). The 21 xpasses are
+pre-existing soft-tier (non-strict) tripwires, unchanged this pass. This is a CONTRACT correction, not a
+test loosening and not a model change — the model already produced the faithful value.
+
 ## 2026-06-10 — paper-fix verify: F1/F2/F3 fix VERIFIED FAITHFUL, BLOCKED on three stale-contract findings (update-state)
 
 **Summary line (mirrored in README):** paper-fix verify — BLOCKED on contract. The F1/F2/F3
