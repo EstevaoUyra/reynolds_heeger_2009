@@ -250,30 +250,39 @@ against the current digitized reference. The 5C sweep contrast is now `1.0` (COD
 | hard | 5C peak ratio vs digitized | ❌ **FAIL** |
 | soft | 5C shape / unattended peak vs digitized | ⚠️ soft (reported) |
 
-### Figure 6 — Feature-based attention sharpening  ❌ BROKEN — sharpening PRESENT, magnitude overshoot
+### Figure 6 — Feature-based attention sharpening  ✅ FAITHFUL — author `Ashape='cross'` field implemented
 
 <table>
 <tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr>
 <tr><td><img src="article_aware/figures/figure_6.jpg" width="300"></td><td><img src="article_aware/figures/figure_6/overlay_6C.png" width="300"></td><td><img src="figures_reproduced/figure_6.png" width="300"></td></tr>
 </table>
 
-Feature-based attention is spatially global (A-014, formalizing SQ-006), so the directional gain reaches
-the recorded neuron: attend-contralateral is both taller (peak 1.0 vs fixation ~0.76) **and narrower
-(sharpening present)** — the prior overlapping-curves failure is gone. Magnitude ~1.17–1.31 vs
-digitized ~1.11 keeps the magnitude-ratio tier red (the author `Ashape='cross'` field is not
-implemented; the oval approximation mildly overshoots — do NOT tune it). The 6C sweep contrast is now
-`1.0` (CODE-021, `Figure6C.m:21`) — the prior 0.5 divergence is **resolved** in calibration.
+The 6C CONTRACT_BUG (2026-06-10) is **RESOLVED** via lineage rung 1 (this paper's own code). `run_figure_6C`
+now honors the binding ledger geometry it already recorded — RF stimulus + recorded column at
+`figure_6C.stim_rf_x=100`, contralateral / attend-opposite centre at `stim_contra_x=-100`, attend-fixation
+at `attend_fixation_x=0` — and `build_attention_field` implements the author **`Ashape='cross'`** additive
+separable spatial×feature field (`attentionModel.m:146-162`; `Figure6C.m` AxWidth=30, AthetaWidth=60,
+CODE-018). The earlier flat-x full-γ proxy applied the θ-gain at full strength everywhere in x and
+**over-scaled** (peak ratio ~1.167, FWHM ratio ~0.79). The faithful 'cross' field lands at the digitized /
+author value with **no tuning**: peak ratio **1.109** (digitized 1.108, author 1.109) and FWHM ratio
+**0.887** (digitized ~0.87 / author 'cross' 0.886–0.889), measured at the authors' native 1° sweep grid.
+Sweep contrast is `1.0` (CODE-021, `Figure6C.m:21`).
+
+> Note on the FWHM measurement: the FWHM helper is a simple grid-crossing measure; on the old coarse
+> 25-point sweep both curves snapped to the same half-max sample. The model curve is resolution-independent
+> (peak ratio 1.109 at every grid); the 6C tests measure on the authors' native 1° grid so the ~13°
+> sharpening is resolved. This is a measurement-fidelity fix, not a model knob.
 
 | | Digitization audit | Final figure (impl vs paper) |
 |---|---|---|
-| panel 6C | ✅ faithful | ❌ divergent — sharpening present, magnitude overshoot |
-| **figure** | ✅ **faithful** | ❌ **divergent** (magnitude) |
+| panel 6C | ✅ faithful | ✅ faithful — author 'cross' field, peak 1.109 / FWHM ratio 0.887 |
+| **figure** | ✅ **faithful** | ✅ **faithful** |
 
 | Tier | Check | Result |
 |------|-------|--------|
 | qualitative | 6C attended ≥ tall at peak · sharpening present | ✅ pass |
-| hard | 6C peak ratio vs digitized | ❌ **FAIL** |
-| soft | 6C flank difference / shape vs digitized | ⚠️ soft |
+| MUST-PASS (CONTRACT_BUG) | 6C peak ratio 1.108±0.01 · FWHM ratio [0.87,0.89] · honors ledger geometry | ✅ pass (3/3) |
+| soft | 6C 'cross' mechanism tripwire (proxy ≠ cross) | ✅ XPASS (resolved) |
 
 ### Figure 7 — Two stimuli in RF: combined attention shifts  ❌ BROKEN — var/fix ratio RED (geometry)
 
@@ -343,11 +352,14 @@ the 2026-06-10 paper-fix verify. Every open divergence is **contract-description
    / the human owner, not another code re-run. *Source:* `Figure4C.m:69,74`; `figure_4/panel_C.md`;
    `assumptions.yaml` A-012.
 
-6. **MAGNITUDE — Fig-5/6 peak-ratio overshoot. Soft, structural, do NOT tune.**
-   5C peak ratio ~1.17 vs ~1.2; 6C ~1.17–1.31 vs digitized ~1.11. Mechanism faithful; the residue is
-   the unimplemented author `Ashape='cross'` attention-field shape (oval approximation). Contrast
-   provenance for 5C/6C/7C is now resolved (CODE-021 `contrast=1`). *Source:* `protocols.py
-   run_figure_{5C,6C}`; Fig-6 caption; `code_refs.yaml` CODE-021.
+6. **MAGNITUDE — Fig-5 peak-ratio overshoot. Soft, structural, do NOT tune.**
+   5C peak ratio ~1.17 vs ~1.2; mechanism faithful, oval-approximation residue. **6C is RESOLVED**
+   (2026-06-10): the author `Ashape='cross'` field is now implemented in `build_attention_field` and
+   `run_figure_6C` honors the binding ledger geometry (stim_rf_x=100 / stim_contra_x=-100 /
+   attend_fixation_x=0), so 6C lands at the digitized/author peak ratio 1.109 and FWHM ratio 0.887 with
+   no tuning (3 MUST-PASS contract tests green). Contrast provenance for 5C/6C/7C is resolved (CODE-021
+   `contrast=1`). *Source:* `model.py _build_attention_field_cross`; `protocols.py run_figure_6C`;
+   `Figure6C.m` / `attentionModel.m:146-162`; `code_refs.yaml` CODE-018/021.
 
 ---
 
@@ -357,6 +369,7 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 
 | Date | Change |
 |---|---|
+| 2026-06-10 | **Phase-A resolve — 6C CONTRACT_BUG RESOLVED (lineage rung 1, author code).** `build_attention_field` now implements the author `Ashape='cross'` additive separable spatial×feature field (`attentionModel.m:146-162`; default 'oval' path byte-identical, no other panel affected); `run_figure_6C` routed through the binding ledger geometry (RF/recorded column stim_rf_x=100, contra/attend-opposite stim_contra_x=-100, attend-fixation attend_fixation_x=0) instead of the invented -50/50 flat-x full-γ proxy. Peak ratio 1.167→**1.109** (digitized 1.108), FWHM ratio 0.79→**0.887** (band [0.87,0.89]) — no tuning. 3 MUST-PASS contract tests GREEN; soft 'cross' mechanism tripwire XPASS. 6C test FWHM measured at the authors' native 1° sweep grid (measurement-fidelity, not a model knob). 19 matplotlib-render test failures are a missing-dep environment issue, unrelated. |
 | 2026-06-10 | **paper-fix verify — BLOCKED on contract.** F1/F2/F3 doc-vs-contract-drift fix VERIFIED FAITHFUL (model_spec Fig-3 baselines = CODE-017; figure_3.md/figure_4.md rewritten to author code; EQ-1/2/5/6 match attentionModel.m). Verify did NOT pass within MAX_PAPERFIX: 3 stale-contract findings remain DIVERGENT — **F-A** figure_3_protocol.md:16-18 still binds superseded A-007 0.05/0.05; **F-B** Fig-2/3 pseudocode describes a single-stim-x=0/[0.01,1] experiment vs author two-separated-stimulus/[1e-5,1] (SQ-002); **F-C** A-013(3) forbids the CODE-017 3C/3F baseline asymmetry. model.py untouched/faithful. DR-4C-sign RESOLVED (digitizer label swap; caption-authority carryover C1). Exit `blocked:[model:contract]`, flagged_count 3, trajectory toward_paper. |
 | 2026-06-10 | Phase-A contract resolution of four blocked divergences (author-code grounded; model.py untouched): retired `suppressive_drive_gain` removed from stage spec; 5C/6C/7C sweep contrast 0.5→1.0 (CODE-021); 4E/7C author SEPARATED geometry adopted; DR-4C-sign investigated→code-resolvable. Added A-014. |
 | 2026-06-04 | from=fix finalize — BLOCKED on contract. Window fix + suppression-test/doc rewrites VERIFIED FAITHFUL (Fig 2/3 full sigmoids). 2 OPEN model-side contract divergences routed to human. |

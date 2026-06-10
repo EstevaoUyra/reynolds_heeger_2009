@@ -15,7 +15,15 @@ EXPECTED_OUTPUTS = {
 
 
 def _figure_6_arrays() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    out = protocols.run_figure_6C()
+    # Authors' native ~1° sweep grid (theta = [-180:180], Figure6C.m). The FWHM /
+    # half-height-width helpers below are simple grid-crossing measures (no
+    # interpolation), so they are quantized to the sweep spacing: the old default
+    # n_directions=25 (~14.8° steps) snaps both curves' half-max crossings to the
+    # SAME sample and reports equal widths even though the attend-feature curve is
+    # genuinely narrower (peak ratio 1.108, author 'cross' sharpening). The 1° grid
+    # resolves the ~13° sharpening. The model curve is resolution-independent; only
+    # the width MEASUREMENT needs the authors' native resolution.
+    out = protocols.run_figure_6C(n_directions=356)
     assert EXPECTED_OUTPUTS.issubset(out.keys())
     theta = np.asarray(out["theta_stim_grid"], dtype=float)
     fixation = np.asarray(out["attend_fixation_tuning"], dtype=float)

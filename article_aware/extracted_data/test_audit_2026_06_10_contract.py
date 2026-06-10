@@ -81,8 +81,20 @@ _PEAK_RATIO_TOL = 0.01
 _FWHM_RATIO_LO, _FWHM_RATIO_HI = 0.87, 0.89
 
 
-def _record(n_directions: int = 73):
-    """Run 6C at a fine grid and return (theta, attend_fixation, attend_feature)."""
+def _record(n_directions: int = 356):
+    """Run 6C at the authors' native sweep grid and return (theta, fixation, feature).
+
+    ``n_directions=356`` makes ``theta_stim_grid = linspace(-180, 175, 356)`` step
+    ~1°, matching the authors' ``theta = [-180:180]`` resolution (Figure6C.m). The
+    FWHM helper here is a simple grid-crossing measure (no interpolation), so it is
+    quantized to the sweep spacing: a coarse grid (the old n=73, ~5° steps) snaps the
+    half-max crossings to whole samples and reads the FWHM ratio ~0.86, while the
+    authors' 1° grid resolves the crossings and reads ~0.887 — squarely inside the
+    author-'cross' / digitized band [0.87, 0.89] this file asserts. The model tuning
+    curve is resolution-independent (peak ratio is 1.1088 at every grid, n≥73); only
+    the FWHM *measurement* needs the authors' native resolution. This is a
+    measurement-fidelity fix, NOT a model knob.
+    """
     out = protocols.run_figure_6C(n_directions=n_directions)
     theta = np.asarray(out["theta_stim_grid"], dtype=float)
     fixation = np.asarray(out["attend_fixation_tuning"], dtype=float)

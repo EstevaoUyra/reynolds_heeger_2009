@@ -240,16 +240,31 @@ def build_attention_field(
     `attention_condition` is a dict with keys:
         'spatial_center': float or None — None = no spatial component (flat in x).
         'feature_center': float or None — None = no feature component (flat in θ).
-    If both are None, A = 1 everywhere (no attention modulation).
+        'shape': 'oval' (default) or 'cross' — the attention-field SHAPE
+            (attentionModel.m ``Ashape``). 'oval' is the separable peak-1 Gaussian
+            product (the default for every other panel). 'cross' is the authors'
+            additive separable spatial×feature field used by Figure 6C
+            (CODE-018 / attentionModel.m:146-162).
+    If both centers are None, A = 1 everywhere (no attention modulation).
 
     Citation: C-005, C-009 (EQ-attention)
+    Code: CODE-018 ('cross' shape, attentionModel.m:146-162)
     Assumption: A-004 (sigma convention)
     """
     spatial_center = attention_condition.get("spatial_center")
     feature_center = attention_condition.get("feature_center")
+    shape = attention_condition.get("shape", "oval")
     n_theta, n_x = len(theta_grid), len(x_grid)
     if spatial_center is None and feature_center is None:
         return np.ones((n_theta, n_x))
+
+    if shape == "cross":
+        return _build_attention_field_cross(
+            spatial_center, feature_center, x_grid, theta_grid,
+            attention_field_size, peak_attention_gain_gamma, feature_tuning_width,
+            theta_period,
+        )
+
     gx = (
         gaussian_1d(x_grid, spatial_center, attention_field_size)
         if spatial_center is not None
@@ -264,6 +279,78 @@ def build_attention_field(
     else:
         gt = np.ones(n_theta)
     return 1.0 + (peak_attention_gain_gamma - 1.0) * np.outer(gt, gx)
+
+
+def _build_attention_field_cross(
+    spatial_center: float | None,
+    feature_center: float | None,
+    x_grid: np.ndarray,
+    theta_grid: np.ndarray,
+    attention_field_size: float,
+    peak_attention_gain_gamma: float,
+    feature_tuning_width: float | None,
+    theta_period: float,
+) -> np.ndarray:
+    """Authors' 'cross' attention field (attentionModel.m:146-162, CODE-018).
+
+    Faithful transcription of the MATLAB ``Ashape=='cross'`` branch with
+    Apeak = ``peak_attention_gain_gamma``, Abase = 1::
+
+        attnGainX     = (Apeak-Abase)·makeGaussian(x,Ax,AxWidth,1) + Abase
+        attnGainTheta = (Apeak-Abase)·makeGaussian(theta,0,AthetaWidth,1) + Abase
+        impulse       = (theta == Atheta)
+        attnGain      = conv2sepYcirc(impulse·attnGainX, [1], attnGainTheta)
+        attnGain      = (Apeak-Abase)·attnGain + Abase
+
+    Note the DOUBLE baseline-lift: each separable factor is lifted to
+    [Abase, Apeak], their (circular-θ) convolution is formed, then the whole
+    field is lifted to [Abase, ...] again. Unlike the 'oval' field this is NOT a
+    simple ``1+(γ-1)·G_x·G_θ`` product, so the peak gain at the attended
+    locus exceeds γ; but at the recorded RF column (far in x from the attended
+    Ax) ``attnGainX≈Abase`` so the directional gain reaches the RF only through
+    the θ-convolution, at moderated strength — the mechanism that makes 6C land
+    at the digitized peak ratio 1.108 (CODE-018).
+
+    A flat factor (its center None) is replaced by the all-ones factor BEFORE the
+    baseline-lift, matching the MATLAB ``isnan(Ax)`` / ``isnan(Atheta)`` guards.
+
+    Code: CODE-018 (Figure6C.m: AxWidth=30, AthetaWidth=60, Ashape='cross')
+    Citation: C-017 (separable spatial×feature attention field)
+    """
+    apeak = float(peak_attention_gain_gamma)
+    abase = 1.0
+    nth, nx = len(theta_grid), len(x_grid)
+
+    if spatial_center is not None:
+        attn_gain_x = (apeak - abase) * gaussian_1d(
+            x_grid, spatial_center, attention_field_size
+        ) + abase
+    else:
+        attn_gain_x = np.ones(nx)
+
+    if feature_center is not None:
+        if feature_tuning_width is None:
+            raise ValueError("feature_tuning_width required when feature_center is set")
+        # makeGaussian(theta, 0, AthetaWidth, 1): the θ profile is centred at 0
+        # and SHIFTED to Atheta by the impulse·conv step below (attentionModel.m).
+        attn_gain_theta = (apeak - abase) * gaussian_periodic_1d(
+            theta_grid, 0.0, feature_tuning_width, theta_period
+        ) + abase
+        atheta = feature_center
+    else:
+        attn_gain_theta = np.ones(nth)
+        atheta = 0.0
+
+    # impulse·attnGainX: a (nth, nx) image whose only non-zero row is at θ=Atheta.
+    j = int(np.argmin(np.abs(theta_grid - atheta)))
+    impulse_image = np.zeros((nth, nx))
+    impulse_image[j, :] = attn_gain_x
+
+    # conv2sepYcirc(impulse·attnGainX, [1], attnGainTheta): identity in x, circular
+    # convolution in θ with the (lifted) θ profile — spreads attnGainX across θ
+    # weighted by attnGainTheta shifted to Atheta.
+    attn_gain = _separable_conv(impulse_image, np.array([1.0]), attn_gain_theta)
+    return (apeak - abase) * attn_gain + abase
 
 
 def compute_suppressive_drive(

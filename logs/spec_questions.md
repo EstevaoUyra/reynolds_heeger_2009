@@ -148,6 +148,16 @@ status: RESOLVED (2026-06-10) then CORRECTED (2026-06-10 contract audit, this pa
   (Figure7C.m passes no Ashape -> default oval, spatially-local arms at x=93/107 ~ RF). The remaining
   work is a PHASE-B BUILD (route run_figure_6C through the ledger geometry + implement 'cross') tracked
   as SQ-009; the 3 MUST-PASS 6C contract tests stay RED until then.
+status_update: |
+  RESOLVED (2026-06-10, Phase-A resolver, this pass). The SQ-009 build is DONE:
+  build_attention_field now implements the author Ashape='cross' field (model.py
+  _build_attention_field_cross, attentionModel.m:146-162) selected via attention_condition
+  {shape:'cross'}; the default 'oval' path is byte-identical so no other panel is affected.
+  run_figure_6C is routed through the binding ledger geometry (stim_rf_x=100 = RF + recorded
+  column, stim_contra_x=-100 = contra stim + attend-opposite Ax/Atheta, attend_fixation_x=0).
+  Verified numerically: peak ratio 1.167->1.109 (digitized 1.108, author 1.109), FWHM ratio
+  0.79->0.887 (band [0.87,0.89]) at the authors' native 1° sweep grid — NO tuning. All 3 MUST-PASS
+  contract tests GREEN; the soft 'cross' mechanism tripwire XPASSes. SQ-006 and SQ-009 CLOSED.
 question: |
   The 2026-06-03 CODE_BUG finding (test_figure_6C_code_bug.py, MUST-PASS) showed run_figure_6C
   built the attend-opposite-stimulus condition as a SPATIAL Gaussian centered at x_opposite=-50
@@ -423,7 +433,17 @@ spec_ref: |
   implementation/src/rh_model/model.py (build_attention_field — needs the 'cross' shape);
   implementation/src/rh_model/protocols.py:388-441 (run_figure_6C — needs the ledger geometry)
 owner: Phase B (builder) ; expiry 2026-07-15
-status: CONTRACT RESOLVED (this pass, ladder rung 1 = author code); PHASE-B BUILD PENDING. The 6C
+status: CLOSED (2026-06-10, resolver pass). CONTRACT RESOLVED + BUILD DONE. The 'cross' shape and
+  ledger geometry are now implemented (model.py _build_attention_field_cross; protocols.py
+  run_figure_6C); the 3 MUST-PASS contract tests are GREEN and the soft mechanism tripwire XPASSes.
+  IMPLEMENTATION NOTE: the build transcribes the LITERAL author code (attentionModel.m:146-162) — the
+  impulse·conv2sepYcirc(.,attnGainTheta) structure with the double baseline-lift. This reduces EXACTLY
+  (verified numerically, max |Δ| ~1e-15) to the closed-form A=(γ-1)·attnGainX·attnGainTheta+1 sketched
+  in step 1 / model_spec EQ-attention 'cross': circular convolution of an impulse at Atheta with a
+  θ-profile centred at 0 just shifts the profile to Atheta, so the two are identical. Either form
+  reproduces the digitized targets (peak 1.109 / FWHM ratio 0.887). model.py uses the literal structure.
+  --- (original CONTRACT-RESOLVED, BUILD-PENDING text retained below for the audit trail) ---
+  CONTRACT RESOLVED (this pass, ladder rung 1 = author code); PHASE-B BUILD PENDING. The 6C
   CONTRACT_BUG (run_figure_6C ignores the binding ledger geometry stim_rf_x=100/stim_contra_x=-100/
   attend_fixation_x=0 and uses a hard-coded -50/50 flat-x full-gamma proxy with no 'cross' shape) is
   RESOLVABLE via this paper's own author code, so it is NOT a blocked/open-contract item: the contract
