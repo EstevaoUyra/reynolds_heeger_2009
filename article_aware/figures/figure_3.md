@@ -26,7 +26,7 @@ normalization equations generate both qualitative patterns (C-014, C-019).
 |-----------|------------------------------|-------------------------------------------|----------|
 | Stimulus configuration | Single preferred grating at recorded RF center | Single preferred grating at recorded RF center | C-014 |
 | Recorded neuron | x = 0, theta = 0 | x = 0, theta = 0 | C-014 |
-| Contrast sweep | Log-spaced contrasts from 0.01 to 1 | Log-spaced contrasts from 0.01 to 1 | C-014 |
+| Contrast sweep | Log-spaced contrasts from 1e-5 to 1 | Log-spaced contrasts from 1e-5 to 1 | CODE-020 |
 | Stimulus size (Gaussian spatial size) | 5 | 7 | C-014 |
 | Attention field size (Gaussian spatial size) | 30 | 7 | C-014 |
 | Stimulation field size | 5 | 5 | C-010 |
