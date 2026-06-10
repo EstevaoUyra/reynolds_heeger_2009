@@ -29,16 +29,19 @@ WHAT CHANGED VS THE EARLIER 2026-06-10 AUDIT (and the prior version of this file
     circular — that operator is already correct). Acceptance: S(0,100)=0.001012 (±0.5%)
     and the 7C var/fixation ratio = 1.32 (±0.03).
 
-  - Figure 6C (RE-TAGGED CODE_BUG -> GENUINE_DIVERGENCE): the earlier audit claimed the
-    committed flat-x feature field OVER-sharpens to σ-ratio 0.79 (a "major CODE_BUG") and
-    made it a MUST-PASS in [0.85,0.90]. The re-render audit measured the CURRENTLY
-    committed render at FWHM-ratio 0.875, which MATCHES the author 'cross' build (0.886)
-    and the digitized panel (~0.87): the figure OUTPUT is faithful. The mechanism is still
-    a flat-x proxy, not the author 'cross', so the audit keeps it a GENUINE_DIVERGENCE with
-    NO FIX REQUIRED while the output stays at ~0.87. Per skills/author-tests/SKILL.md this
-    means a RED TRIPWIRE, NOT a must-pass — a must-pass [0.85,0.90] would be a fit target
-    the implementer could only "hit" by tuning the proxy width (the exact laundering the
-    pipeline exists to prevent). The prior MUST-PASS form is therefore REMOVED.
+  - Figure 6C (NOW CONTRACT_BUG; see the dedicated module): an EARLIER re-render reading
+    held that the committed flat-x feature field rendered FWHM-ratio ~0.875 (faithful) so
+    NO fix was required, and this module carried only a soft MECHANISM tripwire. The
+    same-day CONTRACT audit RETRACTS that "faithful" reading: it re-root-caused 6C as a
+    CONTRACT_BUG (the protocol ignores the binding ledger geometry stim_rf_x=100/
+    stim_contra_x=-100/attend_fixation_x=0 and the documented Ashape='cross', using a
+    hard-coded -50/50 flat-x full-γ proxy) and measured the committed output OVER-corrected
+    (peak ratio ~1.167 vs author/digitized 1.108; FWHM ratio ~0.79 vs author 'cross' 0.886
+    / digitized ~0.87). The tight, FAITHFUL two-sided MUST-PASS targets (peak 1.108±0.01;
+    FWHM ratio 0.87-0.89) — reachable only by the correct 'cross' mechanism, NOT by tuning
+    the proxy — now live in ``test_audit_2026_06_10_contract.py``. The soft mechanism
+    tripwire below STAYS as a complement (proxy ≠ 'cross'), with its "no fix required"
+    framing corrected.
 
 Tag -> test kind (skills/author-tests/SKILL.md):
 
@@ -47,8 +50,10 @@ Tag -> test kind (skills/author-tests/SKILL.md):
     grid + non-periodic profile) is corrected. Targets are AUTHOR-CODE reruns cross-checked
     against the digitized panels — not a re-derivation from the record the protocol draws
     from, and not a figure fit.
-  - GENUINE_DIVERGENCE -> RED TRIPWIRE (soft) (Finding 2 / Figure 6C mechanism; Finding 3 /
-    Figure 1). Flips green only if the model genuinely improves; never a fit target.
+  - CONTRACT_BUG -> MUST-PASS (Finding 2 / Figure 6C): numeric targets in
+    test_audit_2026_06_10_contract.py; the soft MECHANISM tripwire here complements them.
+  - GENUINE_DIVERGENCE -> RED TRIPWIRE (soft) (Finding 3 / Figure 1). Flips green only if
+    the model genuinely improves; never a fit target.
 
 ALREADY-DISPOSITIONED, NOT DUPLICATED HERE:
   - Figure 4C (PAPER_ISSUE — published panel draws attend-RF above) is faithful to the
@@ -285,14 +290,18 @@ def test_7C_variable_over_fixation_ratio_matches_author_code_tight():
 @tier_test(
     tier="soft", spec_ref="simulation_protocols.figure_6C", figure=6,
     claim_id="T-A610-6C-cross-mechanism-tripwire",
-    paper_issue="Figure 6C attend-feature condition is built as a FLAT-IN-X proxy "
+    paper_issue="Figure 6C attend-feature condition is built as a FLAT-IN-X full-γ proxy "
     "(run_figure_6C: spatial_center=None, invented x_opposite=-50/x_fixation=50), not "
     "the author Ashape='cross' (attentionModel.m:146-162; Figure6C.m Ax=-100, "
-    "AxWidth=30, attend-fixation Ax=0). GENUINE_DIVERGENCE: the committed OUTPUT is "
-    "faithful (re-render FWHM σ-ratio 0.875 vs author 'cross' 0.886, digitized ~0.87), "
-    "but the MECHANISM is a proxy. No fix required while the output stays at ~0.87. "
-    "Flips green only if 6C is genuinely routed through the author 'cross' field; never "
-    "a tune-to-fit target.",
+    "AxWidth=30, attend-fixation Ax=0). SUPERSEDED-TAG: the same-day CONTRACT audit "
+    "re-root-caused this as a CONTRACT_BUG (the protocol ignores the binding ledger "
+    "geometry stim_rf_x=100/stim_contra_x=-100/attend_fixation_x=0) and measured the "
+    "committed output OVER-corrected (peak ratio ~1.167 vs author/digitized 1.108; "
+    "FWHM ratio ~0.79 vs author 'cross' 0.886 / digitized ~0.87) — NOT faithful. The "
+    "NUMERIC must-pass targets now live in test_audit_2026_06_10_contract.py; this soft "
+    "test remains as the complementary MECHANISM tripwire (proxy ≠ 'cross'). Flips green "
+    "only when 6C is genuinely routed through the author 'cross' field; never a "
+    "tune-to-fit target.",
 )
 def test_6C_feature_attention_field_is_author_cross():
     """RED TRIPWIRE (GENUINE_DIVERGENCE, Finding 2): the Fig 6C attend-feature condition
@@ -304,25 +313,31 @@ def test_6C_feature_attention_field_is_author_cross():
     field — a progress signal, NEVER a fit target. Soft tier: measured & reported, never
     gates.
 
-    WHY THIS IS A MECHANISM TRIPWIRE, NOT A NUMERIC FWHM-RATIO MUST-PASS
-    -------------------------------------------------------------------
-    The finding tags 6C GENUINE_DIVERGENCE and says NO FIX is required while the output
-    stays at ~0.87 — so by skills/author-tests/SKILL.md it must be a tripwire, never a
-    must-pass (a must-pass band would hand the implementer a tune-to-fit target on the
-    proxy width). I additionally do NOT key the tripwire to a numeric FWHM-ratio band
-    because the two estimators disagree on the SAME committed output: the auditor's
-    Gaussian-σ fit reads 0.875 (faithful), while the repo's ``rh_claim_helpers.fwhm``
-    (raw half-max crossing) reads ~0.79 on the same ``run_figure_6C`` record at every
-    n_directions. A band keyed to ``fwhm`` would read RED today even though the auditor
-    calls the output faithful, mis-signalling "improvement needed". The unambiguous,
-    estimator-independent content of the divergence is the MECHANISM (proxy ≠ 'cross'),
-    so that is what flips this tripwire.
+    MECHANISM TRIPWIRE, COMPLEMENTED BY A NUMERIC MUST-PASS (contract audit, 2026-06-10)
+    ------------------------------------------------------------------------------------
+    UPDATED: the same-day CONTRACT audit re-root-caused 6C as a CONTRACT_BUG (the protocol
+    ignores the binding ledger geometry stim_rf_x=100/stim_contra_x=-100/attend_fixation_x
+    =0) and measured the committed output OVER-corrected — peak ratio ~1.167 (vs author/
+    digitized 1.108) and FWHM ratio ~0.79 (vs author 'cross' 0.886 / digitized ~0.87).
+    The earlier "output is faithful at ~0.87, no fix required" reading is therefore
+    RETRACTED: a fix IS required, and the tight two-sided NUMERIC must-pass targets now
+    live in ``test_audit_2026_06_10_contract.py`` (peak 1.108±0.01; FWHM ratio 0.87-0.89),
+    which exclude the over-corrected committed values.
 
-    (For reference only, the σ-ratio is REPORTED below via ``fwhm`` — its value does not
-    gate this test.)
+    This soft test stays as the COMPLEMENTARY mechanism tripwire: it asserts the
+    unambiguous, estimator-independent content of the divergence — the MECHANISM (flat-x
+    full-γ proxy ≠ author 'cross') — so even a proxy tuned to hit the numbers at the wrong
+    geometry would still trip it. The numeric bands and the mechanism gate go green
+    together only when 6C is genuinely routed through the author 'cross' field on the
+    ledger geometry.
 
-    Citation: Finding 2 ; protocols.py:388-441 (flat-x proxy) vs Figure6C.m:3-7
-    (Ashape='cross', Ax=-100, AxWidth=30) + attentionModel.m:146-162 ; A-014 / SQ-006.
+    (The σ-ratio is REPORTED below via ``fwhm`` for visibility — its value does not gate
+    this soft test; the numeric gate is the must-pass in the contract module.)
+
+    Citation: Finding 2 / 6C CONTRACT_BUG ; protocols.py:388-441 (flat-x proxy, hard-coded
+    -50/50) vs calibration.yaml:638-702 (binding stim_rf_x=100/stim_contra_x=-100/
+    attend_fixation_x=0) + Figure6C.m:3-7 (Ashape='cross', Ax=-100, AxWidth=30) +
+    attentionModel.m:146-162 ; A-014 / SQ-006.
     """
     # Report the σ-ratio (does not gate — see docstring on the estimator conflict).
     out = protocols.run_figure_6C(n_directions=49)
@@ -341,14 +356,16 @@ def test_6C_feature_attention_field_is_author_cross():
     ) and ("cross" not in src.lower())
 
     assert not is_flat_x_proxy, (
-        "Fig 6C attend-feature is still built by the FLAT-IN-X proxy (signature: "
+        "Fig 6C attend-feature is still built by the FLAT-IN-X full-γ proxy (signature: "
         "x_opposite/x_fixation + spatial_center=None, no 'cross'); the author "
         "Ashape='cross' field (attentionModel.m:146-162; Figure6C.m Ax=-100, AxWidth=30, "
-        "AthetaWidth=60, attend-fixation Ax=0) is not yet wired in. The output happens to "
-        f"be faithful today (reported σ-ratio via fwhm = {sigma_ratio:.3f}; auditor "
-        "σ-fit 0.875), so NO fix is required while it stays at ~0.87 — this tripwire "
-        "flips green only when 6C genuinely routes through the author 'cross' field. Do "
-        "NOT tune the proxy width to silence it."
+        "AthetaWidth=60, attend-fixation Ax=0) on the ledger geometry "
+        "(stim_rf_x=100/stim_contra_x=-100/attend_fixation_x=0) is not yet wired in. The "
+        f"committed output OVER-corrects (reported σ-ratio via fwhm = {sigma_ratio:.3f}; "
+        "peak ratio ~1.167 vs author/digitized 1.108), so a fix IS required — see the "
+        "numeric must-pass in test_audit_2026_06_10_contract.py. This tripwire flips green "
+        "only when 6C genuinely routes through the author 'cross' field; do NOT tune the "
+        "proxy width/γ to silence it."
     )
 
 

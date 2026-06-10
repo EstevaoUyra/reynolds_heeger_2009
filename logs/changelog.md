@@ -161,3 +161,58 @@ SQ-005 escalated.
 makes S smaller, not larger; escalated to Phase A with three options), SQ-006 (formalize
 "feature attention is spatially global"), SQ-001/002 (per-panel gains/baselines `audited:false`).
 SQ-003 resolved; SQ-004 retired (4C 75° override deleted, retirement encoded MUST-PASS).
+
+---
+
+## 2026-06-10 — paper-fix verify: 6C model VERIFIED FAITHFUL, BLOCKED on stale Figure 6 render
+
+**Exit:** `{"overall":"blocked","trajectory":"toward_paper","flagged_count":1,"blocked":["model:contract"]}`
+
+**Model fix VERIFIED FAITHFUL (commit 862f4d7, lineage rung 1 = this paper's own author code).**
+The Figure 6C CONTRACT_BUG correction is faithful. I independently reproduced `Figure6C.m` +
+`attentionModel.m` + `makeGaussian.m` + `conv2sepYcirc.m` from scratch in standalone Python: the
+author 'cross' field gives peak ratio 1.1088 and FWHM ratio 0.8873 (att-away peak 12.4528, att-RF
+peak 13.8076), matching digitized 1.108 and the FWHM band [0.87,0.89]. The impl
+`run_figure_6C(n_directions=356)` returns BYTE-IDENTICAL values, confirming both the 'cross'
+transcription and sweep-equivalence (impl sweeps stim+attention θ recording the θ=0 neuron at x=100;
+author fixes stim θ=0 and reads R(:,find(x==100)) — equivalent under θ shift-invariance).
+`_build_attention_field_cross` (model.py:284) is a faithful transcription of attentionModel.m:146-162
+(double baseline-lift, circular-θ impulse-conv) and reduces to the model_spec EQ-attention CROSS
+closed form A=(γ-1)·attnGainX·attnGainθ+1 to machine precision (max|Δ|=3.6e-15). `_separable_conv`
+faithfully implements conv2sepYcirc. The default 'oval' path is byte-identical with/without
+shape:'cross' (allclose), so Figs 2/3/4/5/7 are untouched. Provenance clean: ledger keys
+figure_6C.stim_rf_x=100 / stim_contra_x=-100 / attend_fixation_x=0 (calibration.yaml:682-702) sourced
+CODE-018 with verbatim Figure6C.m line quotes; all audited:true. No per-panel knob tuned. SQ-006 and
+SQ-009 genuinely RESOLVED. The 3 MUST-PASS contract tests (test_audit_2026_06_10_contract.py) are
+GREEN (3 passed in 34.5s; numeric, need no matplotlib).
+
+**The block (F1, figure-scope) — STALE RENDERED ARTIFACT vs the now-FAITHFUL model.** The verify did
+NOT pass within MAX_PAPERFIX. The committed/displayed Figure 6 renders predate the 6C fix and still
+show the OLD over-scaled curve while the README header asserts FAITHFUL. Timeline: resolve commit
+862f4d7 is 2026-06-10 05:52; but `implementation/figure_outputs/figure_6.png` is 04:57 (pre-commit),
+the README-displayed `figures_reproduced/figure_6.png` is Jun 4 13:57, and the overlay
+`article_aware/figures/figure_6/overlay_6C.png` is Jun 3 16:42. Panel C draws the attend-fixation gray
+curve peaking at ~0.855 (shared-max norm) → peak ratio ~1/0.855 = 1.17 = the PRE-FIX over-scaled
+state; the corrected model would put gray at ~1/1.108 = 0.903. The shipping image contradicts the
+FAITHFUL claim and the now-correct numeric text (peak 1.109 / FWHM 0.887). The 2 panel-axes 6C tests
+(test_panel_axes.py) FAIL with ModuleNotFoundError: No module named 'matplotlib' — matplotlib is
+genuinely absent in this environment, so the renders cannot be regenerated here. Per the
+rendered-output-panels-are-reproduction-targets and VLM-eye-is-arbiter conventions this is a real
+figure-scope divergence: a reader sees a FAITHFUL header over a divergent image.
+
+**Fix (next pass, needs matplotlib env):** `pip install matplotlib`, then regenerate
+`implementation/figure_outputs/figure_6.png`, `figures_reproduced/figure_6.png`, and
+`article_aware/figures/figure_6/overlay_6C.png` and commit the refreshed artifacts so the panel shows
+the corrected curve (attend-fixation gray peak ~0.903 under shared-max norm, peak ratio 1.109). Verify
+by eye that the gray/blue peak ratio and widths match the digitized panel before re-asserting FAITHFUL.
+
+**Process:** trajectory toward_paper. C1 (self-caught last pass, now resolved): SQ-006/commit title
+'RESOLVED' over-claim is fixed — the build is DONE and verified. C2 (refuted, logged): Q-043 7C test
+window narrowing was auditor-prescribed from released author code, not builder-grades-own-homework.
+Carryover (not re-litigated): DR-4C-sign caption-attribution authority (A-012, expiry 2026-07-15) —
+route to a paper-reading faithfulness auditor / human owner before expiry; F-A/F-B/F-C prior-pass
+contract-doc findings remain on record for a fix-phase edit.
+
+**README:** refreshed to current state — exit block (flagged_count 1), DECISION NEEDED rewritten to
+the single stale-render block, Figure 6 header scoped to "model FAITHFUL · shipped render STALE",
+audit/check tables flag the stale PNG and the matplotlib-absent panel-axes failures.

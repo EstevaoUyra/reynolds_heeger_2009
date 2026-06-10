@@ -4,12 +4,18 @@ Feature-based attention sharpening of motion-direction tuning. Evaluated on the
 implementation record (protocols.run_figure_6C) in the pinned display frame;
 expected values from the digitized reference.
 
-KNOWN DIVERGENCE: the paper SHARPENS the attended curve — it is enhanced near
-the peak (attend-contralateral ~0.10 ABOVE attend-fixation at 0 deg) and
-relatively suppressed at the flanks. The model's two curves essentially overlap
-(peak ratio ~1.01 — almost no peak enhancement): the feature-based effect is
-essentially absent. The qualitative sharpening test and the hard peak-enhancement
-test FAIL by design.
+STATUS (updated 2026-06-10 contract audit): these tier tests were AUTHORED against an
+earlier model state where the two 6C curves essentially OVERLAPPED (peak ratio ~1.01,
+feature effect absent), so the qualitative sharpening + hard peak-ratio tests were
+INTENDED FAILURES. The committed model has since moved PAST that: the flat-x full-γ
+proxy now OVER-corrects (peak ratio ~1.167, peak gap ~0.14), so these digitized-anchored
+tests now PASS — but for the WRONG reason (over-correction, not the faithful author
+'cross' field). The genuine remaining defect is the OPPOSITE end: the proxy OVER-scales
+PAST the digitized 1.108 and OVER-sharpens to FWHM ratio ~0.79. That two-sided contract
+bug is caught by the tight MUST-PASS in test_audit_2026_06_10_contract.py (peak 1.108
+±0.01 EXCLUDES 1.167; FWHM ratio 0.87-0.89 EXCLUDES 0.79). These coarse one-sided tier
+tripwires are LEFT in place (digitized-anchored, framework-owned) but no longer carry the
+divergence signal — see the contract module for the authoritative 6C target.
 """
 
 from __future__ import annotations

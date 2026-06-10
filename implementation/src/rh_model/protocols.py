@@ -385,27 +385,38 @@ def run_figure_5C(n_orientations: int = 19):
 
 # --- Figure 6 (motion direction tuning, feature-based attention) ---
 
-def run_figure_6C(n_directions: int = 25, x_opposite: float = -50.0, x_fixation: float = 50.0):
-    """Sweep stimulus motion direction; attend_fixation vs attend_opposite.
+def run_figure_6C(n_directions: int = 25):
+    """Authors' ``Figure6C.m`` protocol (CODE-018) — feature-based attention.
 
     Citation: C-017, C-021, C-023 / spec.simulation_protocols.figure_6C
+    Code: CODE-018 (Figure6C.m + attentionModel.m:146-162, Ashape='cross')
 
-    Feature-based attention is spatially GLOBAL (C-023: "the stimulus drive is
-    multiplied by an attention field that is itself selective for motion
-    direction" — the directional gain multiplies the recorded neuron's drive, so
-    it must reach the RF). The attend-opposite-stimulus condition therefore
-    selects the current motion direction (feature_center = θ_stim) but is FLAT in
-    x (spatial_center = None), so the feature gain reaches the recorded neuron at
-    x = 0 and sharpens / elevates its direction tuning (C-021, C-023). Confining
-    the field to a spatial Gaussian at x_opposite = -50 (attention-field size 30)
-    zeroes the feature gain at x = 0 (G_x ≈ 0), so the curves overlap (peak ratio
-    ~1.01, no sharpening) regardless of suppression gain — that is the
-    spatial-confinement bug, not the feature mechanism. Spatial attention being
-    directed AWAY from the RF (to the fixation/opposite location) is captured by
-    the attend-fixation baseline, not by stripping the feature component from the
-    RF. x_opposite is retained only as the location of the second (yoked) stimulus
-    in E. The spatial-globality of feature attention is not yet a named ledger
-    assumption — logged as SQ-006 (underspecification) for Phase A to formalize.
+    Geometry comes from the BINDING ledger keys (calibration.yaml figure_6C.*),
+    transcribed verbatim from ``Figure6C.m``:
+
+      - figure_6C.stim_rf_x        = 100  : RF stimulus (θ=0) AND the recorded
+                                            column (i = find(x==stimCenter1))
+      - figure_6C.stim_contra_x    = -100 : contralateral stimulus (θ=0); also the
+                                            attend-opposite spatial centre (Ax) and
+                                            its feature centre (Atheta = θ of stim2)
+      - figure_6C.attend_fixation_x = 0   : attend-fixation flat-θ baseline centre
+
+    Two SEPARATED stimuli, both at the swept direction θ_stim (the authors sweep a
+    single direction and read off the recorded neuron's tuning), each θ-impulse
+    gratings. Two attention conditions, both at AxWidth = AthetaWidth-driven sizes
+    from the ledger (attention_field_size = 30, tuning_width = 60):
+
+      - attend_fixation : oval field at Ax = attend_fixation_x (= 0), flat in θ
+                          (Atheta NaN). The 'Att Away' baseline (R1 in Figure6C.m).
+      - attend_opposite : author 'cross' field at Ax = stim_contra_x (= -100),
+                          Atheta = θ_stim. The additive separable spatial×feature
+                          field (attentionModel.m:146-162). Because AxWidth=30 places
+                          attnGainX≈Abase at the recorded RF column (x=100), the
+                          directional gain reaches the RF only through the θ-conv —
+                          NOT at full γ — so it scales + sharpens the tuning by the
+                          digitized amount (peak ratio 1.108, FWHM ratio ~0.88,
+                          CODE-018) rather than the over-scaled ~1.167 a flat-x
+                          full-γ proxy produced (the retired SQ-006 framing).
     """
     s = _sci("figure_6C")
     overrides_template = dict(
@@ -413,25 +424,38 @@ def run_figure_6C(n_directions: int = 25, x_opposite: float = -50.0, x_fixation:
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
+        # Record from the RF-stimulus column (Figure6C.m: i = find(x==stimCenter1)).
+        recorded_x=resolve("figure_6C.stim_rf_x"),
     )
+    # Binding ledger geometry (calibration.yaml figure_6C.*, CODE-018).
+    x_rf = resolve("figure_6C.stim_rf_x")
+    x_contra = resolve("figure_6C.stim_contra_x")
+    x_fixation = resolve("figure_6C.attend_fixation_x")
+
     theta_stim_grid = np.linspace(-180.0, 175.0, n_directions)
     contrast = resolve("figure_6C.contrast")
     attend_fixation_tuning = np.zeros(n_directions)
     attend_opposite_stimulus_tuning = np.zeros(n_directions)
     for idx, theta_stim in enumerate(theta_stim_grid):
         stimuli = [
-            {"x": 0.0, "theta": float(theta_stim), "contrast": contrast},
-            {"x": x_opposite, "theta": float(theta_stim), "contrast": contrast},
+            {"x": x_rf, "theta": float(theta_stim), "contrast": contrast},
+            {"x": x_contra, "theta": float(theta_stim), "contrast": contrast},
         ]
         params = default_params(**overrides_template)
         attend_fixation_tuning[idx] = simulate(
-            stimuli, {"spatial_center": x_fixation, "feature_center": None}, params
+            stimuli,
+            {"spatial_center": x_fixation, "feature_center": None, "shape": "oval"},
+            params,
         )["response"]
         attend_opposite_stimulus_tuning[idx] = simulate(
             stimuli,
-            # Feature-based attention is spatially global (C-023): flat in x so
-            # the θ_stim-selective gain reaches the recorded neuron at x = 0.
-            {"spatial_center": None, "feature_center": float(theta_stim)},
+            # Author 'cross' field: spatial centre at the contralateral stimulus
+            # (Ax = stim_contra_x), feature centre at the swept direction (Atheta).
+            {
+                "spatial_center": x_contra,
+                "feature_center": float(theta_stim),
+                "shape": "cross",
+            },
             params,
         )["response"]
     return measurements.tuning_record({
