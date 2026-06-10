@@ -3,6 +3,68 @@
 Newest first. The README "Changelog" table carries the one-line summaries; this file carries the
 full detail.
 
+## 2026-06-10 — paper-fix verify: F1/F2/F3 fix VERIFIED FAITHFUL, BLOCKED on three stale-contract findings (update-state)
+
+**Summary line (mirrored in README):** paper-fix verify — BLOCKED on contract. The F1/F2/F3
+doc-vs-contract-drift fix (commit 0157325) is independently verified faithful, but the verify pass
+did NOT pass within MAX_PAPERFIX: three stale-contract findings (F-A/F-B/F-C) survive in `pseudocode/`
+and `assumptions.yaml` and contradict the now-binding calibration. model.py untouched/faithful.
+
+**Exit:** `{"overall":"blocked","trajectory":"toward_paper","flagged_count":3,"blocked":["model:contract"]}`.
+
+**VERIFIED FAITHFUL this pass (the applied F1/F2/F3 fix; no further fix needed):**
+- **F1** `model_spec.yaml:490-491,504-505` Fig-3 baselines now = CODE-017 (3C baselineMod=5e-7 /
+  baselineUnmod=5.0; 3F 5e-7/0.0), matching `Figure3C.m:5-6` / `Figure3F.m:5-6` exactly. Application
+  order matches `attentionModel.m:165-175` (Eraw=conv(stim)+baselineMod; E=attnGain·Eraw;
+  R=E/(I+σ)+baselineUnmod) and pipeline steps 2.5/5.5.
+- **F3** `figure_3.md` baseline table + Panel C/F prose + key-relationships rewritten to CODE-017; no
+  residual A-007 0.05.
+- **F2** `figure_4.md` Panel-C rewritten to the `Figure4C.m` four-separated-stimulus attend-null
+  suppression build (x=±90/±110, c_nonpref=0.01, cRange[1e-4,0.1], %-mod=100·(unatt-att)/unatt).
+  4D/4E corrected to the matching geometry.
+- **DR-4C-sign** re-confirmed code-resolvable (`Figure4C.m:74` positive ⇒ Att-RF is the suppressed
+  lower curve; deliberate sign contrast with Fig-2/3 facilitation captured correctly).
+- **EQ-1/2/5/6** match the author code operator-for-operator; A-013 honored on the calibration surface
+  (no per-panel suppressive gains).
+
+**Three OPEN contract findings (logged DIVERGENT, need a fix-phase EDIT, not another audit):**
+1. **F-A (model)** `pseudocode/figure_3_protocol.md:16-18` STILL binds the SUPERSEDED A-007 baselines
+   (baseline_modulated_by_attention=0.05 / baseline_unmodulated=0.05, "per A-007"). A-007 is superseded
+   by CODE-017 (3C 5e-7/5.0; 3F 5e-7/0.0). A grep confirms this is the ONLY place a 0.05 baseline
+   survives as an active instruction. `pseudocode/` is a binding contract artifact — a reader following
+   step 2/6 builds the wrong symmetric 0.05/0.05 baseline. *Fix:* rewrite Inputs (16-18) + Procedure
+   2/6 to CODE-017, citing CODE-017 not A-007.
+2. **F-B (figure)** `figure_2_protocol.md:9,16,22` and `figure_3_protocol.md:12,21,29-30` describe
+   "single stimulus at x=0", unattended="constant 1 (no modulation)", sweep "[0.01,1] with 8 points".
+   Author Figure2A/2B/3C/3F.m use TWO separated stimuli at x=±100, recorded at x=+100, BOTH conditions
+   a real attention field (attended Ax=+100 'Att RF' vs unattended Ax=-100 'Att Away', not A=1), sweep
+   cRange=[1e-5,1] (also contradicts calibration.yaml/CODE-020). Numerically verified equivalent AT THE
+   RECORDED NEURON (attend-away gain at x=+100 = 2.2e-10 ≈ A=1, 6.7σ; contra drive at x=+100 = 0.0), so
+   a contract-DESCRIPTION fidelity gap + stale sweep window, not a figure-output divergence. Tracked
+   open as SQ-002. *Fix:* update to the two-separated-stimulus geometry + [1e-5,1], OR document the x=0
+   reduction as an explicit justified equivalence.
+3. **F-C (model)** `assumptions.yaml:411-413` A-013 rule (3) still reads "per-panel baselines that
+   DIFFER across Fig-3 panels (use the single A-007 0.05·α)". CODE-017 (now binding) makes 3C/3F
+   unmodulated (5.0 vs 0.0) legitimately differ — the authors' own per-figure code values. As written
+   A-013(3) forbids the exact asymmetry the author code mandates. A-007's head was updated; this
+   cross-reference was not. *Fix:* amend A-013(3) to forbid per-panel baselines TUNED-to-fit-a-curve
+   while permitting the authors' own per-figure code values (CODE-017); drop the "use the single A-007
+   0.05·α" clause.
+
+**Process (trajectory toward_paper):**
+- **C1 (DR-4C-sign authority, carryover).** DR-4C-sign was closed on a code re-run + caption
+  re-reading. The published-caption-vs-model-panel reading is a human-owned question (A-012, owner=human,
+  expiry 2026-07-15); a code re-run cannot adjudicate it. `panel_C_digitized.json` still labels the
+  upper solid 'attended' behind a per-test read-time swap. Route the caption-attribution question to a
+  faithfulness auditor WITH the paper / to the human owner before expiry — not another code re-run.
+- **C2 (stale-doc findings).** F-A/F-B/F-C are correctly logged DIVERGENT and not closed — no leniency
+  drift, but they need an edit in the fix phase, not another audit re-confirming they are stale, before
+  they age into the next reader's ground truth.
+
+**Where to look:** `logs/spec_audit/contract_audit_2026-06-10_paperfix_verify.md` (verify verdict);
+`logs/faithfulness_audit/2026-06-10-independent-rerender.md`, `2026-06-04.md` (author-code reruns);
+`logs/spec_questions.md` (SQ-002, SQ-005/006/007, DR-4C-sign RESOLVED).
+
 ## 2026-06-04 — from=fix finalize: window fix verified faithful, BLOCKED on two open contract divergences (update-state)
 
 **Summary line (mirrored in README):** from=fix finalize — BLOCKED on contract. Window fix +
