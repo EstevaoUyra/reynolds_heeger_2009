@@ -454,41 +454,62 @@
     - "rendering_conventions / constants: C-010, C-011, C-019, C-020"
 
 - id: A-014
-  name: feature_attention_is_spatially_global
+  name: feature_attention_field_is_author_cross
   description: |
-    Feature-based attention (the direction-selective attention field used in the
-    attend-stimulus conditions of Fig 6C and the attend-variable/attend-nonpref
-    conditions of Fig 7C) is SPATIALLY GLOBAL: its directional (θ) gain reaches
-    the recorded neuron's RF regardless of where spatial attention is directed.
-    Operationally, the attend-opposite-stimulus / feature-selective condition is
-    modelled as a θ-selective field that is FLAT (global) in x at the recorded
-    RF, so the directional gain multiplies the recorded neuron's drive. Spatial
-    attention directed AWAY from the RF is represented by the attend-fixation
-    BASELINE, NOT by zeroing the feature component over the RF.
+    CONTRACT-RESOLUTION (2026-06-10 contract audit, resolved via author code —
+    ladder rung (1)). The direction-selective attention field used in the
+    attend-stimulus condition of Fig 6C is the authors' ``Ashape='cross'`` field
+    (attentionModel.m:146-162; Figure6C.m AxWidth=30, AthetaWidth=60), NOT a
+    flat-in-x full-γ θ proxy. (Fig 7C is DIFFERENT — Figure7C.m passes NO Ashape,
+    so it uses the DEFAULT 'oval' outer-product field with spatially-LOCAL arms:
+    the attended stimulus sits at x=93/107, essentially AT the recorded RF x=100
+    with AxWidth=5, so the feature gain reaches the RF because the attended
+    stimulus is local to it, not via spatial globality. 7C does NOT use the
+    'cross'.) The 'cross' is an ADDITIVE SEPARABLE spatial×feature
+    gain — a spatial ARM and a feature ARM each lifted to peak γ over baseline 1,
+    combined as (see EQ-attention 'cross' form):
+
+        attnGainX(x)   = (γ-1)·G_x(x − Ax; σ=AxWidth) + 1     # spatial arm, peak γ
+        attnGainθ(θ)   = (γ-1)·G_θ(θ − Aθ; σ=AthetaWidth) + 1 # feature arm, peak γ
+        A(x,θ) = (γ-1)·attnGainX(x)·attnGainθ(θ) + 1          # additive 'cross'
+
+    The KEY (and originally-named) property survives: feature attention REACHES the
+    recorded RF even when spatial attention is directed AWAY from it. In Fig 6C the
+    spatial arm is centred at the opposite stimulus (Ax = -100); at the recorded RF
+    (x = +100, ~6.7σ away with AxWidth=30) G_x ≈ 0 so attnGainX ≈ 1, and the field
+    reduces THERE to A(RF,θ) = (γ-1)·attnGainθ(θ) + 1 = γ + (γ-1)²·G_θ(θ) — i.e. a
+    θ-tuned gain ranging from γ (far flanks) to γ+(γ-1)² (preferred). At γ=2 that is
+    a 2.0→3.0 gain over the recorded RF: the directional gain DOES reach the RF
+    (peak ratio 1.109, FWHM ratio 0.887 — matching the digitized panel 1.108/~0.87
+    and the author 'cross' reproduction; verified numerically). Spatial attention
+    directed away from the RF is otherwise captured by the attend-fixation baseline.
   rationale: |
-    Grounded in C-023 ("the stimulus drive is multiplied by an attention field
-    that is itself selective for motion direction" — the directional gain must
-    reach the recorded neuron) and the Fig-6 caption ("feature-based attention …
-    matched to the stimulus in the receptive field"). The authors' Figure6C.m
-    directs SPATIAL attention to the opposite-hemifield stimulus (Ax = -100) yet
-    the recorded neuron (RF at x = +100) still shows the directional sharpening —
-    only possible if the feature gain is not spatially confined to x = -100. A
-    purely-local spatial×feature product (A = 1 + (γ-1)·G_x·G_θ centred at -100)
-    gives G_x ≈ 0 at x = +100, so A ≈ 1 and the feature gain never reaches the
-    recorded neuron (the curves overlap, peak ratio ~1.01, no sharpening — the
-    CODE_BUG that test_figure_6C_code_bug.py named). Spatial globality of the
-    feature gain is the only mapping consistent with C-023 and the author script.
-    Formalizes SQ-006 (escalation option (a)).
+    SUPERSEDES the prior A-014 (feature_attention_is_spatially_global), which
+    modelled the attend-feature condition as a θ-selective field FLAT in x at full γ
+    — operationally A(RF,θ) = 1 + (γ-1)·G_θ(θ), a 1.0→2.0 gain. That flat-x full-γ
+    proxy was the CONTRACT BUG the 2026-06-10 contract audit named: it applies the
+    θ-gain at FULL strength and on baseline 1 everywhere in x, so it OVER-scales
+    (peak ratio 1.170 vs author 1.109, +5.5%) and OVER-sharpens (FWHM ratio 0.831 vs
+    0.887) the recorded tuning relative to the author 'cross' (verified numerically
+    against attentionModel.m). The proxy reached the RF (fixing the EARLIER
+    spatial-confinement bug where a confined G_x·G_θ centred at -100 gave G_x≈0 and
+    A≈1, curves overlapping, peak ratio ~1.01) but over-corrected past the author
+    magnitude. The author 'cross' is the faithful mechanism and is reachable from the
+    single Table-1 / code constants (γ=2, AxWidth=30, AthetaWidth=60) with NO tuning;
+    it lands exactly on the digitized panel. This resolves SQ-006 (the underspecified
+    feature-attention shape) to the author code, not to a proxy convention we chose.
   alternatives_considered:
-    - "Confined spatial×feature product centred at the attended stimulus (G_x·G_θ): REJECTED — G_x≈0 at the recorded RF so the feature gain never reaches it; curves overlap, no sharpening (the 6C CODE_BUG)."
-    - "A separable global-feature × local-spatial-baseline factorization (SQ-006 option b): not adopted — the simpler spatially-global feature gain already matches C-023 and the author script; no evidence a separate spatial-baseline term is intended."
+    - "Flat-in-x full-γ θ proxy (prior A-014; A(RF,θ)=1+(γ-1)·G_θ): RETIRED — over-scales (peak 1.170 vs 1.109) and over-sharpens (FWHM 0.831 vs 0.887) vs the author 'cross'; not the authors' field."
+    - "Confined spatial×feature product centred at the attended stimulus (1+(γ-1)·G_x·G_θ): REJECTED — G_x≈0 at the recorded RF so the feature gain never reaches it; curves overlap, no sharpening (the original 6C spatial-confinement bug)."
+    - "Oval (default Ashape) outer-product A=1+(γ-1)·G_x·G_θ: NOT the 6C field — Figure6C.m explicitly passes Ashape='cross' for the attend-stimulus condition; the oval mildly overshoots the digitized magnitude."
   affects:
-    - "simulation_protocols.figure_6C (attend-opposite-stimulus: θ-selective, spatially global)"
-    - "simulation_protocols.figure_7C (attend-variable / attend-nonpref feature gains)"
-    - "pseudocode/figure_6_protocol.md (Procedure step 2); pseudocode/figure_7_protocol.md (Procedure step 2)"
-    - "pipeline.build_attention_field (feature-selective conditions are flat in x at the recorded RF)"
+    - "simulation_protocols.figure_6C (attend-opposite-stimulus: author 'cross' field, ledger geometry stim_rf_x=100 / stim_contra_x=-100 / attend_fixation_x=0)"
+    - "simulation_protocols.figure_7C (attend-variable / attend-nonpref use the DEFAULT 'oval' field with spatially-local arms — NOT the cross; feature gain reaches the RF because the attended stimulus is local to it)"
+    - "pseudocode/figure_6_protocol.md (Procedure step 2)"
+    - "pipeline.build_attention_field (must support the author 'cross' additive separable shape for 6C)"
+    - "equations.EQ-attention (the 'cross' construction form)"
   spec_refs:
     - "C-023 (feature-based attention sharpens via a direction-selective field)"
     - "C-017 (Fig-6 spatial attention away from RF; feature attention selective)"
-    - "CODE-018 (Figure6C.m Ashape='cross', Ax=-100 yet affects recorded RF at +100)"
-    - "logs/spec_questions.md SQ-006"
+    - "CODE-018 (Figure6C.m Ashape='cross', Ax=-100, AxWidth=30, AthetaWidth=60; attentionModel.m:146-162 the additive separable 'cross' construction)"
+    - "logs/spec_questions.md SQ-006 (resolved to the author 'cross'); contract audit 2026-06-10"

@@ -135,12 +135,19 @@ human_resolution: |
 ## SQ-006 — feature-based attention is spatially GLOBAL (Fig 6C / 7C attend-opposite); needs a named ledger assumption
 date: 2026-06-03
 spec_ref: simulation_protocols.figure_6C; pseudocode/figure_6_protocol.md (Procedure 6C step 2); pipeline.build_attention_field; constants C-017, C-021, C-023
-status: RESOLVED (2026-06-10) — FORMALIZED as assumption A-014 (feature_attention_is_spatially_global)
-  in article_aware/spec/assumptions.yaml (escalation option (a)). The figure_6/7 protocols + model_spec
-  figure_6C/7C now cite A-014; the feature-selective conditions are theta-selective and FLAT in x at the
-  recorded RF, spatial-attention-away is the attend-fixation baseline. Grounded in C-023 + Figure6C.m
-  (spatial attention to x=-100 yet affects recorded x=+100, CODE-018). (Was: RESOLVED-IN-BUILD pending
-  Phase-A formalization.)
+status: RESOLVED (2026-06-10) then CORRECTED (2026-06-10 contract audit, this pass). The proxy that
+  formalized this SQ as A-014 (feature_attention_is_spatially_global = flat-in-x full-gamma theta gain)
+  was itself the 6C CONTRACT BUG: it OVER-scales (peak ratio 1.170 vs author/digitized 1.108) and
+  OVER-sharpens (FWHM 0.831 vs 0.887). A-014 is now RENAMED feature_attention_field_is_author_cross and
+  rewritten to the authors' Ashape='cross' field (attentionModel.m:146-162; EQ-attention 'cross' form,
+  A=(g-1)*attnGainX*attnGainTheta+1). At the recorded RF the spatial arm ~=1 so
+  A(RF,theta)=g+(g-1)^2*G_theta — the directional gain STILL reaches the RF (the originally-named
+  property survives) but at the AUTHOR magnitude (1.109/0.887, verified numerically). model_spec
+  EQ-attention now carries the 'cross' construction; figure_6C adds attention_shape: cross;
+  figure_6_protocol.md Procedure step 2 + Inputs note prescribe the cross. NOTE: Fig 7C is NOT a cross
+  (Figure7C.m passes no Ashape -> default oval, spatially-local arms at x=93/107 ~ RF). The remaining
+  work is a PHASE-B BUILD (route run_figure_6C through the ledger geometry + implement 'cross') tracked
+  as SQ-009; the 3 MUST-PASS 6C contract tests stay RED until then.
 question: |
   The 2026-06-03 CODE_BUG finding (test_figure_6C_code_bug.py, MUST-PASS) showed run_figure_6C
   built the attend-opposite-stimulus condition as a SPATIAL Gaussian centered at x_opposite=-50
@@ -334,7 +341,19 @@ spec_ref: |
   implementation/src/rh_model/model.py (build_stimulus_drive θ profile; theta_grid);
   article_aware/figures/figure_7/panel_C_digitized.json
 owner: human / Phase A (faithfulness lead)
-status: OPEN — Phase-B partial-STUCK on ONE pre-existing must-pass (Q-043), routed to Phase A.
+status: RESOLVED (2026-06-10, this pass) via escalation option (a) — resolved at the CONTRACT level by
+  the author code (ladder rung 1), no model tuning. Q-043
+  (test_attention_effects_have_opposite_signs_around_preferred_flanks) was NARROWED from the
+  central-flank window 15<=|theta|<=60 (>=0.75 positive) to 15<=|theta|<=45, the region where the AUTHOR
+  code, the impl, and the paper panel all agree attend-variable is RAISED (author + impl frac-positive =
+  1.000 there). The old 15..60 threshold was authored against the buggy periodic-wrap profile and
+  demanded behaviour the released Figure7C.m does not exhibit: the author code itself dips attend-
+  variable below attend-away for |theta| > ~46 deg (author frac over 15..60 = 0.688 < 0.75); the
+  digitized "no dip" is a resolution artifact at the steep outer flanks. The model already matches the
+  author var/away peak ratio (1.322 vs 1.323) — the TEST was stale, not the model. Verified GREEN this
+  pass (test_figure_7C.py::...preferred_flanks passes; suite 10 passed / 2 xfailed on the 7C+6C+audit
+  subset). The Finding-1 trio (T-A610-7C-*) is also GREEN. Closes SQ-008. (Was: OPEN — Phase-B
+  partial-STUCK.)
 question: |
   Phase B implemented the 2026-06-10 audit Finding-1 fix EXACTLY as the contract prescribes
   (test_audit_2026_06_10.py + model_spec.yaml theta_grid:[-180,180,1]=361 + code_refs.yaml
@@ -391,3 +410,43 @@ escalation_options_for_phaseA: |
       (Phase B cannot read paper/).
   (c) Confirm Q-043 was authored before Finding-1 and is simply stale relative to the most-recent
       contract change; if so, retire/replace it in line with the 2026-06-10 audit.
+
+## SQ-009 — Fig 6C author 'cross' attention field: contract RESOLVED, Phase-B BUILD pending
+date: 2026-06-10
+spec_ref: |
+  article_aware/spec/assumptions.yaml A-014 (feature_attention_field_is_author_cross);
+  article_aware/spec/model_spec.yaml EQ-attention ('cross' form) + simulation_protocols.figure_6C
+  (attention_shape: cross) + pipeline.build_attention_field;
+  article_aware/pseudocode/figure_6_protocol.md (Inputs + Procedure step 2);
+  article_aware/extracted_data/test_audit_2026_06_10_contract.py (T-A610C-6C-peak-ratio /
+  -fwhm-ratio / -ledger-geometry, MUST-PASS);
+  implementation/src/rh_model/model.py (build_attention_field — needs the 'cross' shape);
+  implementation/src/rh_model/protocols.py:388-441 (run_figure_6C — needs the ledger geometry)
+owner: Phase B (builder) ; expiry 2026-07-15
+status: CONTRACT RESOLVED (this pass, ladder rung 1 = author code); PHASE-B BUILD PENDING. The 6C
+  CONTRACT_BUG (run_figure_6C ignores the binding ledger geometry stim_rf_x=100/stim_contra_x=-100/
+  attend_fixation_x=0 and uses a hard-coded -50/50 flat-x full-gamma proxy with no 'cross' shape) is
+  RESOLVABLE via this paper's own author code, so it is NOT a blocked/open-contract item: the contract
+  has been corrected to prescribe the authors' Ashape='cross' field unambiguously (A-014 rewritten;
+  EQ-attention 'cross' construction added; figure_6C attention_shape: cross; pseudocode step 2 + Inputs
+  rewritten; the over-scaling oval/flat-x proxy retired from the sanctioned surface). What REMAINS is a
+  Phase-B implementation build (no Phase-A decision left):
+    1. build_attention_field (model.py) must support Ashape='cross':
+         attnGainX = (gamma-1)*G_x(x-Ax; AxWidth) + 1
+         attnGainTheta = (gamma-1)*G_theta(theta-Atheta; AthetaWidth) + 1
+         A = (gamma-1)*attnGainX*attnGainTheta + 1
+       (attentionModel.m:146-162), selectable per protocol via attention_shape.
+    2. run_figure_6C (protocols.py) must read the binding ledger keys figure_6C.stim_rf_x (=100, the
+       recorded column), stim_contra_x (=-100, attend-opposite spatial centre), attend_fixation_x (=0)
+       instead of the hard-coded x_opposite=-50 / x_fixation=50 / RF-at-x=0; attend-opposite uses the
+       'cross' shape (Ax=-100, Atheta=0, AthetaWidth=60), attend-fixation the oval flat-theta field.
+  Acceptance (already encoded, currently RED as expected — reachable by the correct mechanism with NO
+  tuning, verified numerically 1.109/0.887): 6C peak ratio 1.108 (+-0.01); 6C FWHM ratio 0.87-0.89;
+  protocol consumes the ledger keys and no longer hard-codes -50/50.
+chosen_assumption: |
+  NONE forced. Phase A corrected the contract to the author code (article_aware only; no model code
+  touched, no per-figure knob tuned). The 3 must-pass 6C contract tests
+  (test_audit_2026_06_10_contract.py) and the soft mechanism tripwire
+  (test_audit_2026_06_10.py::test_6C_feature_attention_field_is_author_cross) stay RED until Phase B
+  builds the 'cross' shape + ledger geometry. That is the expected state of a correctly-specified-but-
+  not-yet-built fix, not a STUCK/blocked contract.

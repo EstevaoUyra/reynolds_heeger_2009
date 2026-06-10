@@ -244,16 +244,43 @@ equations:
   - id: EQ-attention
     name: attention_field_construction
     expression: |
-      A(x,θ) = 1 + (γ - 1) · G_space(x - x_attended; σ=attention_field_size)
-                            · G_feature(θ - θ_attended; σ=attention_tuning_width)
-      For unselective dimensions (e.g., "flat over θ"), the corresponding Gaussian
-      is replaced by 1 (uniform). For "attend elsewhere" conditions where the
+      Two construction forms, selected by Ashape (attentionModel.m:139-163, CODE-018):
+
+      OVAL (Ashape='oval', the default — used by every spatial-only / single-arm
+      condition, e.g. Figs 2/3/4/5 attend-RF/attend-away and the 6C attend-fixation
+      baseline):
+        A(x,θ) = 1 + (γ - 1) · G_space(x - x_attended; σ=attention_field_size)
+                              · G_feature(θ - θ_attended; σ=tuning_width)
+      For unselective dimensions ("flat over θ" or "flat over x"), the corresponding
+      Gaussian is replaced by 1 (uniform). For "attend elsewhere" conditions where the
       attended location is far from the recorded neuron's RF, the spatial Gaussian
       contribution at the RF is negligible and A ≈ 1 over the RF.
-    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width]
+
+      CROSS (Ashape='cross' — used by the feature-based attend-stimulus condition of
+      Fig 6C, A-014; Fig 7C uses the DEFAULT oval, not the cross — Figure7C.m passes
+      no Ashape):
+        attnGainX(x) = (γ - 1) · G_space(x - Ax; σ=attention_field_size) + 1
+        attnGainθ(θ) = (γ - 1) · G_feature(θ - Aθ; σ=tuning_width) + 1
+        A(x,θ)       = (γ - 1) · attnGainX(x) · attnGainθ(θ) + 1
+      i.e. each ARM is independently lifted to peak γ over baseline 1, then their
+      PRODUCT is lifted again (the additive separable 'cross', attentionModel.m:146-162).
+      This differs from the oval: when the spatial arm is centred away from the RF
+      (G_space ≈ 0 there, attnGainX ≈ 1) the field reduces over the RF to
+        A(RF,θ) = γ + (γ-1)² · G_feature(θ - Aθ),
+      a θ-tuned gain from γ (flanks) to γ+(γ-1)² (preferred) — NOT the 1+(γ-1)·G_θ a
+      flat-x full-γ proxy would give. Using the oval/proxy for a 'cross' condition
+      OVER-scales and OVER-sharpens the recorded tuning (the 6C contract bug; A-014).
+    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width, "<protocol.attention_shape>"]
     outputs: [A]
-    citation_refs: [C-005, C-009]
-    notes: "Construction form is conventional (paper says 'Gaussian profiles'); baseline 1, peak γ. Gaussian σ convention per A-004."
+    citation_refs: [C-005, C-009, C-023]
+    code_refs: [CODE-018]
+    notes: |
+      Baseline 1, peak γ; Gaussian σ convention per A-004. The OVAL form is the
+      paper's conventional 'Gaussian profiles' product. The CROSS form is the authors'
+      released Ashape='cross' (attentionModel.m:146-162), BINDING for the Fig 6C
+      attend-stimulus condition per A-014 (Fig 7C uses the oval default — no Ashape) —
+      do NOT substitute the oval/flat-x proxy for the 6C 'cross' (it over-scales: 6C
+      peak ratio 1.170 vs author/digitized 1.108).
 
   - id: EQ-suppressive_kernel
     name: suppressive_kernel_construction
@@ -344,9 +371,17 @@ pipeline:
 
   - step: 3
     name: build_attention_field
-    description: "Construct A(x,θ) per the protocol's attention condition: baseline 1 plus Gaussian peak γ at the attended location, with feature selectivity per protocol."
+    description: |
+      Construct A(x,θ) per the protocol's attention condition and Ashape (EQ-attention).
+      OVAL (default, spatial-only/single-arm conditions): baseline 1 plus the product of
+      the Gaussian arms scaled to peak γ. CROSS (feature-based attend-stimulus conditions,
+      Fig 6C / Fig 7C, A-014): each arm is independently lifted to peak γ over baseline 1,
+      then their product is lifted — A=(γ-1)·attnGainX·attnGainθ+1. The protocol selects
+      the shape via attention_shape (default oval; 'cross' for 6C/7C feature conditions);
+      do NOT substitute the oval/flat-x proxy for a 'cross' condition (it over-scales — the
+      6C contract bug, A-014).
     equation_ref: EQ-attention
-    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width, x_grid, theta_grid, "<protocol.attention_condition>"]
+    inputs: [attention_field_size, peak_attention_gain_gamma, tuning_width, x_grid, theta_grid, "<protocol.attention_condition>", "<protocol.attention_shape>"]
     outputs: [A]
 
   - step: 4
@@ -586,19 +621,25 @@ simulation_protocols:
     pseudocode_path: pseudocode/figure_6_protocol.md
     # Authors' Figure6C.m (CODE-018/CODE-021). TWO separated stimuli, both θ=0,
     # x=+100 (RF) / x=-100 (contra), contrast=1.0; stim = contrast²·stim1 + stim2
-    # (inert at contrast=1). Attend-fixation (Ax=0, flat θ) vs attend-opposite
-    # (Ashape='cross', Ax=-100, Atheta=0, AthetaWidth=60°). Feature gain is
-    # SPATIALLY GLOBAL (A-014) so it reaches the recorded neuron at x=+100; tuning
-    # = column R(:, x=+100). Ashape='cross' approximated (oval mildly overshoots,
-    # ~1.17 vs ~1.11 — do NOT tune). RETIRES the prior fixed sweep contrast 0.5.
+    # (inert at contrast=1). Attend-fixation (Ax=0, flat θ, OVAL) vs attend-opposite
+    # (Ashape='cross', Ax=-100, Atheta=0, AthetaWidth=60°). The 'cross' feature arm
+    # reaches the recorded neuron at x=+100 even though the spatial arm is centred at
+    # -100 (A-014; at the RF G_x≈0 so A(RF,θ)=γ+(γ-1)²·G_θ). Tuning = column
+    # R(:, x=+100). The author 'cross' (EQ-attention cross form) is BINDING and lands
+    # at the digitized panel (peak ratio 1.108, FWHM ratio ~0.87-0.89, verified
+    # 1.109/0.887); the oval/flat-x proxy OVER-scales (1.170/0.831) and MUST NOT be
+    # substituted (A-014; 2026-06-10 contract audit). RETIRES the prior fixed sweep
+    # contrast 0.5.
     parameter_overrides:
       stimulus_size: 10
       attention_field_size: 30
       tuning_width: 60
       peak_attention_gain_gamma: 2
+      attention_shape: cross    # Ashape='cross' [CODE-018, A-014] — BINDING, not oval
       contrast: 1.0              # CODE-021 (Figure6C.m:21); was an unfounded 0.5
-      # geometry (Figure6C.m): stim_rf_x=+100, stim_contra_x=-100, recorded x=+100,
-      #   attend-opposite spatial centre x=-100, feature global in x (A-014)
+      # geometry (Figure6C.m, BINDING ledger keys figure_6C.stim_*/attend_fixation_x):
+      #   stim_rf_x=+100 (=recorded column), stim_contra_x=-100 (attend-opposite
+      #   spatial centre), attend_fixation_x=0; feature arm global in x (A-014)
     expected_outputs: [theta_stim_grid, attend_fixation_tuning, attend_opposite_stimulus_tuning]
     expected_data_paths:
       - extracted_data/test_figure_6C.py
