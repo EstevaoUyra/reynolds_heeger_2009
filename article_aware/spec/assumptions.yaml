@@ -410,7 +410,14 @@
       (2) per-panel suppressive_spatial_sigma_scale (the RETIRED
           0.45/0.55/0.7/1.0);
       (3) per-panel baseline_modulated_by_attention / baseline_unmodulated
-          values that differ across Fig-3 panels (use the single A-007 0.05·α);
+          values TUNED to fit a Fig-3 curve shape. This does NOT forbid the
+          authors' OWN per-figure code values: CODE-017 (Figure3C.m/3F.m) gives
+          baselineMod = 5e-7 (shared) and baselineUnmod = 5.0 for 3C / 0.0 for
+          3F — these LEGITIMATELY differ across panels because they are the
+          authors' released per-figure constants, not a fit to a curve, and are
+          PERMITTED (they supersede the earlier A-007 single-shared 0.05·α, which
+          is retired). The forbidden case is a baseline re-tuned per panel to
+          make a curve match; the permitted case is the authors' code value.
       (4) per-panel sigma or suppressive_tuning_width overrides (the already-
           RETIRED SQ-004 figure_4C 75°/sigma override class).
     Tests MUST NOT be relaxed or tightened to admit a tuned value (the SQ-001
