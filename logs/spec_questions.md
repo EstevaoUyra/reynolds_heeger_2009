@@ -190,10 +190,20 @@ spec_ref: |
   article_aware/extracted_data/test_contract_suppression_consistency.py;
   article_aware/extracted_data/test_figure_{2A,2B,3C,3F,4C}.py (half-max/left-shift claims);
   article_aware/extracted_data/test_tier_figure_{4,7}.py; figure_{2,3,4}/panel_*_digitized.json
-status: PARTIAL-STUCK (Phase B). The SQ-005 mechanism was IMPLEMENTED and is correct where the
-  contract is self-consistent (Figure 1 is fully green; CRF saturation + response-gain signatures
-  pass). Three groups of must-pass tests remain RED for reasons OUTSIDE a paper-blind builder's
-  sanctioned levers; escalated to Phase A / organizer. No knob was tuned to force any of them.
+status: RESOLVED (2026-06-10). GAP 1 (CRF contrast axis) and GAP 2 (suppression-consistency test
+  shape) were resolved at the CONTRACT level by Phase A on prior passes (author cRange windows
+  CODE-020; test_contract_suppression_consistency.py rewritten to the no-per-panel-gain invariant) and
+  the implementation now passes both. GAP 3 (Fig-4E %-mod and Fig-7C ratio over-modulation) is RESOLVED
+  IN-BUILD this pass: the 2026-06-04 audit (test_audit_2026_06_04.py Findings B/D, MUST-PASS) identified
+  the over-modulation as a GEOMETRY CODE_BUG — the protocols simulated TWO CO-LOCATED stimuli at x=0
+  instead of the authors' FOUR/TWO SEPARATED stimuli (Figure4E.m/Figure7C.m, CODE-018). Phase B rewired
+  run_figure_4E to the four-separated-stimulus yoked-contrast layout (x=±90/±110, RF at x=100) and
+  run_figure_7C to the two-separated-stimulus layout (variable x=93, null x=107, RF x=100, attend-away
+  x=-100), reading the geometry keys Phase A already added to article_aware/spec/calibration.yaml. Under
+  the FAITHFUL mechanism over the correct geometry the magnitudes drop to 4E %-mod ~50% (digitized ~54%)
+  and 7C var/away ratio ~1.41 (digitized ~1.33-1.4) — NO knob tuned (A-013). Full suite green: 150
+  passed, 9 xfailed (legitimate tripwires: Fig-1 R-asymmetry, 6C oval-vs-cross, seven soft-tier shapes),
+  18 xpassed (soft tier). (Was: PARTIAL-STUCK — 3 must-pass gaps RED, escalated to Phase A.)
 what_was_built: |
   Implemented the SQ-005 author-code mechanism end to end (implementation/src/rh_model, no
   article_aware edits):

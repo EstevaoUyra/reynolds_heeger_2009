@@ -284,28 +284,62 @@ def run_figure_4C(n_contrasts: int = 8, c_nonpref: float | None = None):
 
 
 def run_figure_4E(n_contrasts: int = 8):
-    """Two stimuli colocated in RF, contrasts covary. attend_pref vs nonpref.
+    """Figure 4E — exact authors' ``Figure4E.m`` protocol (CODE-018).
 
-    Citation: C-015 / spec.simulation_protocols.figure_4E
+    The "yoked contrast" Martinez-Trujillo & Treue panel. IDENTICAL
+    four-separated-stimulus layout to 4C — preferred (θ = 0) and null (θ = 180)
+    in the RF and contralateral — with the recorded neuron's RF centred at the
+    midpoint of the two RF stimuli (x = 100):
+
+      - x = 90,  θ = 0   — PREFERRED stimulus in RF
+      - x = 110, θ = 180 — NULL/nonpreferred stimulus in RF
+      - x = -90, θ = 0   — preferred stimulus in the opposite hemifield
+      - x = -110,θ = 180 — null stimulus in the opposite hemifield
+
+    UNLIKE 4C (which fixes the null at low contrast), ALL FOUR contrasts COVARY
+    over the swept window — the yoked-contrast experiment. Two conditions:
+
+      - ``attend_pref_CRF``    = attend the PREFERRED stimulus in RF (Ax = 90, Aθ = 0)
+      - ``attend_nonpref_CRF`` = attend the NULL stimulus in RF (Ax = 110, Aθ = 180)
+
+    The record's ``ratio`` = attend_pref / attend_nonpref; the %-modulation is
+    ``(ratio - 1)·100``. This author geometry (vs the prior two-co-located-stimuli
+    -at-x=0 layout, which let feature competition crush the nonpreferred response
+    and overflow the %-modulation to ~386%) yields a peak %-modulation ~50–54%,
+    matching the digitized panel-E ~54% — the faithful mechanism reaches the paper
+    value once the geometry is the authors' (CODE-018), with NO tuning (A-013).
+
+    Contrast window = author Figure4E.m cRange [1e-4, 0.1] (CODE-020).
+
+    Citation: C-015 / spec.simulation_protocols.figure_4E ; Code: CODE-018 (Figure4E.m)
     """
     s = _sci("figure_4E")
+    rf_center = resolve("figure_4E.rf_center")
+    stim_pref_rf = resolve("figure_4E.stim_pref_rf_x")
+    stim_null_rf = resolve("figure_4E.stim_null_rf_x")
+    stim_pref_contra = resolve("figure_4E.stim_pref_contra_x")
+    stim_null_contra = resolve("figure_4E.stim_null_contra_x")
+    theta_null = resolve("figure_4E.theta_nonpref")
     overrides = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
+        recorded_x=rf_center,
+        recorded_theta=0.0,
     )
-    # Contrast window from the author Figure4E.m cRange (CODE-020): [1e-4, 0.1],
-    # not the prior guessed [0.01, 1]. (The %-modulation MAGNITUDE divergence is a
-    # separate geometry finding — co-located vs four separated stimuli — not fixed
-    # here; this only corrects the contrast WINDOW.)
     c_range = (s["c_range_lo"], s["c_range_hi"])
+    # All four stimuli covary in contrast (the yoked-contrast experiment).
     stim = lambda c: [
-        {"x": 0.0, "theta": 0.0, "contrast": c},
-        {"x": 0.0, "theta": 180.0, "contrast": c},
+        {"x": stim_pref_rf, "theta": 0.0, "contrast": c},
+        {"x": stim_null_rf, "theta": theta_null, "contrast": c},
+        {"x": stim_pref_contra, "theta": 0.0, "contrast": c},
+        {"x": stim_null_contra, "theta": theta_null, "contrast": c},
     ]
-    attend_pref = lambda c: {"spatial_center": 0.0, "feature_center": 0.0}
-    attend_nonpref = lambda c: {"spatial_center": 0.0, "feature_center": 180.0}
+    attend_pref = lambda c: {"spatial_center": stim_pref_rf, "feature_center": 0.0}
+    attend_nonpref = lambda c: {
+        "spatial_center": stim_null_rf, "feature_center": theta_null
+    }
     c, att_pref = _contrast_sweep(stim, attend_pref, overrides, n_contrasts, c_range=c_range)
     _, att_nonpref = _contrast_sweep(stim, attend_nonpref, overrides, n_contrasts, c_range=c_range)
     return measurements.crf_ratio_record(c, att_pref, att_nonpref)
@@ -409,38 +443,66 @@ def run_figure_6C(n_directions: int = 25, x_opposite: float = -50.0, x_fixation:
 
 # --- Figure 7 (two stimuli in RF, three attention conditions) ---
 
-def run_figure_7C(n_directions: int = 25, theta_nonpref: float = 180.0):
-    """Sweep θ_var; three attention conditions on two-stim-in-RF setup.
+def run_figure_7C(n_directions: int = 25, theta_nonpref: float | None = None):
+    """Figure 7C — exact authors' ``Figure7C.m`` protocol (CODE-018).
 
-    Citation: C-018 / spec.simulation_protocols.figure_7C
+    Two SEPARATED stimuli in the RF (NOT co-located at x = 0): a
+    variable-direction grating at x = 93 and a fixed null (θ = 180) grating at
+    x = 107, with the recorded neuron's RF centred at their midpoint (x = 100).
+    There is NO contralateral stimulus; spatial attention "away" is directed to
+    x = -100. The sweep is over the variable stimulus's motion direction θ_var,
+    at fixed contrast 1.0 (CODE-021). Three conditions:
+
+      - ``fixation_tuning``        = attend AWAY (Ax = -100, feature-flat) — baseline
+      - ``attend_nonpref_tuning``  = attend the NULL stimulus (Ax = 107, Aθ = 180)
+      - ``attend_variable_tuning`` = attend the VARIABLE stimulus (Ax = 93, Aθ = θ_var)
+
+    Co-locating the two stimuli at x = 0 inflated the attend-variable / attend-away
+    peak ratio to ~2.73 (the prior "intended failure"); the authors' separated
+    x = 93/107 geometry yields ~1.41, matching the digitized ~1.33–1.4 — the
+    faithful mechanism reaches the paper ratio once the geometry is restored, with
+    NO tuning (A-013). AthetaWidth = 45 (Table 1, CODE-018).
+
+    Citation: C-018 / spec.simulation_protocols.figure_7C ; Code: CODE-018 (Figure7C.m)
     """
     s = _sci("figure_7C")
+    if theta_nonpref is None:
+        theta_nonpref = resolve("figure_7C.theta_nonpref")
+    rf_center = resolve("figure_7C.rf_center")
+    stim_var_x = resolve("figure_7C.stim_var_x")
+    stim_null_x = resolve("figure_7C.stim_null_x")
+    att_away_x = resolve("figure_7C.att_away_x")
     overrides_template = dict(
         stimulus_size=s["stimulus_size"],
         attention_field_size=s["attention_field_size"],
         peak_attention_gain_gamma=s["peak_attention_gain_gamma"],
         tuning_width=s["tuning_width"],
+        recorded_x=rf_center,
+        recorded_theta=0.0,
     )
     theta_var_grid = np.linspace(-180.0, 175.0, n_directions)
     contrast = resolve("figure_7C.contrast")
     fixation_tuning = np.zeros(n_directions)
     attend_nonpref_tuning = np.zeros(n_directions)
     attend_variable_tuning = np.zeros(n_directions)
-    x_fixation = 50.0
     for idx, theta_var in enumerate(theta_var_grid):
         stimuli = [
-            {"x": 0.0, "theta": theta_nonpref, "contrast": contrast},
-            {"x": 0.0, "theta": float(theta_var), "contrast": contrast},
+            {"x": stim_null_x, "theta": theta_nonpref, "contrast": contrast},
+            {"x": stim_var_x, "theta": float(theta_var), "contrast": contrast},
         ]
         params = default_params(**overrides_template)
         fixation_tuning[idx] = simulate(
-            stimuli, {"spatial_center": x_fixation, "feature_center": None}, params
+            stimuli, {"spatial_center": att_away_x, "feature_center": None}, params
         )["response"]
         attend_nonpref_tuning[idx] = simulate(
-            stimuli, {"spatial_center": 0.0, "feature_center": theta_nonpref}, params
+            stimuli,
+            {"spatial_center": stim_null_x, "feature_center": theta_nonpref},
+            params,
         )["response"]
         attend_variable_tuning[idx] = simulate(
-            stimuli, {"spatial_center": 0.0, "feature_center": float(theta_var)}, params
+            stimuli,
+            {"spatial_center": stim_var_x, "feature_center": float(theta_var)},
+            params,
         )["response"]
     return measurements.tuning_record({
         "theta_var_grid": theta_var_grid,
