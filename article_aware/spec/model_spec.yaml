@@ -487,8 +487,8 @@ simulation_protocols:
       stimulus_size: 5
       attention_field_size: 30
       peak_attention_gain_gamma: 2
-      baseline_modulated_by_attention: 0.05    # per A-007
-      baseline_unmodulated: 0.05               # per A-007
+      baseline_modulated_by_attention: 5.0e-7  # CODE-017 (Figure3C.m:5 baselineMod=5e-7); supersedes A-007
+      baseline_unmodulated: 5.0                 # CODE-017 (Figure3C.m:6 baselineUnmod=5); supersedes A-007. Binding value lives in calibration.yaml figure_3C.baseline_*
     expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
       - extracted_data/test_figure_3C.py
@@ -501,8 +501,8 @@ simulation_protocols:
       stimulus_size: 7
       attention_field_size: 7
       peak_attention_gain_gamma: 2
-      baseline_modulated_by_attention: 0.05    # per A-007
-      baseline_unmodulated: 0.05               # per A-007
+      baseline_modulated_by_attention: 5.0e-7  # CODE-017 (Figure3F.m:5 baselineMod=5e-7, same as 3C); supersedes A-007
+      baseline_unmodulated: 0.0                 # CODE-017 (Figure3F.m:6 baselineUnmod=0); supersedes A-007. ASYMMETRIC vs 3C (5 vs 0). Binding value in calibration.yaml figure_3F.baseline_*
     expected_outputs: [attended_CRF, unattended_CRF, percent_modulation, absolute_difference, c]
     expected_data_paths:
       - extracted_data/test_figure_3F.py
