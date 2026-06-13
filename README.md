@@ -399,3 +399,39 @@ One line here; full detail in [`logs/changelog.md`](logs/changelog.md).
 | 2026-06-10 | Phase-A contract resolution of four blocked divergences (author-code grounded; model.py untouched): retired `suppressive_drive_gain` removed from stage spec; 5C/6C/7C sweep contrast 0.5→1.0 (CODE-021); 4E/7C author SEPARATED geometry adopted; DR-4C-sign investigated→code-resolvable. Added A-014. |
 | 2026-06-04 | from=fix finalize — BLOCKED on contract. Window fix + suppression-test/doc rewrites VERIFIED FAITHFUL (Fig 2/3 full sigmoids). 2 OPEN model-side contract divergences routed to human. |
 | 2026-06-04 | Contrast-window CONTRACT_BUG + digitized re-digitization RESOLVED (author cRange [1e-5,1] / [1e-4,0.1]; model unchanged). 18→5 deterministic reds. |
+
+## Reproduction cost
+
+Estimated at **standard Claude Opus 4.8 API rates** ($5 / $25 per 1M input/output; cache read $0.50/1M, cache write $6.25/1M) from this model's full-pass workflow agent transcripts still in local history, summed across all recoverable runs (initial pass + any later fixes). Runs or agents whose transcripts have rotated out are not counted, so this is a **lower bound** — most reliable for recently-built models.
+
+**Estimated total: $265.17** — 7 recoverable run(s), 110 agents, 310.2M tokens.
+
+### By token type
+
+| token type | tokens | $/1M | cost |
+|---|--:|--:|--:|
+| input | 437,602 | 5.00 | $2.19 |
+| cache write 5m | 10,659,566 | 6.25 | $66.62 |
+| cache read | 297,227,423 | 0.50 | $148.61 |
+| output | 1,909,925 | 25.00 | $47.75 |
+| **total** | **310,234,516** | | **$265.17** |
+
+### By agent role
+
+| agent | runs× | input | cache-write | cache-read | output | cost |
+|---|--:|--:|--:|--:|--:|--:|
+| extract-spec | 8 | 69k | 1.5M | 62.7M | 244k | $47.11 |
+| audit-faithfulness | 17 | 60k | 2.0M | 51.0M | 314k | $46.07 |
+| implement | 9 | 56k | 1.3M | 58.7M | 272k | $44.40 |
+| author-tests | 15 | 60k | 1.8M | 35.3M | 290k | $36.67 |
+| digitize-figure | 8 | 27k | 598k | 21.7M | 181k | $19.23 |
+| audit-spec | 7 | 22k | 683k | 13.2M | 101k | $13.52 |
+| audit-digitization | 8 | 33k | 450k | 13.2M | 126k | $12.75 |
+| extract-figure | 8 | 23k | 380k | 13.1M | 84k | $11.16 |
+| audit-process | 11 | 29k | 683k | 7.7M | 88k | $10.44 |
+| audit-tests | 9 | 24k | 548k | 8.4M | 88k | $9.94 |
+| update-state | 4 | 11k | 359k | 4.9M | 71k | $6.53 |
+| paper-fix | 3 | 15k | 301k | 6.6M | 41k | $6.27 |
+| finalize | 3 | 7k | 68k | 718k | 10k | $1.08 |
+
+<sub>Measured from agent transcripts via `tools/repro_cost.py`. Messages de-duped by API id (max cumulative output); agents de-duped by id (cache-replayed resumes not double-counted). The in-flight report phase of the latest run may be slightly undercounted.</sub>
