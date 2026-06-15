@@ -1,0 +1,9 @@
+Figure 1 is not a Mode-1 line plot — it is the authors' four 2D grayscale
+activity-map renders (Stimulus Drive E, Attention Field A, Suppressive Drive S,
+Population Response R, each plotted as RF-center × orientation-preference
+heatmaps) plus a far-left stimulus schematic. There is no curve to trace, so a
+digitized overlay would be fabricated. The figure is reproduced as a live model
+render (figures_reproduced/figure_1.png) and certified by the deterministic
+must-pass checks + VLM topology comparison (see logs/readme_meta.yaml fig 1),
+not by curve digitization. Honest .nodigitize marker per the digitize-figure
+skill (rendered output / heat-map panel, no Mode-1 trace).

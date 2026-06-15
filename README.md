@@ -115,7 +115,7 @@ Each figure is shown up to three ways — **paper** (original crop), **digitized
 
 ### Figure 1 — Activity-map render  ✅ FAITHFUL (det all-pass · VLM pass)
 
-<table><tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="300"></td><td>—</td><td><img src="figures_reproduced/figure_1.png" width="300"></td></tr></table>
+<table><tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="300"></td><td>_n/a — not digitizable_</td><td><img src="figures_reproduced/figure_1.png" width="300"></td></tr></table>
 
 The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two
 bands) × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive
