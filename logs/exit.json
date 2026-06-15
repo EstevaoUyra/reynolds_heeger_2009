@@ -1,0 +1,11 @@
+{
+  "overall": "reproduced",
+  "trajectory": "toward_paper",
+  "flagged_count": 0,
+  "blocked": [],
+  "audit": "hardened",
+  "figures_in_scope": [1, 2, 3, 4, 5, 6, 7],
+  "figures_rerendered": 7,
+  "updated_at": "2026-06-10",
+  "headline": "Figures re-rendered and certified; the model is independently verified FAITHFUL on every figure it reproduces."
+}

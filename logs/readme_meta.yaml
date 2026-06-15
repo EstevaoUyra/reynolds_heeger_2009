@@ -1,0 +1,137 @@
+# Irreducible README prose, authored once and rendered verbatim by
+# tools/build_model_readme.py. Everything mechanical (exit table, test/VLM
+# roll-up, changelog table, figure image tables, cost) is computed from other
+# artifacts — only the analytical prose lives here. The `checks` lists are the
+# fallback for §4 tier tables until the suite re-runs with @pytest.mark.tier
+# markers captured into test_runs.jsonl (then they populate automatically).
+
+title: "Reynolds & Heeger 2009 — The Normalization Model of Attention"
+
+status_narrative: |
+  **Figures re-rendered and certified.** All 7 figure PNGs were regenerated with the project venv
+  (`PYTHONPATH=implementation/src python -m rh_model.views`, matplotlib 3.10.9) and propagated to the
+  committed `figures_reproduced/figure_*.png` that the README shows. The earlier "BLOCKED on stale
+  Figure 6 render" exit is **superseded** — Fig 6 now displays the corrected author 'cross' curve, and
+  the model is independently VERIFIED FAITHFUL on every figure it reproduces.
+
+  **Per-figure state:** Figs 2/3 FAITHFUL (full CRF sigmoids); 4C faithful to `Figure4C.m` (author
+  suppression sign), 4E FAITHFUL (%-mod ~52% on the author four-separated geometry); 5C FAITHFUL
+  (peak ratio 1.166 vs digitized 1.157); 6C FAITHFUL (author `Ashape='cross'` field, peak ratio 1.109,
+  FWHM ratio 0.887); 7C FAITHFUL (var/fixation ratio 1.3215 vs digitized 1.325); Fig 1 FAITHFUL (the
+  authors' activity-map render). Not-reproduced placeholder panels are explicit, not model output.
+
+model_summary: |
+  The foundational **normalization model of attention**: one divisive-normalization circuit explains
+  contrast-gain vs response-gain modulation, multiplicative tuning-curve scaling, feature-based
+  sharpening, and tuning shifts with two stimuli in the receptive field. A population indexed by RF
+  center `x` and feature preference `θ` receives an excitatory **stimulus drive** `E(x,θ)`, is gated by
+  a multiplicative **attention field** `A(x,θ) ≥ 1`, and is divisively normalized by a pooled
+  **suppressive drive** `S(x,θ)`. The central claim: the *shape* of attentional modulation is not a
+  free parameter — it emerges from the relative size of the attention field and the stimulus.
+
+  Resolved from the authors' released MATLAB, the suppression is a separable space×feature convolution
+  (`conv2sepYcirc`) of two unit-volume Gaussians with σ=1e-6 and NO per-panel suppression gain. The
+  equations map operator-for-operator to the paper and the author code, and are faithful (independent
+  audits: spec_audit VERDICT FAITHFUL, faithfulness_audit "model.py is FAITHFUL"). Every open
+  divergence is figure / contract-scope, not a transcription fault. Scope: 7 figures; Fig 1 is the
+  authors' own activity-map render, Figs 2–7 are live `protocols.run_figure_*` → measurements → views.
+
+# Eq. 5 (attention-modulated divisive normalization) and Eq. 6 (suppressive drive).
+model_equation_refs: [C-005, C-006]
+
+figures:
+  1:
+    headline: "Activity-map render"
+    status_badge: "✅ FAITHFUL (det all-pass · VLM pass)"
+    note: |
+      The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two
+      bands) × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive
+      drive → an output that enhances the attended band relative to the left. 11/11 must-pass, including
+      the corrected R-asymmetry check (faithful MUST-PASS at the author-code value R_right/R_left ≈ 1.01,
+      SQ-010, replacing the refuted ≥1.10 over-claim).
+    checks:
+      - {tier: "must-pass", check: "R-asymmetry R_right/R_left ≈ 1.01 (author CODE-019)", result: "✅ pass"}
+      - {tier: "figure (VLM)", check: "topology + attended-stimulus enhancement match", result: "✅ faithful"}
+  2:
+    headline: "Contrast gain vs response gain"
+    status_badge: "✅ FAITHFUL (det all-pass · CRFs full sigmoids)"
+    note: |
+      Over the author window `[1e-5, 1]` (CODE-020) the panels are full sigmoids: 2A is contrast-gain
+      (attended left-shifted, half-max c≈0.00128, shared plateau); 2B is response-gain (attended scaled
+      up, sustained ~42% %-mod). **Contract caveat (F-B, open):** the Fig-2 pseudocode still describes a
+      single-stim-x=0 / [0.01,1] experiment that contradicts the author two-separated-stimulus geometry
+      (numerically equivalent at the recorded neuron — SQ-002).
+    checks:
+      - {tier: "qualitative", check: "2A attended ≥ ignored / converges / %-mod falls", result: "✅ pass"}
+      - {tier: "qualitative", check: "2B attended above ignored / no convergence", result: "✅ pass"}
+      - {tier: "hard", check: "2A/2B high-contrast separation vs digitized", result: "✅ pass"}
+      - {tier: "hard", check: "2A attended left-shifted (half-max) in author window", result: "✅ pass"}
+      - {tier: "shape", check: "2A/2B half-max & %-mod plateau vs digitized", result: "✅ pass"}
+  3:
+    headline: "Baseline shift across contrast"
+    status_badge: "✅ FAITHFUL (det all-pass · CRFs full sigmoids)"
+    note: |
+      Over the author window `[1e-5, 1]`: 3C attend-in-RF above contralateral with an interior %-mod bump
+      and high-contrast convergence (unmod=5.0 baseline, CODE-017); 3F sustained separation with %-mod
+      largest at low contrast declining to ~20%. **Contract caveats (open):** F-A (pseudocode binds the
+      superseded A-007 0.05/0.05 baseline) and F-C (A-013 rule (3) forbids the per-panel asymmetry
+      CODE-017 mandates).
+    checks:
+      - {tier: "qualitative", check: "3C above/converge · 3F above/persist", result: "✅ pass"}
+      - {tier: "hard", check: "3C/3F high-contrast separation vs digitized", result: "✅ pass"}
+      - {tier: "shape", check: "3C %-mod interior bump · 3F abs-diff above %-mod peak", result: "✅ pass"}
+  4:
+    headline: "Two-stimulus contrast-response modulation"
+    status_badge: "✅ FAITHFUL (4E %-mod ~52% on author geometry; 4C dispositioned)"
+    note: |
+      Over the author window `[1e-4, 0.1]` (CODE-018/020). **4C** follows `Figure4C.m` (the suppression
+      sign: attend-null-in-RF SUPPRESSES the recorded preferred neuron). DR-4C-sign is RESOLVED
+      (digitizer label swap, not a paper defect); the caption-attribution authority question carries over
+      (C1). **4E is FAITHFUL:** %-mod ~52% (within the paper 0–100 axis) on the author
+      four-separated-stimulus geometry, matching digitized ~54%; the earlier ~386% overflow was the
+      co-located-at-x=0 geometry, now corrected.
+    checks:
+      - {tier: "qualitative", check: "4C suppression direction · 4E attend-pref above nonpref", result: "✅ pass"}
+      - {tier: "window", check: "4C/4E sweep + xlim = author cRange [1e-4, 0.1]", result: "✅ pass"}
+      - {tier: "hard", check: "4E %-mod stays within paper 0–100 axis", result: "✅ pass — ~52%"}
+      - {tier: "hard", check: "4E author-geometry %-mod ~54%", result: "✅ pass — ~52%"}
+  5:
+    headline: "Spatial attention as multiplicative scaling"
+    status_badge: "✅ FAITHFUL (peak ratio 1.166 vs 1.157)"
+    note: |
+      The right *kind* of effect — multiplicative, same-width scaling (no sharpening). The model lands the
+      peak ratio at 1.166 vs digitized 1.157 (|Δ|≈0.009, inside the ±0.15 hard band). The 5C sweep
+      contrast is 1.0 (CODE-021); the prior `audited:false` 0.5 provenance divergence is resolved.
+    checks:
+      - {tier: "qualitative", check: "5C attended above unattended · same width, no sharpening", result: "✅ pass"}
+      - {tier: "hard", check: "5C peak ratio vs digitized", result: "✅ pass — 1.166 vs 1.157"}
+      - {tier: "soft", check: "5C shape / unattended peak vs digitized", result: "⚠️ soft (reported)"}
+  6:
+    headline: "Feature-based attention sharpening"
+    status_badge: "✅ FAITHFUL (det all-pass · fresh render)"
+    note: |
+      The 6C CONTRACT_BUG (2026-06-10) is RESOLVED via lineage rung 1 (this paper's own code).
+      `run_figure_6C` honors the binding ledger geometry (RF stimulus stim_rf_x=100, contralateral
+      stim_contra_x=-100, attend-fixation attend_fixation_x=0) and `build_attention_field` implements the
+      author **`Ashape='cross'`** additive separable spatial×feature field. No tuning: peak ratio 1.109
+      (digitized 1.108, author 1.109), FWHM ratio 0.887, measured at the authors' native 1° sweep grid.
+      `figures_reproduced/figure_6.png` was re-rendered with matplotlib 3.10.9.
+    checks:
+      - {tier: "qualitative", check: "6C attended ≥ tall at peak · sharpening present", result: "✅ pass"}
+      - {tier: "must-pass", check: "6C peak ratio 1.108±0.01 · FWHM ratio [0.87,0.89] · honors ledger geometry", result: "✅ pass (3/3)"}
+      - {tier: "soft", check: "6C 'cross' mechanism tripwire (proxy ≠ cross)", result: "✅ XPASS (resolved)"}
+      - {tier: "panel-axes", check: "6C panel matches axis spec (re-rendered)", result: "✅ pass"}
+  7:
+    headline: "Two stimuli in RF: combined attention shifts"
+    status_badge: "✅ FAITHFUL (var/fix ratio 1.32)"
+    note: |
+      Ordering faithful (attend-variable > ignored/fixation > attend-nonpref) AND the variable/fixation
+      peak ratio lands at 1.3215 vs digitized ~1.325 — the earlier ~2.73/3.3 was the co-located-at-x=0
+      geometry, now corrected to the author separated geometry (var x=93, null x=107, recorded x=100,
+      att-away x=−100) plus the θ-stimulus convention fix (361 grid + non-periodic profile). Panel C is
+      the sole deliverable (SQ-003); A/B "not reproduced". Sweep contrast 1.0 (CODE-021).
+    checks:
+      - {tier: "qualitative", check: "7C peak ordering variable>fixation>nonpref", result: "✅ pass"}
+      - {tier: "hard", check: "7C variable/fixation ratio vs digitized", result: "✅ pass — 1.3215 vs 1.325"}
+      - {tier: "must-pass", check: "7C var/fixation ratio 1.32±0.03 · S(0,100) author value · 361 θ grid", result: "✅ pass (3/3)"}
+      - {tier: "soft", check: "7C variable/nonpref ratio / shape vs digitized", result: "⚠️ soft (2.10 vs 2.12)"}
