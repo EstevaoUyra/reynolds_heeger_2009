@@ -115,7 +115,7 @@ Each figure is shown up to three ways — **paper** (original crop), **digitized
 
 ### Figure 1 — Activity-map render  ✅ FAITHFUL (det all-pass · VLM pass)
 
-<table><tr><th>Paper</th><th>Implementation</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="300"></td><td><img src="figures_reproduced/figure_1.png" width="300"></td></tr></table>
+<table><tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="300"></td><td>—</td><td><img src="figures_reproduced/figure_1.png" width="300"></td></tr></table>
 
 The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two
 bands) × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive
@@ -251,17 +251,7 @@ pass**. There are no remaining figure divergences: the former Fig-1 R-asymmetry 
 was an UNGROUNDED contract over-claim, corrected to the author ground truth (R_right/R_left ≈ 1.01,
 SQ-010) and now a faithful MUST-PASS. The rest is contract-description residue.
 
-1. **The Figure 6 render is now FRESH** — _FIGURE · RESOLVED_
-
-   All 7 figures were re-rendered with matplotlib 3.10.9
-   (`PYTHONPATH=implementation/src python -m rh_model.views`) and propagated to
-   `figures_reproduced/figure_*.png`. Fig 6 now shows the corrected author 'cross' curve (gray
-   peak ~0.903, peak ratio 1.109); the prior stale pre-fix render is gone. The `overlay_6C.png`
-   is a digitize-tool artifact (not produced by `views.py`) and already reflects the fixed model.
-
-   *Source:* `model.py:284 _build_attention_field_cross`, `protocols.py run_figure_6C`, `Figure6C.m / attentionModel.m:146-162`, `code_refs.yaml CODE-018`
-
-2. **Stale A-007 baselines in the Fig-3 pseudocode (fix-phase doc edit)** — _CONTRACT · OPEN_
+1. **Stale A-007 baselines in the Fig-3 pseudocode (fix-phase doc edit)** — _CONTRACT_
 
    `article_aware/pseudocode/figure_3_protocol.md:16-18` binds the superseded
    `baseline_* = 0.05 (per A-007)` — the only surviving active 0.05 instruction. CODE-017 (3C
@@ -269,7 +259,7 @@ SQ-010) and now a faithful MUST-PASS. The rest is contract-description residue.
 
    *Source:* `figure_3_protocol.md:16-18`, `code_refs.yaml CODE-017`, `Figure3C.m:5-6`, `Figure3F.m:5-6`
 
-3. **Fig-2/3 pseudocode describes a different experiment + stale [0.01,1] sweep (SQ-002)** — _CONTRACT · OPEN_
+2. **Fig-2/3 pseudocode describes a different experiment + stale [0.01,1] sweep (SQ-002)** — _CONTRACT_
 
    `figure_2_protocol.md` / `figure_3_protocol.md` say "single stimulus at x=0", unattended =
    "constant 1", sweep "[0.01,1]". Author scripts use TWO separated stimuli at x=±100, recorded
@@ -278,7 +268,7 @@ SQ-010) and now a faithful MUST-PASS. The rest is contract-description residue.
 
    *Source:* `figure_{2,3}_protocol.md`, `Figure2A/2B/3C/3F.m`, `calibration.yaml figure_*.c_range_*`, `SQ-002`
 
-4. **A-013 rule (3) forbids the per-panel asymmetry CODE-017 mandates (fix-phase doc edit)** — _CONTRACT · OPEN_
+3. **A-013 rule (3) forbids the per-panel asymmetry CODE-017 mandates (fix-phase doc edit)** — _CONTRACT_
 
    `assumptions.yaml:411-413` still says per-panel Fig-3 baselines that differ are forbidden
    ("use the single A-007 0.05·α"); CODE-017 makes 3C/3F unmodulated (5.0 vs 0.0) legitimately
@@ -286,34 +276,15 @@ SQ-010) and now a faithful MUST-PASS. The rest is contract-description residue.
 
    *Source:* `assumptions.yaml:411-413`, `code_refs.yaml CODE-017`
 
-5. **Fig-4E / Fig-7C two-stimulus geometry** — _GEOMETRY · RESOLVED_
-
-   `run_figure_4E` / `run_figure_7C` now build the author SEPARATED geometry (4E four stimuli
-   RF x=90/110, contra x=−90/−110; 7C var x=93 / null x=107 / recorded x=100 / att-away x=−100)
-   instead of co-locating at x=0. Through the committed, unchanged `simulate` this lands 4E ~52%
-   (within axis) and 7C var/fix ratio ~1.3215, matching the digitized references. The 7C result
-   also required the θ-stimulus convention fix (361 θ grid + non-periodic per-stimulus profile).
-   The forward mechanism (`model.py`) is unchanged.
-
-   *Source:* `Figure4E.m`, `Figure7C.m`, `calibration figure_{4E,7C}.* (CODE-018)`, `logs/faithfulness_audit/2026-06-10-independent-rerender-v2.md`
-
-6. **DR-4C-sign — caption-authority carryover (C1)** — _DECISION · RESOLVED_
-
-   The published positive %-modulation matches `Figure4C.m` once the upper solid is read as the
-   author's "Att Away"/unattCRF; the model follows the code and is correct. The
-   published-caption-vs-model-panel *reading* (A-012, owner=human, expiry 2026-07-15) and the
-   `panel_C_digitized.json` solid-label swap should be ratified by a faithfulness auditor WITH
-   the paper / the human owner, not another code re-run.
-
-   *Source:* `Figure4C.m:69,74`, `figure_4/panel_C.md`, `assumptions.yaml A-012`
-
-7. **Fig-5 peak-ratio overshoot — soft, structural, do NOT tune** — _MAGNITUDE · OPEN_
+4. **Fig-5 peak-ratio overshoot — soft, structural, do NOT tune** — _MAGNITUDE_
 
    5C peak ratio ~1.166 vs digitized ~1.157; mechanism faithful, oval-approximation residue,
    inside the ±0.15 hard band. 6C is RESOLVED (author 'cross' field, peak ratio 1.109, FWHM
    ratio 0.887, no tuning). Contrast provenance for 5C/6C/7C is resolved (CODE-021 contrast=1).
 
    *Source:* `model.py _build_attention_field_cross`, `protocols.py run_figure_6C`, `code_refs.yaml CODE-018/021`
+
+<sub>3 resolved issue(s) omitted — see `logs/issues.yaml`.</sub>
 
 ---
 
