@@ -9,6 +9,24 @@ adjudications:
     date: 2026-06-10
     decided_by: organizer
     verdict: override → faithful (flagged_count 1 → 0)
+    status: RETRACTED
+    retracted_date: 2026-07-01
+    retraction_reason: |
+      ADJ-001 violated two process rules now documented in
+      proposals/process-faithfulness-gaps-2026-06-29.md:
+      (1) Asymmetric refutation authority — code-agreement (numpy port also gives 1.0128) was
+      used to override the paper's PRINTED panel which shows a clearly visible right>left
+      asymmetry. Code-agreement can only resolve things the paper is silent on; it cannot
+      override what the paper's figure positively shows. The operating point used by the debug
+      call (contrast=1, σ=1e-6) sits on the scale-invariant plateau where the effect cancels;
+      that is a config problem, not evidence the claim is wrong.
+      (2) Tautological threshold — the replacement test (1.005 < ratio < 1.05) is centred on
+      1.0128 = the model's own output at the wrong contrast. A test threshold may never equal
+      the current model output.
+      Fix: calibration.yaml figure_1.stim_contrast set to 1e-4 (unsaturated CRF limb where
+      σ breaks scale-invariance); figure_1.md relation #6 and the R-panel description
+      restored to "right noticeably brighter"; test_figure_1.py Q-008b rewritten to
+      assert ratio >= 1.3 (paper-grounded lower bound, clearly fails at contrast=1).
     finding: |
       The strict-xfail Fig-1 R-asymmetry tripwire
       (test_population_response_right_noticeably_brighter_TRIPWIRE) asserted

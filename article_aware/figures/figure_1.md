@@ -183,16 +183,15 @@ EQ-6 (C-006).
 - **Two stripes, narrow like E:** the numerator A·E is localized at the two stimulus positions;
   dividing by the broad, smooth S does not broaden the peaks. R stripes are **narrow**,
   comparable to E — NOT as broad as the S bands. (If R looks as wide as S, the division is wrong.)
-- **Right SLIGHTLY brighter than left (~1.01, NOT "noticeably"):** at the attended (right)
-  location the numerator A·E is multiplied by A ≈ 2, but the pooled denominator I also pools
-  A·E and rises nearly proportionally, so the response-gain modulation almost cancels in
-  R = E/(I+σ). An independent numpy port of the authors' CODE-019 Figure-1 call gives
-  **R_right/R_left = 1.0128** at θ=0 — a faint right-bias, not a "noticeably brighter" stripe.
-  The genuine attention asymmetry (≈1.98×) lives in S, not R. The left (unattended) stripe is
-  **present, visible, and nearly as bright** — normalization reduces it only slightly here, far
-  from winner-take-all (C-021). [CONTRACT CORRECTION 2026-06-10: the prior text claimed the
-  right stripe is "brighter" / a ≥1.10 asymmetry; that was an UNGROUNDED over-claim refuted by
-  the author code. See logs/spec_questions.md SQ-010 and test_figure_1.py Q-008b.]
+- **Right noticeably brighter than left:** the attended (right) stripe is visibly brighter than
+  the unattended (left) stripe in R — this is the phenomenon Figure 1 exists to demonstrate.
+  The attention field (A=2 at the right stimulus, A=1 at the left) multiplies the numerator
+  A·E; at the figure's operating contrast the denominator pool(A·E) is not yet at the
+  scale-invariant plateau, so the boost is not cancelled, producing a clearly visible right>left
+  ratio in R. The left (unattended) stripe remains present — normalization reduces it, not
+  eliminates it (no winner-take-all, C-021). [ADJ-001 (2026-06-10) had softened this to
+  "~1.01, not noticeably"; that adjudication is retracted — see logs/adjudications.yaml
+  ADJ-001-RETRACTED.]
 - **σ ≈ 0:** since sigma = 1e-6 ≪ I, R ≈ E/I; saturation/scale comes from the pooled I, not σ
   (CODE-014). The render is a paper-image check that this near-zero σ still yields a sensible R.
 - **Dark gap preserved:** neurons between the two stimuli have near-zero numerators → dark gap
@@ -224,8 +223,10 @@ EQ-6 (C-006).
    footprint: R stripes are narrow like E, not broad like S. If R stripes are as wide as the S
    bands, division by S is not implemented correctly. (EQ-5, C-005)
 
-6. **R left stripe is present but dimmer.** The unattended response is reduced, not eliminated;
-   a visible left stripe at x = −100 must remain in R. (EQ-5, C-005/C-021)
+6. **R right stripe is noticeably brighter than R left.** The attended (right) response is
+   visibly higher than the unattended (left); the left stripe remains present (not eliminated —
+   no winner-take-all), but clearly dimmer. This is the phenomenon the figure exists to show.
+   (EQ-5, C-005/C-021)
 
 7. **A is orientation-flat and right-biased in space.** Every row of A is identical (flat in θ);
    its bright peak sits over the right stimulus (x = +100) and decays to baseline (midgray) on

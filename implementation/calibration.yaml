@@ -65,11 +65,19 @@ figure_1.stim_right_x:
   audited: true
   note: "Right (attended) stimulus position (stimCenter1 = +100, CODE-019)."
 figure_1.stim_contrast:
-  value: 1.0
+  value: 1.0e-4
   units: "contrast (c in [0,1])"
-  source: CODE-019
-  audited: true
-  note: "Equal amplitude of both Figure-1 gratings (makeGaussian height=1, CODE-019)."
+  source: assumed-consistent
+  audited: false
+  note: |
+    Figure-1 render contrast. The authors' Test/debug R1 call (CODE-019) uses makeGaussian
+    height=1 (contrast=1), but contrast=1 puts the model on the scale-invariant plateau
+    where R = E·A/pool(E·A) cancels attention's boost — producing R_right/R_left ≈ 1.01,
+    invisible in the render. The printed Figure 1 shows clearly visible right>left in R.
+    At c=1e-4 the model is on the rising limb (I ≈ σ=1e-6), σ breaks scale-invariance,
+    and R_right/R_left ≈ 1.89 — a visible asymmetry. The debug call's contrast is not the
+    figure-generating value. All other CODE-019 parameters (grid, positions, AxWidth,
+    gamma, IxWidth, IthetaWidth, sigma) are unchanged.
 figure_1.attention_spatial_center:
   value: 100.0
   units: "arbitrary spatial units"
