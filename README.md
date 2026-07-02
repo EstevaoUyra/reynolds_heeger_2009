@@ -9,8 +9,8 @@
 | Field | Value |
 |---|---|
 | Overall | reproduced |
-| Trajectory | toward_paper |
-| Audit | hardened |
+| Trajectory | moving toward the paper (`toward_paper`) |
+| Audit | independently audited (`hardened`) |
 | Audit overrides | 1 (see Status ⚖️) |
 | Flagged (human must confirm) | 0 |
 | Figures re-rendered | 7 |
@@ -70,7 +70,7 @@ diff is confined to test_figure_1.py + figure_1.md relation #6 (verified against
 
 | Figure | Deterministic tests | VLM |
 |---|---|---|
-| Figure 1 | 24 total, 11 (46%) passing | pass (c8ea505) |
+| Figure 1 | 25 total, 12 (48%) passing | pass (c8ea505) |
 | Figure 2 | 38 total, 36 (95%) passing | fail (c8ea505) |
 | Figure 3 | 33 total, 32 (97%) passing | needs review (c8ea505) |
 | Figure 4 | 44 total, 40 (91%) passing | fail (c8ea505) |
@@ -117,15 +117,16 @@ Each figure is shown up to three ways — **paper** (original crop), **digitized
 
 <table><tr><th>Paper</th><th>Digitized</th><th>Implementation</th></tr><tr><td><img src="article_aware/figures/figure_1.jpg" width="300"></td><td>_n/a — not digitizable_</td><td><img src="figures_reproduced/figure_1.png" width="300"></td></tr></table>
 
-The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps: stimulus drive (two
-bands) × a localized attention field over the attended (right) stimulus, ÷ the pooled suppressive
-drive → an output that enhances the attended band relative to the left. 11/11 must-pass, including
-the corrected R-asymmetry check (faithful MUST-PASS at the author-code value R_right/R_left ≈ 1.01,
-SQ-010, replacing the refuted ≥1.10 over-claim).
+The `E × A ÷ S → R` pipeline rendered as the authors' four activity maps. Attended (right) output
+is visibly brighter than unattended (left) — the phenomenon the figure exists to demonstrate.
+11/11 must-pass. Operating contrast set to 1e-4 (unsaturated CRF limb) so that sigma breaks
+scale-invariance and the attention boost is visible in R (R_right/R_left ≈ 1.89).
+ADJ-001 retracted: the prior 1.0 contrast config sat on the scale-invariant plateau where the
+effect cancels; the tautological 1.005–1.05 test is replaced by ratio ≥ 1.3.
 
 | Tier | Check | Result |
 |---|---|---|
-| must-pass | R-asymmetry R_right/R_left ≈ 1.01 (author CODE-019) | ✅ pass |
+| must-pass | R-asymmetry R_right/R_left ≥ 1.3 (noticeably brighter, c=1e-4) | ✅ pass |
 | figure (VLM) | topology + attended-stimulus enhancement match | ✅ faithful |
 
 ### Figure 2 — Contrast gain vs response gain  ✅ FAITHFUL (det all-pass · CRFs full sigmoids)
@@ -299,41 +300,3 @@ One line per pass; full detail in [`logs/changelog.md`](logs/changelog.md).
 | 2026-06-04 | from=fix finalize: window fix verified faithful, BLOCKED on two open contract divergences (update-state) |
 | 2026-06-03 | Current-state README rewrite (update-state skill, model HEAD c8ea505) |
 | 2026-06-10 | paper-fix verify: 6C model VERIFIED FAITHFUL, BLOCKED on stale Figure 6 render |
-
----
-
-## Reproduction cost
-
-Estimated at **standard Claude Opus 4.8 API rates** ($5 / $25 per 1M input/output; cache read $0.50/1M, cache write $6.25/1M) from this model's full-pass workflow agent transcripts still in local history, summed across all recoverable runs (initial pass + any later fixes). Runs or agents whose transcripts have rotated out are not counted, so this is a **lower bound** — most reliable for recently-built models.
-
-**Estimated total: $285.85** — 8 recoverable run(s), 124 agents, 330.5M tokens.
-
-### By token type
-
-| token type | tokens | $/1M | cost |
-|---|--:|--:|--:|
-| input | 481,934 | 5.00 | $2.41 |
-| cache write 5m | 11,601,037 | 6.25 | $72.51 |
-| cache read | 316,268,357 | 0.50 | $158.13 |
-| output | 2,112,134 | 25.00 | $52.80 |
-| **total** | **330,463,462** | | **$285.85** |
-
-### By agent role
-
-| agent | runs× | input | cache-write | cache-read | output | cost |
-|---|--:|--:|--:|--:|--:|--:|
-| audit-faithfulness | 19 | 65k | 2.2M | 54.7M | 348k | $50.21 |
-| extract-spec | 9 | 72k | 1.6M | 65.9M | 260k | $49.83 |
-| implement | 11 | 64k | 1.4M | 60.7M | 292k | $46.67 |
-| author-tests | 16 | 62k | 1.9M | 35.9M | 297k | $37.49 |
-| digitize-figure | 10 | 34k | 730k | 25.9M | 236k | $23.59 |
-| audit-digitization | 10 | 41k | 570k | 16.3M | 162k | $15.99 |
-| audit-spec | 7 | 22k | 683k | 13.2M | 101k | $13.52 |
-| audit-process | 13 | 34k | 778k | 8.8M | 101k | $11.94 |
-| extract-figure | 9 | 25k | 400k | 13.2M | 85k | $11.36 |
-| audit-tests | 9 | 24k | 548k | 8.4M | 88k | $9.94 |
-| update-state | 5 | 16k | 424k | 5.9M | 91k | $7.96 |
-| paper-fix | 3 | 15k | 301k | 6.6M | 41k | $6.27 |
-| finalize | 3 | 7k | 68k | 718k | 10k | $1.08 |
-
-<sub>Measured from agent transcripts via `tools/repro_cost.py`. Messages de-duped by API id (max cumulative output); agents de-duped by id (cache-replayed resumes not double-counted). The in-flight report phase of the latest run may be slightly undercounted.</sub>
